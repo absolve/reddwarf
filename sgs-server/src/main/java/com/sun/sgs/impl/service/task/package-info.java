@@ -19,5 +19,7 @@
  * --
  */
 
-/** Provides an implementation of {@link com.sun.sgs.service.TaskService}. */
+/**
+ * Provides an implementation of {@link com.sun.sgs.service.TaskService}.
+ */
 package com.sun.sgs.impl.service.task;

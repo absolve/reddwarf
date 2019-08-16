@@ -28,13 +28,11 @@
 package com.sun.sgs.impl.kernel;
 
 import com.sun.sgs.auth.Identity;
-
-import com.sun.sgs.kernel.schedule.ScheduledTask;
-
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.Priority;
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskQueue;
+import com.sun.sgs.kernel.schedule.ScheduledTask;
 
 
 /**
@@ -82,6 +80,7 @@ final class ScheduledTaskImpl implements ScheduledTask {
         /* The task was cancelled. */
         CANCELLED
     }
+
     private State state = State.RUNNABLE;
 
     // the result of the task, if the state is COMPLETED; null if the task
@@ -119,8 +118,8 @@ final class ScheduledTaskImpl implements ScheduledTask {
          * Constructs a {@code Builder} object that takes three required
          * parameters for building a {@code ScheduledTaskImpl}.
          *
-         * @param task the <code>KernelRunnable</code> to run
-         * @param owner the <code>Identity</code> of the task owner
+         * @param task     the <code>KernelRunnable</code> to run
+         * @param owner    the <code>Identity</code> of the task owner
          * @param priority the <code>Priority</code> of the task
          */
         Builder(KernelRunnable task, Identity owner, Priority priority) {
@@ -234,62 +233,86 @@ final class ScheduledTaskImpl implements ScheduledTask {
 
     /** Implementation of ScheduledTask interface. */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public KernelRunnable getTask() {
         return task;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Identity getOwner() {
         return owner;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Priority getPriority() {
         return priority;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getStartTime() {
         return startTime;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getPeriod() {
         return period;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getTryCount() {
         return tryCount;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getTimeout() {
         return timeout;
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public Throwable getLastFailure() {
         return lastFailure;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setPriority(Priority priority) {
         this.priority = priority;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isRecurring() {
         return period != NON_RECURRING;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public RecurringTaskHandle getRecurringTaskHandle() {
         return recurringTaskHandle;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized boolean isCancelled() {
         return state == State.CANCELLED;
     }
@@ -297,8 +320,7 @@ final class ScheduledTaskImpl implements ScheduledTask {
     /**
      * {@inheritDoc}
      */
-    public synchronized boolean cancel(boolean block)
-    {
+    public synchronized boolean cancel(boolean block) {
         switch (state) {
             case COMPLETED:
             case CANCELLED:
@@ -372,12 +394,16 @@ final class ScheduledTaskImpl implements ScheduledTask {
         return result;
     }
 
-    /** Re-sets the starting time to the now. */
+    /**
+     * Re-sets the starting time to the now.
+     */
     void resetStartTime() {
         startTime = System.currentTimeMillis();
     }
 
-    /** Returns whether the task has finished. */
+    /**
+     * Returns whether the task has finished.
+     */
     synchronized boolean isDone() {
         return ((state == State.COMPLETED) || (state == State.CANCELLED));
     }
@@ -420,7 +446,9 @@ final class ScheduledTaskImpl implements ScheduledTask {
         return false;
     }
 
-    /** Returns whether this task is currently running. */
+    /**
+     * Returns whether this task is currently running.
+     */
     synchronized boolean isRunning() {
         return state == State.RUNNING;
     }

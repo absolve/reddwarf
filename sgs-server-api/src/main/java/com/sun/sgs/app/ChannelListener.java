@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 /**
  * Listener for messages received on a channel.  A channel can be
  * created with a {@code ChannelListener} which is notified when
- * any client session sends a message on that channel. 
+ * any client session sends a message on that channel.
  *
  * <p>An implementation of a {@code ChannelListener} should implement
  * the {@link Serializable} interface, so that channel listeners
@@ -69,10 +69,10 @@ public interface ChannelListener {
      * additional messages with or without the specified message content,
      * or ignoring the message.
      *
-     * @param	channel a channel
-     * @param	sender the sending client session
-     * @param	message a message
+     * @param    channel a channel
+     * @param    sender the sending client session
+     * @param    message a message
      */
     void receivedMessage(
-	Channel channel, ClientSession sender, ByteBuffer message);
+            Channel channel, ClientSession sender, ByteBuffer message);
 }

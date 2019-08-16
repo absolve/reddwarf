@@ -21,11 +21,8 @@
 
 package com.sun.sgs.impl.service.session;
 
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.Delivery;
-import com.sun.sgs.app.ManagedObjectRemoval;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.ObjectNotFoundException;
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Set;
@@ -43,111 +40,134 @@ import java.util.Set;
  * service, the underlying client session is disconnected.
  */
 public class ClientSessionWrapper
-    implements ClientSession, Serializable, ManagedObjectRemoval
-{
-    /** The serialVersionUID for this class. */
+        implements ClientSession, Serializable, ManagedObjectRemoval {
+    /**
+     * The serialVersionUID for this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The reference to the client session that this instance wraps. */
+    /**
+     * The reference to the client session that this instance wraps.
+     */
     private final ManagedReference<ClientSessionImpl> sessionRef;
 
     /**
      * Constructs an instance with the specified {@code sessionRef}.
      *
-     * @param	sessionRef a reference to a client session to wrap
+     * @param    sessionRef a reference to a client session to wrap
      */
     ClientSessionWrapper(ManagedReference<ClientSessionImpl> sessionRef) {
-	if (sessionRef == null) {
-	    throw new NullPointerException("null sessionRef");
-	}
-	this.sessionRef = sessionRef;
+        if (sessionRef == null) {
+            throw new NullPointerException("null sessionRef");
+        }
+        this.sessionRef = sessionRef;
     }
 
     /* -- Implement ClientSession -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getName() {
-	return getClientSession().getName();
+        return getClientSession().getName();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Set<Delivery> supportedDeliveries() {
-	return getClientSession().supportedDeliveries();
+        return getClientSession().supportedDeliveries();
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public int getMaxMessageLength() {
         return getClientSession().getMaxMessageLength();
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean isConnected() {
-	try {
-	    return sessionRef.get().isConnected();
-	} catch (ObjectNotFoundException e) {
-	    return false;
-	}
+        try {
+            return sessionRef.get().isConnected();
+        } catch (ObjectNotFoundException e) {
+            return false;
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public ClientSession send(ByteBuffer message) {
-	getClientSession().send(message);
-	return this;
+        getClientSession().send(message);
+        return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public ClientSession send(ByteBuffer message, Delivery delivery) {
-	getClientSession().send(message, delivery);
-	return this;
+        getClientSession().send(message, delivery);
+        return this;
     }
     /* -- Implement ManagedObjectRemoval -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removingObject() {
-	try {
-	    sessionRef.get().disconnect();
-	} catch (ObjectNotFoundException e) {
-	    // already disconnected.
-	}
+        try {
+            sessionRef.get().disconnect();
+        } catch (ObjectNotFoundException e) {
+            // already disconnected.
+        }
     }
 
     /* -- Implement Object -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object object) {
-	if (object == this) {
-	    return true;
-	} else if (object instanceof ClientSessionWrapper) {
-	    return sessionRef.equals(
-		       ((ClientSessionWrapper) object).sessionRef);
-	} else {
-	    return false;
-	}
+        if (object == this) {
+            return true;
+        } else if (object instanceof ClientSessionWrapper) {
+            return sessionRef.equals(
+                    ((ClientSessionWrapper) object).sessionRef);
+        } else {
+            return false;
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
-	return sessionRef.hashCode();
+        return sessionRef.hashCode();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-	ClientSessionImpl sessionImpl = null;
-	try {
-	    sessionImpl = sessionRef.get();
-	} catch (Exception e) {
-	}
-	return
-	    getClass().getName() + "[" +
-	    (sessionImpl == null ?
-	     sessionRef.toString() :
-	     sessionImpl.toString())
-	    + "]";
+        ClientSessionImpl sessionImpl = null;
+        try {
+            sessionImpl = sessionRef.get();
+        } catch (Exception e) {
+        }
+        return
+                getClass().getName() + "[" +
+                        (sessionImpl == null ?
+                                sessionRef.toString() :
+                                sessionImpl.toString())
+                        + "]";
     }
-    
+
     /* -- Other methods -- */
 
     /**
@@ -160,10 +180,10 @@ public class ClientSessionWrapper
      * wrapper
      */
     public ClientSessionImpl getClientSession() {
-	try {
-	    return sessionRef.get();
-	} catch (ObjectNotFoundException e) {
-	    throw new IllegalStateException("client session is disconnected");
-	}
+        try {
+            return sessionRef.get();
+        } catch (ObjectNotFoundException e) {
+            throw new IllegalStateException("client session is disconnected");
+        }
     }
 }

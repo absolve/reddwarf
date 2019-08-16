@@ -24,6 +24,7 @@ package com.sun.sgs.impl.util;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.service.DataService;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -33,8 +34,11 @@ import java.util.NoSuchElementException;
  */
 public final class BoundNamesUtil {
 
-    /** Prevents instantiation. */
-    private BoundNamesUtil() { }
+    /**
+     * Prevents instantiation.
+     */
+    private BoundNamesUtil() {
+    }
 
     /**
      * Returns an {@code Iterable} that can be used to obtain an
@@ -49,19 +53,18 @@ public final class BoundNamesUtil {
      * #getServiceBoundNamesIterator getServiceBoundNamesIterator}
      * with the specified {@code dataService} and {@code prefix}.
      *
-     * @param 	dataService a data service
-     * @param	prefix the prefix of service bound names
-     * @return 	an {@code Iterable} for the set of service bound names
-     * 		matching the {@code prefix}
-     * @see	#getServiceBoundNamesIterator
+     * @param dataService a data service
+     * @return an {@code Iterable} for the set of service bound names
+     * matching the {@code prefix}
+     * @param    prefix the prefix of service bound names
+     * @see    #getServiceBoundNamesIterator
      */
     public static Iterable<String> getServiceBoundNamesIterable(
-	DataService dataService, String prefix)
-    {
-	if (dataService == null || prefix == null) {
-	    throw new NullPointerException("null argument");
-	}
-	return new BoundNamesIterable(dataService, prefix);
+            DataService dataService, String prefix) {
+        if (dataService == null || prefix == null) {
+            throw new NullPointerException("null argument");
+        }
+        return new BoundNamesIterable(dataService, prefix);
     }
 
     /**
@@ -84,18 +87,17 @@ public final class BoundNamesUtil {
      * DataManager#removeObject removeObject} method passing the
      * {@code ManagedObject} bound to the name.
      *
-     * @param 	dataService a data service
-     * @param	prefix the prefix of service bound names
-     * @return	an {@code Iterator} for the set of service bound names
-     * 		matching the {@code prefix}
+     * @param dataService a data service
+     * @param    prefix the prefix of service bound names
+     * @return an {@code Iterator} for the set of service bound names
+     * matching the {@code prefix}
      */
     public static Iterator<String> getServiceBoundNamesIterator(
-	DataService dataService, String prefix)
-    {
-	if (dataService == null || prefix == null) {
-	    throw new NullPointerException("null argument");
-	}
-	return new BoundNamesIterator(dataService, prefix);
+            DataService dataService, String prefix) {
+        if (dataService == null || prefix == null) {
+            throw new NullPointerException("null argument");
+        }
+        return new BoundNamesIterator(dataService, prefix);
     }
 
     /* -- other classes -- */
@@ -106,20 +108,26 @@ public final class BoundNamesUtil {
      */
     private static class BoundNamesIterable implements Iterable<String> {
 
-	/** The data service. */
-	private final DataService dataService;
-	/** The prefix for service bound names. */
-	private final String prefix;
+        /**
+         * The data service.
+         */
+        private final DataService dataService;
+        /**
+         * The prefix for service bound names.
+         */
+        private final String prefix;
 
-	BoundNamesIterable(DataService dataService, String prefix) {
-	    this.dataService = dataService;
-	    this.prefix = prefix;
-	}
+        BoundNamesIterable(DataService dataService, String prefix) {
+            this.dataService = dataService;
+            this.prefix = prefix;
+        }
 
-	/** {@inheritDoc} */
-	public Iterator<String> iterator() {
-	    return new BoundNamesIterator(dataService, prefix);
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public Iterator<String> iterator() {
+            return new BoundNamesIterator(dataService, prefix);
+        }
     }
 
     /**
@@ -129,64 +137,80 @@ public final class BoundNamesUtil {
      */
     private static class BoundNamesIterator implements Iterator<String> {
 
-	/** The data service. */
-	private final DataService dataService;
-	/** The prefix for service bound names. */
-	private final String prefix;
-	/** The key used to look up next service bound name, or null. */
-	private String key;
-	/** The key returned by {@code next}, or null. */
-	private String keyReturnedByNext;
-	/** The name fetched in the {@code hasNext} method, which
-	 * is only valid if {@code hasNext} returns {@code true}. */
-	private String nextName;
-	
-	BoundNamesIterator(DataService dataService, String prefix) {
-	    this.dataService = dataService;
-	    this.prefix = prefix;
-	    this.key = prefix;
-	}
+        /**
+         * The data service.
+         */
+        private final DataService dataService;
+        /**
+         * The prefix for service bound names.
+         */
+        private final String prefix;
+        /**
+         * The key used to look up next service bound name, or null.
+         */
+        private String key;
+        /**
+         * The key returned by {@code next}, or null.
+         */
+        private String keyReturnedByNext;
+        /**
+         * The name fetched in the {@code hasNext} method, which
+         * is only valid if {@code hasNext} returns {@code true}.
+         */
+        private String nextName;
 
-	/** {@inheritDoc} */
-	public boolean hasNext() {
-	    if (key == null) {
-		return false;
-	    }
-	    if (nextName != null) {
-		return true;
-	    }
-	    String name = dataService.nextServiceBoundName(key);
-	    if (name != null && name.startsWith(prefix)) {
-		nextName = name;
-		return true;
-	    } else {
-		key = null;
-		return false;
-	    }
-	}
+        BoundNamesIterator(DataService dataService, String prefix) {
+            this.dataService = dataService;
+            this.prefix = prefix;
+            this.key = prefix;
+        }
 
-	/** {@inheritDoc} */
-	public String next() {
-	    try {
-		if (!hasNext()) {
-		    throw new NoSuchElementException();
-		}
-		keyReturnedByNext = nextName;
-		key = nextName;
-		return keyReturnedByNext;
-	    } finally {
-		nextName = null;
-	    }
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public boolean hasNext() {
+            if (key == null) {
+                return false;
+            }
+            if (nextName != null) {
+                return true;
+            }
+            String name = dataService.nextServiceBoundName(key);
+            if (name != null && name.startsWith(prefix)) {
+                nextName = name;
+                return true;
+            } else {
+                key = null;
+                return false;
+            }
+        }
 
-	/** {@inheritDoc} */
-	public void remove() {
-	    if (keyReturnedByNext == null) {
-		throw new IllegalStateException();
-	    }
+        /**
+         * {@inheritDoc}
+         */
+        public String next() {
+            try {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                keyReturnedByNext = nextName;
+                key = nextName;
+                return keyReturnedByNext;
+            } finally {
+                nextName = null;
+            }
+        }
 
-	    dataService.removeServiceBinding(keyReturnedByNext);
-	    keyReturnedByNext = null;
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public void remove() {
+            if (keyReturnedByNext == null) {
+                throw new IllegalStateException();
+            }
+
+            dataService.removeServiceBinding(keyReturnedByNext);
+            keyReturnedByNext = null;
+        }
     }
 }

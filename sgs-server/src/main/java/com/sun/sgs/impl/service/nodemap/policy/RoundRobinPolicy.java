@@ -22,6 +22,7 @@
 package com.sun.sgs.impl.service.nodemap.policy;
 
 import com.sun.sgs.impl.service.nodemap.NoNodesAvailableException;
+
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RoundRobinPolicy extends AbstractNodePolicy {
 
     private final AtomicInteger nextNode = new AtomicInteger();
-    
+
     /**
      * Creates a new instance of RoundRobinPolicy.
      *
@@ -40,17 +41,18 @@ public class RoundRobinPolicy extends AbstractNodePolicy {
     public RoundRobinPolicy(Properties props) {
         super();
     }
-    
-    /** {@inheritDoc} */
-    public synchronized long chooseNode(long requestingNode) 
-        throws NoNodesAvailableException 
-    {
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized long chooseNode(long requestingNode)
+            throws NoNodesAvailableException {
         if (availableNodes.size() < 1) {
             // We don't have any live nodes to assign to.
             // Let the caller figure it out.
             throw new NoNodesAvailableException("no live nodes available");
-        }  
-        
+        }
+
         return availableNodes.get(
                 nextNode.getAndIncrement() % availableNodes.size());
     }

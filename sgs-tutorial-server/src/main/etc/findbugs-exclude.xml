@@ -14,10 +14,10 @@
 
 <FindBugsFilter>
 
-  <!-- Ignore the SE_BAD_FIELD error since it flags every
-       ManagedReference field -->
-  <Match>
-    <Bug pattern="SE_BAD_FIELD"/>
-  </Match>
+    <!-- Ignore the SE_BAD_FIELD error since it flags every
+         ManagedReference field -->
+    <Match>
+        <Bug pattern="SE_BAD_FIELD"/>
+    </Match>
 
 </FindBugsFilter>

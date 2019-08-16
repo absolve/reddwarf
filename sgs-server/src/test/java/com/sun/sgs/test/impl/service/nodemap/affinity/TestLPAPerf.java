@@ -22,16 +22,11 @@
 package com.sun.sgs.test.impl.service.nodemap.affinity;
 
 import com.sun.sgs.auth.Identity;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
-import com.sun.sgs.impl.service.nodemap.affinity.LPAAffinityGroupFinder;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderStats;
-import com.sun.sgs.impl.service.nodemap.affinity.dlpa.graph.DLPAGraphBuilder;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupGoodness;
-import com.sun.sgs.impl.service.nodemap.affinity.LPADriver;
-import com.sun.sgs.impl.service.nodemap.affinity.RelocatingAffinityGroup;
+import com.sun.sgs.impl.service.nodemap.affinity.*;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagation;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagationServer;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.graph.BipartiteGraphBuilder;
+import com.sun.sgs.impl.service.nodemap.affinity.dlpa.graph.DLPAGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.graph.WeightedGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
@@ -49,23 +44,20 @@ import com.sun.sgs.tools.test.IntegrationTest;
 import com.sun.sgs.tools.test.ParameterizedFilteredNameRunner;
 import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.util.*;
+
 import static org.junit.Assert.assertNotNull;
+
 /**
  * Test of single node performance of label propagation.
  * This is useful for modifying parameters before integrating
  * into the distributed version of the algorithm.
- *
  */
 
 @IntegrationTest
@@ -91,20 +83,20 @@ public class TestLPAPerf {
 
     // profile collector
     private static ProfileCollector collector;
-    
+
     @Parameterized.Parameters
     public static Collection data() {
         return Arrays.asList(new Object[][]
-            {{1, WeightedGraphBuilder.class.getName()},
-             {2, WeightedGraphBuilder.class.getName()},
-             {4, WeightedGraphBuilder.class.getName()},
-             {8, WeightedGraphBuilder.class.getName()},
-             {16, WeightedGraphBuilder.class.getName()},
-             {1, BipartiteGraphBuilder.class.getName()},
-             {2, BipartiteGraphBuilder.class.getName()},
-             {4, BipartiteGraphBuilder.class.getName()},
-             {8, WeightedGraphBuilder.class.getName()},
-             {16, BipartiteGraphBuilder.class.getName()}});
+                {{1, WeightedGraphBuilder.class.getName()},
+                        {2, WeightedGraphBuilder.class.getName()},
+                        {4, WeightedGraphBuilder.class.getName()},
+                        {8, WeightedGraphBuilder.class.getName()},
+                        {16, WeightedGraphBuilder.class.getName()},
+                        {1, BipartiteGraphBuilder.class.getName()},
+                        {2, BipartiteGraphBuilder.class.getName()},
+                        {4, BipartiteGraphBuilder.class.getName()},
+                        {8, WeightedGraphBuilder.class.getName()},
+                        {16, BipartiteGraphBuilder.class.getName()}});
     }
 
     public TestLPAPerf(int numThreads, String builderName) {
@@ -116,14 +108,14 @@ public class TestLPAPerf {
     public static void before() throws Exception {
         Properties props = SgsTestNode.getDefaultProperties("TestLPA", null, null);
         props.put("com.sun.sgs.impl.kernel.profile.level",
-                   ProfileLevel.MAX.name());
+                ProfileLevel.MAX.name());
         props.setProperty(LPADriver.UPDATE_FREQ_PROPERTY, "3600"); // one hour
         // We are creating this SgsTestNode so we can get at its watchdog
         // and profile collector only - the LPAServer we are testing is
         // created outside this framework so we could easily extend the type.
         serverNode = new SgsTestNode("TestLPA", null, props);
         collector =
-            serverNode.getSystemRegistry().getComponent(ProfileCollector.class);
+                serverNode.getSystemRegistry().getComponent(ProfileCollector.class);
         wdog = serverNode.getWatchdogService();
         lpaServer = new LabelPropagationServer(collector, wdog, props);
     }
@@ -139,9 +131,9 @@ public class TestLPAPerf {
         // Warm up the compilers
         Properties props = new Properties();
         props.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads",
-                    String.valueOf(numThreads));
+                String.valueOf(numThreads));
         SingleLabelPropagation lpa =
-           new SingleLabelPropagation(new ZachBuilder(), collector, props);
+                new SingleLabelPropagation(new ZachBuilder(), collector, props);
 
         for (int i = 0; i < WARMUP_RUNS; i++) {
             lpa.findAffinityGroups();
@@ -154,45 +146,45 @@ public class TestLPAPerf {
         AffinityGraphBuilder builder = new ZachBuilder();
         Properties props = new Properties();
         props.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads",
-                    String.valueOf(numThreads));
+                String.valueOf(numThreads));
         // third argument true:  gather statistics
         SingleLabelPropagation lpa =
-            new SingleLabelPropagation(builder, collector, props);
+                new SingleLabelPropagation(builder, collector, props);
 
         AffinityGroupFinderMXBean bean = (AffinityGroupFinderMXBean)
-            collector.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
+                collector.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
         assertNotNull(bean);
         bean.clear();
         // Be sure the consumer is turned on
         collector.getConsumer(AffinityGroupFinderStats.CONS_NAME).
-                    setProfileLevel(ProfileLevel.MAX);
-        
-        double avgMod  = 0.0;
+                setProfileLevel(ProfileLevel.MAX);
+
+        double avgMod = 0.0;
         double maxMod = 0.0;
         double minMod = 1.0;
         for (int i = 0; i < RUNS; i++) {
-            Set<AffinityGroup> groups = 
+            Set<AffinityGroup> groups =
                     Objects.uncheckedCast(lpa.findAffinityGroups());
             double mod =
-                AffinityGroupGoodness.calcModularity(
-                                new ZachBuilder().getAffinityGraph(), groups);
+                    AffinityGroupGoodness.calcModularity(
+                            new ZachBuilder().getAffinityGraph(), groups);
 
             avgMod = avgMod + mod;
             maxMod = Math.max(maxMod, mod);
             minMod = Math.min(minMod, mod);
         }
         System.out.printf("SING (%d runs, %d threads): " +
-                  "avg time : %4.2f ms, " +
-                  " time range [%d - %d ms] " +
-                  " avg iters : %4.2f, avg modularity: %.4f, " +
-                  " modularity range [%.4f - %.4f] %n",
-                  RUNS, numThreads,
-                  bean.getAvgRunTime(),
-                  bean.getMinRunTime(),
-                  bean.getMaxRunTime(),
-                  bean.getAvgIterations(),
-                  avgMod/(double) RUNS,
-                  minMod, maxMod);
+                        "avg time : %4.2f ms, " +
+                        " time range [%d - %d ms] " +
+                        " avg iters : %4.2f, avg modularity: %.4f, " +
+                        " modularity range [%.4f - %.4f] %n",
+                RUNS, numThreads,
+                bean.getAvgRunTime(),
+                bean.getMinRunTime(),
+                bean.getMaxRunTime(),
+                bean.getAvgIterations(),
+                avgMod / (double) RUNS,
+                minMod, maxMod);
         lpa.shutdown();
     }
 
@@ -204,23 +196,23 @@ public class TestLPAPerf {
             Properties props = new Properties();
             int serverPort = SgsTestNode.getNextUniquePort();
             props.put("com.sun.sgs.impl.service.nodemap.affinity.server.port",
-                       String.valueOf(serverPort));
+                    String.valueOf(serverPort));
             props.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads",
                     String.valueOf(numThreads));
             server = new LabelPropagationServer(collector, wdog, props);
 
             LabelPropagation lp1 =
-                new LabelPropagation(
-                    new DistributedZachBuilder(DistributedZachBuilder.NODE1),
-                        wdog, DistributedZachBuilder.NODE1, props);
+                    new LabelPropagation(
+                            new DistributedZachBuilder(DistributedZachBuilder.NODE1),
+                            wdog, DistributedZachBuilder.NODE1, props);
             LabelPropagation lp2 =
-                new LabelPropagation(
-                    new DistributedZachBuilder(DistributedZachBuilder.NODE2),
-                        wdog, DistributedZachBuilder.NODE2, props);
+                    new LabelPropagation(
+                            new DistributedZachBuilder(DistributedZachBuilder.NODE2),
+                            wdog, DistributedZachBuilder.NODE2, props);
             LabelPropagation lp3 =
-                new LabelPropagation(
-                    new DistributedZachBuilder(DistributedZachBuilder.NODE3),
-                        wdog, DistributedZachBuilder.NODE3, props);
+                    new LabelPropagation(
+                            new DistributedZachBuilder(DistributedZachBuilder.NODE3),
+                            wdog, DistributedZachBuilder.NODE3, props);
         }
 
         for (int i = 0; i < WARMUP_RUNS; i++) {
@@ -237,43 +229,43 @@ public class TestLPAPerf {
         Properties props = new Properties();
         int serverPort = SgsTestNode.getNextUniquePort();
         props.put("com.sun.sgs.impl.service.nodemap.affinity.server.port",
-                   String.valueOf(serverPort));
-        LabelPropagationServer server = 
+                String.valueOf(serverPort));
+        LabelPropagationServer server =
                 new LabelPropagationServer(collector, wdog, props);
         props.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads",
-                    String.valueOf(numThreads));
+                String.valueOf(numThreads));
         props.put(LPADriver.GRAPH_CLASS_PROPERTY, builderName);
 
         LabelPropagation lp1 =
-            new LabelPropagation(
-                new DistributedZachBuilder(DistributedZachBuilder.NODE1),
-                    wdog, DistributedZachBuilder.NODE1, props);
+                new LabelPropagation(
+                        new DistributedZachBuilder(DistributedZachBuilder.NODE1),
+                        wdog, DistributedZachBuilder.NODE1, props);
         LabelPropagation lp2 =
-            new LabelPropagation(
-                new DistributedZachBuilder(DistributedZachBuilder.NODE2),
-                    wdog, DistributedZachBuilder.NODE2, props);
+                new LabelPropagation(
+                        new DistributedZachBuilder(DistributedZachBuilder.NODE2),
+                        wdog, DistributedZachBuilder.NODE2, props);
         LabelPropagation lp3 =
-            new LabelPropagation(
-                new DistributedZachBuilder(DistributedZachBuilder.NODE3),
-                    wdog, DistributedZachBuilder.NODE3, props);
+                new LabelPropagation(
+                        new DistributedZachBuilder(DistributedZachBuilder.NODE3),
+                        wdog, DistributedZachBuilder.NODE3, props);
 
         AffinityGroupFinderMXBean bean = (AffinityGroupFinderMXBean)
-            collector.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
+                collector.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
         assertNotNull(bean);
         bean.clear();
         // Be sure the consumer is turned on
         collector.getConsumer(AffinityGroupFinderStats.CONS_NAME).
-                    setProfileLevel(ProfileLevel.MAX);
-        
-        double avgMod  = 0.0;
+                setProfileLevel(ProfileLevel.MAX);
+
+        double avgMod = 0.0;
         double maxMod = 0.0;
         double minMod = 1.0;
         for (int i = 0; i < RUNS; i++) {
-            Set<AffinityGroup> groups = 
+            Set<AffinityGroup> groups =
                     Objects.uncheckedCast(server.findAffinityGroups());
             double mod =
-                AffinityGroupGoodness.calcModularity(
-                                new ZachBuilder().getAffinityGraph(), groups);
+                    AffinityGroupGoodness.calcModularity(
+                            new ZachBuilder().getAffinityGraph(), groups);
 
             avgMod = avgMod + mod;
             maxMod = Math.max(maxMod, mod);
@@ -286,20 +278,20 @@ public class TestLPAPerf {
             name = "DIST bipartite";
         }
         System.out.printf(name + " (%d runs, %d threads): " +
-                  "avg time : %4.2f ms, " +
-                  " time range [%d - %d ms] " +
-                  " avg iters : %4.2f, avg modularity: %.4f, " +
-                  " modularity range [%.4f - %.4f] %n",
-                  RUNS, numThreads,
-                  bean.getAvgRunTime(),
-                  bean.getMinRunTime(),
-                  bean.getMaxRunTime(),
-                  bean.getAvgIterations(),
-                  avgMod/(double) RUNS,
-                  minMod, maxMod);
+                        "avg time : %4.2f ms, " +
+                        " time range [%d - %d ms] " +
+                        " avg iters : %4.2f, avg modularity: %.4f, " +
+                        " modularity range [%.4f - %.4f] %n",
+                RUNS, numThreads,
+                bean.getAvgRunTime(),
+                bean.getMinRunTime(),
+                bean.getMaxRunTime(),
+                bean.getAvgIterations(),
+                avgMod / (double) RUNS,
+                minMod, maxMod);
         server.shutdown();
     }
-    
+
     // A Zachary karate club which is distributed over 3 nodes, round-robin.
     private class DistributedZachBuilder implements DLPAGraphBuilder {
         private final UndirectedGraph<LabelVertex, WeightedEdge> graph;
@@ -327,7 +319,7 @@ public class TestLPAPerf {
             DummyIdentity[] idents = new DummyIdentity[35];
             int nodeAsInt = (int) node;
             // Create a partial graph
-            for (int i = nodeAsInt; i < nodes.length; i+=3) {
+            for (int i = nodeAsInt; i < nodes.length; i += 3) {
                 // Add identities 1, 4, etc.
                 idents[i] = new DummyIdentity(String.valueOf(i));
                 nodes[i] = new LabelVertex(idents[i]);
@@ -484,7 +476,8 @@ public class TestLPAPerf {
 
                 // conflicts - data cache evictions due to conflict
                 // just guessing
-                HashMap<Object, Long> conflict = new HashMap<Object, Long>();;
+                HashMap<Object, Long> conflict = new HashMap<Object, Long>();
+                ;
                 conflict.put("o1", 1L);
                 conflict.put("o2", 1L);
                 conflict.put("o18", 1L);
@@ -761,52 +754,73 @@ public class TestLPAPerf {
             }
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public UndirectedGraph<LabelVertex, WeightedEdge>
-                getAffinityGraph()
-        {
+        getAffinityGraph() {
             return graph;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public LabelVertex getVertex(Identity id) {
             return identMap.get(id);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public Map<Long, Map<Object, Long>> getConflictMap() {
             return conflictMap;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void removeNode(long nodeId) {
             conflictMap.remove(nodeId);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public Map<Object, Map<Identity, Long>> getObjectUseMap() {
             return objUseMap;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void updateGraph(Identity owner, AccessedObjectsDetail detail) {
             return;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void enable() {
             // do nothing
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void disable() {
             // do nothing
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void shutdown() {
             // do nothing
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public LPAAffinityGroupFinder getAffinityGroupFinder() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

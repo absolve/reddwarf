@@ -24,6 +24,7 @@ package com.sun.sgs.impl.service.session;
 import com.sun.sgs.app.Delivery;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.protocol.ProtocolListener;
+
 import java.io.IOException;
 import java.rmi.Remote;
 
@@ -37,9 +38,9 @@ public interface ClientSessionServer extends Remote {
      * Notifies this server that it should service the event queue of
      * the client session with the specified {@code sessionId}.
      *
-     * @param	sessionId a session ID
-     * @throws	IOException if a communication problem occurs while
-     * 		invoking this method
+     * @param    sessionId a session ID
+     * @throws IOException if a communication problem occurs while
+     * invoking this method
      */
     void serviceEventQueue(byte[] sessionId) throws IOException;
 
@@ -49,15 +50,15 @@ public interface ClientSessionServer extends Remote {
      * guarantee with the corresponding {@code deliveryOrdinal} (the ordinal
      * representing the {@link Delivery} enum).
      *
-     * @param	sessionId a session ID
-     * @param	message a message
-     * @param	deliveryOrdinal a delivery guarantee (the
-     *		ordinal representing the {@link Delivery} enum)
-     * @throws	IOException if a communication problem occurs while
-     * 		invoking this method
+     * @param    sessionId a session ID
+     * @param    message a message
+     * @param    deliveryOrdinal a delivery guarantee (the
+     * ordinal representing the {@link Delivery} enum)
+     * @throws IOException if a communication problem occurs while
+     * invoking this method
      */
     void send(byte[] sessionId, byte[] message, byte deliveryOrdinal)
-	throws IOException;
+            throws IOException;
 
     /**
      * Notifies this server that the client session with the specified
@@ -70,14 +71,14 @@ public interface ClientSessionServer extends Remote {
      * relocatedSession} method of the appropriate {@link
      * ProtocolListener} to reestablish the client session.
      *
-     * @param	identity an identity
-     * @param	sessionId a session ID
-     * @param	oldNodeId the ID of the node the session is relocating from
-     * @return	a relocation key 
-     * @throws	IOException if a communication problem occurs while
-     * 		invoking this method
+     * @param    identity an identity
+     * @param    sessionId a session ID
+     * @param    oldNodeId the ID of the node the session is relocating from
+     * @return a relocation key
+     * @throws IOException if a communication problem occurs while
+     * invoking this method
      */
     byte[] relocatingSession(
-	Identity identity, byte[] sessionId, long oldNodeId)
-	throws IOException;
+            Identity identity, byte[] sessionId, long oldNodeId)
+            throws IOException;
 }

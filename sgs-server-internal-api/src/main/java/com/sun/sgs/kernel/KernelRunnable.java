@@ -48,7 +48,7 @@ public interface KernelRunnable {
     /**
      * Runs this <code>KernelRunnable</code>. If this is run by a
      * <code>Scheduler</code> that support re-try logic, and if an
-     * <code>Exception</code> is thrown that implements 
+     * <code>Exception</code> is thrown that implements
      * <code>ExceptionRetryStatus</code> then the <code>Scheduler</code>
      * will consult the <code>shouldRetry</code> method of the
      * <code>Exception</code> to see if this task should be re-run.

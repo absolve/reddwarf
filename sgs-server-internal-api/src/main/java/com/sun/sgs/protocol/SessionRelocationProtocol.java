@@ -45,56 +45,56 @@ public interface SessionRelocationProtocol extends SessionProtocol {
      * invoked.  If messages are not suspended in a timely fashion (i.e,
      * the {@code completionHandler} is not notified), then the server may
      * disconnect this session.<p>
-     *
+     * <p>
      * Only session messages that have their completion handlers notified
      * before the specified {@code completionHandler} is notified are
      * guaranteed to be processed by the server. <p>
-     *
+     * <p>
      * Once this method is invoked, an invocation on a method that sends a
      * message to the client should throw {@link IllegalStateException}
      * until messages are resumed.
      *
-     * @param	completionHandler a completion handler
-     * @throws	IOException if an I/O error occurs
+     * @param    completionHandler a completion handler
+     * @throws IOException if an I/O error occurs
      */
     void suspend(RequestCompletionHandler<Void> completionHandler)
-	throws IOException;
+            throws IOException;
 
     /**
      * Notifies the associated client to resume sending messages to the
      * server.  If messages were not previously suspended, the method is
      * not required to take action.
      *
-     * @throws	IOException if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     void resume() throws IOException;
-    
+
     /**
      * Notifies the associated client to relocate its session to the node
      * specified by the {@code descriptors} using the given {@code
      * relocationKey}.<p>
-     *
+     * <p>
      * The associated client session can be reestablished on the new node
      * by notifying the {@link ProtocolListener} of this protocol's
      * corresponding {@link ProtocolAcceptor} on the new node.  The {@link
      * ProtocolListener#relocatedSession ProtocolListener.relocatedSession}
      * method can be invoked on the new node with the given relocation key
      * to reestablish the client session without having to log in again.<p>
-     *
+     * <p>
      * Once this method is invoked, an invocation on a method that sends a
      * message to the client should throw {@link IllegalStateException}.
      * Additionally, the client should close any underlying local
      * connection(s) in a timely fashion.
      *
-     * @param	descriptors protocol descriptors for {@code newNode}
-     * @param	relocationKey the key to be supplied to the new node
-     * @param	completionHandler a completion handler
-     * @throws	IllegalStateException if the associated session is not
-     *		suspended or is already relocating 
-     * @throws	IOException if an I/O error occurs
+     * @param    descriptors protocol descriptors for {@code newNode}
+     * @param    relocationKey the key to be supplied to the new node
+     * @param    completionHandler a completion handler
+     * @throws IllegalStateException if the associated session is not
+     * suspended or is already relocating
+     * @throws IOException if an I/O error occurs
      */
     void relocate(Set<ProtocolDescriptor> descriptors,
-		  ByteBuffer relocationKey,
-		  RequestCompletionHandler<Void> completionHandler)
-	throws IOException;
+                  ByteBuffer relocationKey,
+                  RequestCompletionHandler<Void> completionHandler)
+            throws IOException;
 }

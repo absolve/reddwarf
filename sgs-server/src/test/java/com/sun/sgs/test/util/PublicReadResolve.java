@@ -21,7 +21,11 @@
 
 package com.sun.sgs.test.util;
 
-/** A class with a public readResolve method. */
+/**
+ * A class with a public readResolve method.
+ */
 public class PublicReadResolve {
-    public Object readResolve() { return this; }
+    public Object readResolve() {
+        return this;
+    }
 }

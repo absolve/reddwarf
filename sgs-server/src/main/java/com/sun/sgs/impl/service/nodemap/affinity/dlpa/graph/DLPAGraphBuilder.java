@@ -23,6 +23,7 @@ package com.sun.sgs.impl.service.nodemap.affinity.dlpa.graph;
 
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
+
 import java.util.Map;
 
 /**
@@ -49,7 +50,7 @@ public interface DLPAGraphBuilder extends AffinityGraphBuilder {
      * object with that node.  An empty map will be returned if there are no
      * conflicts.  If more than one node needs an object at about the same
      * time, it is only required that one node be recorded as a conflict.
-     * 
+     *
      * @return the map of detected cross node data conflicts
      */
     Map<Long, Map<Object, Long>> getConflictMap();
@@ -57,7 +58,7 @@ public interface DLPAGraphBuilder extends AffinityGraphBuilder {
     /**
      * Note that a node has failed.  Does nothing if the {@code nodeId} is
      * unknown or has already been noted as failed.
-     * 
+     *
      * @param nodeId the id of the failed node
      */
     void removeNode(long nodeId);

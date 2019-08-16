@@ -34,56 +34,81 @@ public enum Priority {
     /**
      * The highest priority for tasks.
      */
-    HIGH        (256) {
+    HIGH(256) {
         /** {@inheritDoc} */
-        public Priority higher() { return HIGH; }
+        public Priority higher() {
+            return HIGH;
+        }
+
         /** {@inheritDoc} */
-        public Priority lower()  { return MEDIUM_HIGH; }
+        public Priority lower() {
+            return MEDIUM_HIGH;
+        }
     },
 
     /**
      * A medium high priority for tasks.
      */
-    MEDIUM_HIGH (192) { 
+    MEDIUM_HIGH(192) {
         /** {@inheritDoc} */
-        public Priority higher() { return HIGH; }
+        public Priority higher() {
+            return HIGH;
+        }
+
         /** {@inheritDoc} */
-        public Priority lower()  { return MEDIUM; }
+        public Priority lower() {
+            return MEDIUM;
+        }
     },
 
     /**
      * The default priority for tasks.
      */
-    MEDIUM      (128) {
+    MEDIUM(128) {
         /** {@inheritDoc} */
-        public Priority higher() { return MEDIUM_HIGH; }
+        public Priority higher() {
+            return MEDIUM_HIGH;
+        }
+
         /** {@inheritDoc} */
-        public Priority lower()  { return MEDIUM_LOW; }
+        public Priority lower() {
+            return MEDIUM_LOW;
+        }
     },
 
     /**
      * A medium low priority for tasks.
      */
-    MEDIUM_LOW  (64) {
+    MEDIUM_LOW(64) {
         /** {@inheritDoc} */
-        public Priority higher() { return MEDIUM; }
+        public Priority higher() {
+            return MEDIUM;
+        }
+
         /** {@inheritDoc} */
-        public Priority lower()  { return LOW; }
+        public Priority lower() {
+            return LOW;
+        }
     },
 
     /**
      * The lowest priority for tasks.
      */
-    LOW         (16) {
+    LOW(16) {
         /** {@inheritDoc} */
-        public Priority higher() { return MEDIUM_LOW; }
+        public Priority higher() {
+            return MEDIUM_LOW;
+        }
+
         /** {@inheritDoc} */
-        public Priority lower()  { return LOW; }
+        public Priority lower() {
+            return LOW;
+        }
     };
 
     // The numeric value of this priority
     private final int value;
-    
+
     /**
      * The private constructor that ensures no additional
      * <code>Priority</code> types can ever be created.
@@ -118,7 +143,7 @@ public enum Priority {
      * defined.
      *
      * @return the priority higher than this priority, or this
-     *         priority if this is the highest priority
+     * priority if this is the highest priority
      */
     public abstract Priority higher();
 
@@ -128,7 +153,7 @@ public enum Priority {
      * defined.
      *
      * @return the priority lower than this priority, or this
-     *         priority if this is the lowest priority
+     * priority if this is the lowest priority
      */
     public abstract Priority lower();
 

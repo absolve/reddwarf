@@ -23,81 +23,82 @@ package com.sun.sgs.impl.service.data.store;
 
 import com.sun.sgs.service.store.db.DbDatabase;
 import com.sun.sgs.service.store.db.DbTransaction;
+
 import java.math.BigInteger;
 
 /**
  * Encapsulates the layout of meta data stored at the start of the info
  * database, and in the classes database.  This class cannot be instantiated.
- *
+ * <p>
  * In the info database, the value for key 0 stores a magic number common to
  * all DataStoreImpl databases.
- *
+ * <p>
  * Key 1 stores the major version number, which must match the value in the
  * current version of the implementation.
- *
+ * <p>
  * Key 2 stores the minor version number, which can vary between the database
  * and the implementation.
- *
+ * <p>
  * Key 3 stores the ID of the next free ID number to use for allocating new
  * objects.
- *
+ * <p>
  * Key 4 stores the ID of the next free transaction ID number for the network
  * version to use in allocating transactions.
- *
+ * <p>
  * Key 5 stores the ID of the lowest allocation block placeholder, or -1 if
  * there are no placeholders.  This field is used during initialization to
  * remove any existing placeholders which were created for allocation blocks
  * that are no longer in use.  Placeholders always appear at the end of each
  * allocation block, whose size is fixed (as of version 4.0) at 1024 bytes.
- *
+ * <p>
  * Key 6 store the ID of the next free node ID to use for giving unique
  * identifiers to nodes.
- *
+ * <p>
  * In the classes database, keys whose initial byte is 1 map the SHA-1 hash of
  * the serialized form of a class descriptor (a ObjectStreamClass) to the class
  * ID, which is 4 byte integer.
- *
+ * <p>
  * Keys whose initial byte is 2 map a class ID to the bytes making up the
  * serialized form of the associated class descriptor.  Since these entries
  * come at the end, we can find the next class ID by using a cursor to find the
  * last entry.
- *
+ * <p>
  * In the names database, keys are the UTF8 encoding of binding names, and
  * values are the object IDs of the associated objects.
- *
+ * <p>
  * In the oids database, keys are object IDs, and values are the bytes
  * representing the associated objects.
- *
+ * <p>
  * The serialized forms used for the object values are compressed as follows:
- *
+ * <p>
  * - If the first byte is 1, then the value was created by serialization
- *   protocol version 2, and the 4 bytes at the start of that format have been
- *   elided.
- *
+ * protocol version 2, and the 4 bytes at the start of that format have been
+ * elided.
+ * <p>
  * - If the first byte is 2, then the subsequent bytes represent the
- *   uncompressed object data.
- *
+ * uncompressed object data.
+ * <p>
  * - Class descriptors in the serialized form have been replaced by an integer
- *   which refers to a class ID stored in the classes database.  The class IDs
- *   themselves have been compressed using the Int30 class
- *
+ * which refers to a class ID stored in the classes database.  The class IDs
+ * themselves have been compressed using the Int30 class
+ * <p>
  * Object values also have two additional, distinguished initial byte values
  * to support placeholders:
- *
+ * <p>
  * - If the first byte is 3, then the entry represents a placeholder, which
- *   means that the entry appears within the database but should not be
- *   considered to represent an object.  Placeholders are used to create a
- *   barrier object in the database to improve concurrency for new object
- *   allocations when using BDB Java Edition.
- *
+ * means that the entry appears within the database but should not be
+ * considered to represent an object.  Placeholders are used to create a
+ * barrier object in the database to improve concurrency for new object
+ * allocations when using BDB Java Edition.
+ * <p>
  * - If the first byte is 4, then the actual data value is represented by the
- *   remaining bytes.  This "quoting" value can be used to represent data that
- *   starts with the 3 that marks placeholders, or the 4 used for quoting.
- *   Since serialized data will always start with 1 or 2, though, this value
- *   should not be used in practice.
- *
+ * remaining bytes.  This "quoting" value can be used to represent data that
+ * starts with the 3 that marks placeholders, or the 4 used for quoting.
+ * Since serialized data will always start with 1 or 2, though, this value
+ * should not be used in practice.
+ * <p>
  * Version history:
- *
+ * <p>
  * Version 1.0: Initial version, 11/3/2006
  * Version 2.0: Add NEXT_TXN_ID, 2/15/2007
  * Version 3.0: Add classes DB, compress object values, 5/18/2007
@@ -106,16 +107,24 @@ import java.math.BigInteger;
  */
 final class DataStoreHeader {
 
-    /** The key for the magic number. */
+    /**
+     * The key for the magic number.
+     */
     static final long MAGIC_KEY = 0;
 
-    /** The key for the major version number. */
+    /**
+     * The key for the major version number.
+     */
     static final long MAJOR_KEY = 1;
 
-    /** The key for the minor version number. */
+    /**
+     * The key for the minor version number.
+     */
     static final long MINOR_KEY = 2;
 
-    /** The key for the value of the next free object ID. */
+    /**
+     * The key for the value of the next free object ID.
+     */
     static final long NEXT_OBJ_ID_KEY = 3;
 
     /**
@@ -124,31 +133,49 @@ final class DataStoreHeader {
      */
     static final long NEXT_TXN_ID_KEY = 4;
 
-    /** The key for the value of the first allocation block placeholder ID. */
+    /**
+     * The key for the value of the first allocation block placeholder ID.
+     */
     static final long FIRST_PLACEHOLDER_ID_KEY = 5;
 
-    /** The key for the value of the next free node ID. */
+    /**
+     * The key for the value of the next free node ID.
+     */
     static final long NEXT_NODE_ID_KEY = 6;
 
-    /** The magic number: DaRkStAr. */
+    /**
+     * The magic number: DaRkStAr.
+     */
     static final long MAGIC = 0x4461526b53744172L;
 
-    /** The major version number. */
+    /**
+     * The major version number.
+     */
     static final short MAJOR_VERSION = 5;
 
-    /** The minor version number. */
+    /**
+     * The minor version number.
+     */
     static final short MINOR_VERSION = 0;
 
-    /** The first free object ID. */
+    /**
+     * The first free object ID.
+     */
     static final long INITIAL_NEXT_OBJ_ID = 1;
 
-    /** The first free transaction ID. */
+    /**
+     * The first free transaction ID.
+     */
     static final long INITIAL_NEXT_TXN_ID = 1;
 
-    /** The first free node ID. */
+    /**
+     * The first free node ID.
+     */
     static final long INITIAL_NEXT_NODE_ID = 1;
 
-    /** The first byte stored in keys for the classes database hash keys. */
+    /**
+     * The first byte stored in keys for the classes database hash keys.
+     */
     static final byte CLASS_HASH_PREFIX = 1;
 
     /**
@@ -158,7 +185,9 @@ final class DataStoreHeader {
      */
     static final byte CLASS_ID_PREFIX = 2;
 
-    /** The first byte stored in the object value for a placeholder */
+    /**
+     * The first byte stored in the object value for a placeholder
+     */
     static final byte PLACEHOLDER_OBJ_VALUE = 3;
 
     /**
@@ -179,51 +208,53 @@ final class DataStoreHeader {
      */
     static final int ALLOCATION_BLOCK_SIZE = 1024;
 
-    /** This class cannot be instantiated. */
+    /**
+     * This class cannot be instantiated.
+     */
     private DataStoreHeader() {
-	throw new AssertionError();
+        throw new AssertionError();
     }
 
     /**
      * Verifies the header information in the database, and returns its minor
      * version number.
      *
-     * @param	db the database
-     * @param	dbTxn the database transaction
-     * @return	the minor version number
-     * @throws	DbDatabaseException if a problem occurs accessing the database
-     * @throws	DataStoreException if the format of the header information is
-     *		incorrect
+     * @param    db the database
+     * @param    dbTxn the database transaction
+     * @return the minor version number
+     * @throws DbDatabaseException if a problem occurs accessing the database
+     * @throws DataStoreException if the format of the header information is
+     * incorrect
      */
     static int verify(DbDatabase db, DbTransaction dbTxn) {
-	byte[] value =
-	    db.get(dbTxn, DataEncoding.encodeLong(MAGIC_KEY), false);
-	if (value == null) {
-	    throw new DataStoreException("Magic number not found");
-	}
-	long magic = DataEncoding.decodeLong(value);
-	if (magic != MAGIC) {
-	    throw new DataStoreException(
-		"Bad magic number in header: expected " +
-		toHexString(MAGIC) + ", found " + toHexString(magic));
-	}
-	value = db.get(dbTxn, DataEncoding.encodeLong(MAJOR_KEY), false);
-	if (value == null) {
-	    throw new DataStoreException("Major version number not found");
-	}
-	short majorVersion = DataEncoding.decodeShort(value);
-	if (majorVersion < MAJOR_VERSION) {
-	    upgrade(db, dbTxn, majorVersion);
-	} else if (majorVersion > MAJOR_VERSION) {
-	    throw new DataStoreException(
-		"Wrong major version number: expected " + MAJOR_VERSION +
-		", found " + majorVersion);
-	}
-	value = db.get(dbTxn, DataEncoding.encodeLong(MINOR_KEY), false);
-	if (value == null) {
-	    throw new DataStoreException("Minor version number not found");
-	}
-	return DataEncoding.decodeShort(value);
+        byte[] value =
+                db.get(dbTxn, DataEncoding.encodeLong(MAGIC_KEY), false);
+        if (value == null) {
+            throw new DataStoreException("Magic number not found");
+        }
+        long magic = DataEncoding.decodeLong(value);
+        if (magic != MAGIC) {
+            throw new DataStoreException(
+                    "Bad magic number in header: expected " +
+                            toHexString(MAGIC) + ", found " + toHexString(magic));
+        }
+        value = db.get(dbTxn, DataEncoding.encodeLong(MAJOR_KEY), false);
+        if (value == null) {
+            throw new DataStoreException("Major version number not found");
+        }
+        short majorVersion = DataEncoding.decodeShort(value);
+        if (majorVersion < MAJOR_VERSION) {
+            upgrade(db, dbTxn, majorVersion);
+        } else if (majorVersion > MAJOR_VERSION) {
+            throw new DataStoreException(
+                    "Wrong major version number: expected " + MAJOR_VERSION +
+                            ", found " + majorVersion);
+        }
+        value = db.get(dbTxn, DataEncoding.encodeLong(MINOR_KEY), false);
+        if (value == null) {
+            throw new DataStoreException("Minor version number not found");
+        }
+        return DataEncoding.decodeShort(value);
     }
 
     /**
@@ -231,57 +262,56 @@ final class DataStoreHeader {
      * possible, and otherwise throws an exception.
      */
     private static void upgrade(
-	DbDatabase db, DbTransaction dbTxn, int majorVersion)
-    {
-	switch (majorVersion) {
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-	    throw new DataStoreException(
-		"Database version number " + majorVersion +
-		" is not supported");
-	default:
-	    throw new AssertionError();
-	}
+            DbDatabase db, DbTransaction dbTxn, int majorVersion) {
+        switch (majorVersion) {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                throw new DataStoreException(
+                        "Database version number " + majorVersion +
+                                " is not supported");
+            default:
+                throw new AssertionError();
+        }
     }
 
     /**
      * Stores header information in the database.
      *
-     * @param	db the database
-     * @param	dbTxn the database transaction
-     * @throws	DbDatabaseException if a problem occurs accessing the database
+     * @param    db the database
+     * @param    dbTxn the database transaction
+     * @throws DbDatabaseException if a problem occurs accessing the database
      */
     static void create(DbDatabase db, DbTransaction dbTxn) {
-	boolean success = db.putNoOverwrite(
-	    dbTxn, DataEncoding.encodeLong(MAGIC_KEY),
-	    DataEncoding.encodeLong(MAGIC));
-	assert success;
-	success = db.putNoOverwrite(
-	    dbTxn, DataEncoding.encodeLong(MAJOR_KEY),
-	    DataEncoding.encodeShort(MAJOR_VERSION));
-	assert success;
-	success = db.putNoOverwrite(
-	    dbTxn, DataEncoding.encodeLong(MINOR_KEY),
-	    DataEncoding.encodeShort(MINOR_VERSION));
-	assert success;
-	success = db.putNoOverwrite(
-	    dbTxn, DataEncoding.encodeLong(NEXT_OBJ_ID_KEY),
-	    DataEncoding.encodeLong(INITIAL_NEXT_OBJ_ID));
-	assert success;
-	success = db.putNoOverwrite(
-	    dbTxn, DataEncoding.encodeLong(NEXT_TXN_ID_KEY),
-	    DataEncoding.encodeLong(INITIAL_NEXT_TXN_ID));
-	assert success;
-	success = db.putNoOverwrite(
-	    dbTxn, DataEncoding.encodeLong(FIRST_PLACEHOLDER_ID_KEY),
-	    DataEncoding.encodeLong(-1));
-	assert success;
-	success = db.putNoOverwrite(
-	    dbTxn, DataEncoding.encodeLong(NEXT_NODE_ID_KEY),
-	    DataEncoding.encodeLong(INITIAL_NEXT_NODE_ID));
-	assert success;
+        boolean success = db.putNoOverwrite(
+                dbTxn, DataEncoding.encodeLong(MAGIC_KEY),
+                DataEncoding.encodeLong(MAGIC));
+        assert success;
+        success = db.putNoOverwrite(
+                dbTxn, DataEncoding.encodeLong(MAJOR_KEY),
+                DataEncoding.encodeShort(MAJOR_VERSION));
+        assert success;
+        success = db.putNoOverwrite(
+                dbTxn, DataEncoding.encodeLong(MINOR_KEY),
+                DataEncoding.encodeShort(MINOR_VERSION));
+        assert success;
+        success = db.putNoOverwrite(
+                dbTxn, DataEncoding.encodeLong(NEXT_OBJ_ID_KEY),
+                DataEncoding.encodeLong(INITIAL_NEXT_OBJ_ID));
+        assert success;
+        success = db.putNoOverwrite(
+                dbTxn, DataEncoding.encodeLong(NEXT_TXN_ID_KEY),
+                DataEncoding.encodeLong(INITIAL_NEXT_TXN_ID));
+        assert success;
+        success = db.putNoOverwrite(
+                dbTxn, DataEncoding.encodeLong(FIRST_PLACEHOLDER_ID_KEY),
+                DataEncoding.encodeLong(-1));
+        assert success;
+        success = db.putNoOverwrite(
+                dbTxn, DataEncoding.encodeLong(NEXT_NODE_ID_KEY),
+                DataEncoding.encodeLong(INITIAL_NEXT_NODE_ID));
+        assert success;
     }
 
     /**
@@ -289,36 +319,37 @@ final class DataStoreHeader {
      * increments the stored value by the specified amount, which must be
      * greater than zero.  The return value will be a positive number.
      *
-     * @param	key the key under which the ID is stored
-     * @param	db the database
-     * @param	dbTxn the database transaction
-     * @param	increment the amount to increment the stored amount
-     * @return	the next available ID
-     * @throws	DbDatabaseException if a problem occurs accessing the database
-     * @throws	IllegalArgumentException if increment is not greater than zero
+     * @param    key the key under which the ID is stored
+     * @param    db the database
+     * @param    dbTxn the database transaction
+     * @param    increment the amount to increment the stored amount
+     * @return the next available ID
+     * @throws DbDatabaseException if a problem occurs accessing the database
+     * @throws IllegalArgumentException if increment is not greater than zero
      */
     static long getNextId(long key,
-			  DbDatabase db,
-			  DbTransaction dbTxn,
-			  long increment)
-    {
-	if (increment <= 0) {
-	    throw new IllegalArgumentException(
-		"The increment must be greater than zero");
-	}
-	byte[] keyBytes = DataEncoding.encodeLong(key);
-	byte[] valueBytes = db.get(dbTxn, keyBytes, true);
-	if (valueBytes == null) {
-	    throw new DataStoreException("Key not found: " + key);
-	}
-	long result = DataEncoding.decodeLong(valueBytes);
-	db.put(dbTxn, keyBytes, DataEncoding.encodeLong(result + increment));
-	return result;
+                          DbDatabase db,
+                          DbTransaction dbTxn,
+                          long increment) {
+        if (increment <= 0) {
+            throw new IllegalArgumentException(
+                    "The increment must be greater than zero");
+        }
+        byte[] keyBytes = DataEncoding.encodeLong(key);
+        byte[] valueBytes = db.get(dbTxn, keyBytes, true);
+        if (valueBytes == null) {
+            throw new DataStoreException("Key not found: " + key);
+        }
+        long result = DataEncoding.decodeLong(valueBytes);
+        db.put(dbTxn, keyBytes, DataEncoding.encodeLong(result + increment));
+        return result;
     }
 
-    /** Returns a string that describes the standard header. */
+    /**
+     * Returns a string that describes the standard header.
+     */
     static String headerString() {
-	return headerString(MINOR_VERSION);
+        return headerString(MINOR_VERSION);
     }
 
     /**
@@ -326,17 +357,19 @@ final class DataStoreHeader {
      * version number.
      */
     static String headerString(int minorVersion) {
-	return "DataStoreHeader[magic:" + toHexString(MAGIC) +
-	    ", version:" + MAJOR_VERSION + "." + minorVersion + "]";
+        return "DataStoreHeader[magic:" + toHexString(MAGIC) +
+                ", version:" + MAJOR_VERSION + "." + minorVersion + "]";
     }
 
-    /** Converts a long to a string in hexadecimal. */
+    /**
+     * Converts a long to a string in hexadecimal.
+     */
     private static String toHexString(long l) {
-	/* Avoid sign extension if bit 63 is set */
-	BigInteger bi = BigInteger.valueOf(l & (-1L >>> 1));
-	if ((l & (1L << 63)) != 0) {
-	    bi = bi.setBit(63);
-	}
-	return "0x" + bi.toString(16);
+        /* Avoid sign extension if bit 63 is set */
+        BigInteger bi = BigInteger.valueOf(l & (-1L >>> 1));
+        if ((l & (1L << 63)) != 0) {
+            bi = bi.setBit(63);
+        }
+        return "0x" + bi.toString(16);
     }
 }

@@ -36,6 +36,5 @@ package com.sun.sgs.service;
  * implementation of the two phase commit protocol.
  */
 public interface NonDurableTransactionParticipant
-    extends TransactionParticipant
-{
+        extends TransactionParticipant {
 }

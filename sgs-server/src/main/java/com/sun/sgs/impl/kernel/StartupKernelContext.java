@@ -24,7 +24,6 @@ package com.sun.sgs.impl.kernel;
 import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.TaskManager;
-
 import com.sun.sgs.service.Service;
 
 
@@ -43,7 +42,7 @@ final class StartupKernelContext extends KernelContext {
      */
     public StartupKernelContext(String applicationName) {
         super(applicationName, new ComponentRegistryImpl(),
-              new ComponentRegistryImpl());
+                new ComponentRegistryImpl());
     }
 
     /**
@@ -90,7 +89,7 @@ final class StartupKernelContext extends KernelContext {
      */
     void notifyReady() {
         throw new AssertionError("A temporary startup context should never " +
-                                 "be notified that an application is ready");
+                "be notified that an application is ready");
     }
 
 }

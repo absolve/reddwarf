@@ -40,18 +40,18 @@
  * generally useful.
  * </b>
  * <p>
- * By convention, only one of each of these objects will be registered with the 
- * platform MBean server.  The {@code ObjectName} for uniquely identifying 
+ * By convention, only one of each of these objects will be registered with the
+ * platform MBean server.  The {@code ObjectName} for uniquely identifying
  * MBeans in this package is the field {@code MXBEAN_NAME} within each MBean.
  * <p>
  * For more information, please refer to the <a href=
  * "http://java.sun.com/javase/6/docs/technotes/guides/management/toc.html">
- * Java SE Monitoring and Management Guide</a>, especially Chapter 2, 
+ * Java SE Monitoring and Management Guide</a>, especially Chapter 2,
  * Monitoring and Management Using JMX Technology.
  * <p>
- * Profiling for services can be dynamically enabled with 
- * {@link com.sun.sgs.management.ProfileControllerMXBean#setConsumerLevel 
- * ProfileControllerMXBean.setConsumerLevel}.  
+ * Profiling for services can be dynamically enabled with
+ * {@link com.sun.sgs.management.ProfileControllerMXBean#setConsumerLevel
+ * ProfileControllerMXBean.setConsumerLevel}.
  * The names of the profile consumers enabled in the system can be found with
  * {@link com.sun.sgs.management.ProfileControllerMXBean#getProfileConsumers
  * ProfileControllerMXBean.getProfileConsumers}.

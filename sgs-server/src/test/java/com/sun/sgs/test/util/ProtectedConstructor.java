@@ -26,5 +26,6 @@ package com.sun.sgs.test.util;
  * no-arguments constructor.
  */
 public class ProtectedConstructor {
-    protected ProtectedConstructor() { }
+    protected ProtectedConstructor() {
+    }
 }

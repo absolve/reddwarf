@@ -38,7 +38,7 @@ import java.util.Properties;
  * can be stored persistently.  When an application is started for the
  * the first time, its {@link #initialize(java.util.Properties) initialize}
  * method is called and it is then persisted.  If a given listener has mutable
- * state that can be changed after this point, it should also implement 
+ * state that can be changed after this point, it should also implement
  * the {@link ManagedObject}
  * interface.  An implementation must be public and non-abstract, and
  * have a public, no-argument constructor.
@@ -101,7 +101,7 @@ public interface AppListener {
      * client session, the client session is removed when the {@link
      * ClientSessionListener#disconnected disconnected} method invoked
      * on the returned listener completes.
-     * 
+     *
      * <p>A return value of {@code null} has special meaning,
      * indicating that the specified client session should not
      * complete the login process and should be disconnected

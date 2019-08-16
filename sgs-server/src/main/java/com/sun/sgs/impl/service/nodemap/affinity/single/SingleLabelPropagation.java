@@ -22,51 +22,43 @@
 package com.sun.sgs.impl.service.nodemap.affinity.single;
 
 import com.sun.sgs.auth.Identity;
-import com.sun.sgs.impl.service.nodemap.affinity.AbstractLPA;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
-import com.sun.sgs.impl.service.nodemap.affinity.LPAAffinityGroupFinder;
-import
-   com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderFailedException;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderStats;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupGoodness;
-import com.sun.sgs.impl.service.nodemap.affinity.RelocatingAffinityGroup;
+import com.sun.sgs.impl.service.nodemap.affinity.*;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
 import com.sun.sgs.management.AffinityGroupFinderMXBean;
 import com.sun.sgs.profile.ProfileCollector;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+
+import javax.management.JMException;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
-import javax.management.JMException;
 
 /**
  * A single-node implementation of the algorithm presented in
  * "Near linear time algorithm to detect community structures in large-scale
  * networks" Raghavan, Albert and Kumara 2007.
  */
-public class SingleLabelPropagation extends AbstractLPA 
-        implements LPAAffinityGroupFinder
-{
-    /** Our graph builder. */
+public class SingleLabelPropagation extends AbstractLPA
+        implements LPAAffinityGroupFinder {
+    /**
+     * Our graph builder.
+     */
     private final AffinityGraphBuilder builder;
 
-    /** Our JMX info. */
+    /**
+     * Our JMX info.
+     */
     private final AffinityGroupFinderStats stats;
 
-    /** Our generation number. */
+    /**
+     * Our generation number.
+     */
     private final AtomicLong generation = new AtomicLong();
 
-    /** The maximum number of iterations we will run.  Interesting to set high
+    /**
+     * The maximum number of iterations we will run.  Interesting to set high
      * for testing, but 5 has been shown to be adequate in most papers.
      * For distributed case, seem to always converge within 10, and setting
      * to 5 cuts off some of the highest modularity solutions (running
@@ -76,43 +68,42 @@ public class SingleLabelPropagation extends AbstractLPA
 
     /**
      * Constructs a new instance of the label propagation algorithm.
-     * @param builder the graph producer
-     * @param col the profile collector
-     * @param properties the properties for configuring this service
      *
+     * @param builder    the graph producer
+     * @param col        the profile collector
+     * @param properties the properties for configuring this service
      * @throws IllegalArgumentException if {@code numThreads} is
-     *       less than {@code 1}
-     * @throws Exception if any other error occurs
+     *                                  less than {@code 1}
+     * @throws Exception                if any other error occurs
      */
     public SingleLabelPropagation(AffinityGraphBuilder builder,
                                   ProfileCollector col,
                                   Properties properties)
-        throws Exception
-    {
+            throws Exception {
         this(builder, col, properties, null);
     }
 
     /**
      * Constructs a new instance of the label propagation algorithm.
-     * @param builder the graph producer
-     * @param col the profile collector
+     *
+     * @param builder    the graph producer
+     * @param col        the profile collector
      * @param properties the properties for configuring this service
-     * @param stats pre-constructed JMX Mbean or {@code null} if one should be
-     *              constructed
+     * @param stats      pre-constructed JMX Mbean or {@code null} if one should be
+     *                   constructed
      * @throws IllegalArgumentException if {@code numThreads} is
-     *       less than {@code 1}
-     * @throws Exception if any other error occurs
+     *                                  less than {@code 1}
+     * @throws Exception                if any other error occurs
      */
     public SingleLabelPropagation(AffinityGraphBuilder builder,
                                   ProfileCollector col,
                                   Properties properties,
                                   AffinityGroupFinderStats stats)
-        throws Exception
-    {
+            throws Exception {
         super(1, properties);
         if (builder == null) {
-	    throw new NullPointerException("null builder");
-	}
+            throw new NullPointerException("null builder");
+        }
         this.builder = builder;
         if (stats == null) {
             // Create our JMX MBean
@@ -128,31 +119,40 @@ public class SingleLabelPropagation extends AbstractLPA
         this.stats = stats;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void doOtherInitialization() {
         // do nothing
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected long doOtherNeighbors(LabelVertex vertex,
                                     Map<Integer, Long> labelMap,
-                                    StringBuilder logSB)
-    {
+                                    StringBuilder logSB) {
         // do nothing, no changes
         return -1L;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void disable() {
         setDisabledState();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void enable() {
         setEnabledState();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         if (setShutdownState()) {
             if (executor != null) {
@@ -179,8 +179,7 @@ public class SingleLabelPropagation extends AbstractLPA
      * @return the affinity groups
      */
     public NavigableSet<RelocatingAffinityGroup> findAffinityGroups()
-            throws AffinityGroupFinderFailedException
-    {
+            throws AffinityGroupFinderFailedException {
         checkForDisabledOrShutdownState();
         long startTime = System.currentTimeMillis();
         stats.runsCountInc();
@@ -197,7 +196,7 @@ public class SingleLabelPropagation extends AbstractLPA
         while (true) {
             if (logger.isLoggable(Level.FINEST)) {
                 logger.log(Level.FINEST, "{0}: GRAPH at iteration {1} is {2}",
-                                          localNodeId, t, graph);
+                        localNodeId, t, graph);
             }
             // Step 3.  Arrange the nodes in a random order and set it to X.
             // Choose a different ordering for each iteration
@@ -208,7 +207,7 @@ public class SingleLabelPropagation extends AbstractLPA
             // Step 4.  For each vertices in X chosen in that specific order,
             //          let the label of vertices be the label of the highest
             //          frequency of its neighbors.
-            boolean changed = false;    
+            boolean changed = false;
 
             if (numThreads > 1) {
                 final AtomicBoolean abool = new AtomicBoolean(false);
@@ -232,7 +231,7 @@ public class SingleLabelPropagation extends AbstractLPA
                 } catch (InterruptedException ie) {
                     changed = true;
                     logger.logThrow(Level.INFO, ie,
-                                    " during iteration " + t);
+                            " during iteration " + t);
                 }
 
             } else {
@@ -260,8 +259,8 @@ public class SingleLabelPropagation extends AbstractLPA
                         logSB.append(id + " ");
                     }
                     logger.log(Level.FINEST,
-                               "{0}: Intermediate group {1} , members: {2}",
-                               localNodeId, group, logSB.toString());
+                            "{0}: Intermediate group {1} , members: {2}",
+                            localNodeId, group, logSB.toString());
                 }
 
             }
@@ -277,7 +276,7 @@ public class SingleLabelPropagation extends AbstractLPA
 
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "{0}: FINAL GRAPH IS {1}",
-                                    localNodeId, graph);
+                    localNodeId, graph);
         }
         // The groups collected in the last run
         Set<AffinityGroup> groups = gatherGroups(vertices, true, gen);
@@ -285,15 +284,15 @@ public class SingleLabelPropagation extends AbstractLPA
         stats.runtimeSample(runTime);
         stats.iterationsSample(t);
         stats.setNumGroups(groups.size());
-        
+
         if (logger.isLoggable(Level.FINE)) {
             double modularity =
                     AffinityGroupGoodness.calcModularity(graph, groups);
             StringBuilder sb = new StringBuilder();
             sb.append(" LPA (" + numThreads + ") took " +
-                      runTime + " milliseconds, " +
-                      t + " iterations, and found " +
-                      groups.size() + " groups ");
+                    runTime + " milliseconds, " +
+                    t + " iterations, and found " +
+                    groups.size() + " groups ");
             sb.append(" modularity " + modularity);
             for (AffinityGroup group : groups) {
                 sb.append(" id: " + group.getId() + ": members ");
@@ -303,7 +302,7 @@ public class SingleLabelPropagation extends AbstractLPA
             }
             logger.log(Level.FINE, sb.toString());
         }
-        
+
         // Need to translate the groups into relocating groups.
         // We do not know the group number, so just use -1.
         NavigableSet<RelocatingAffinityGroup> retVal =

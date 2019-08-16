@@ -38,18 +38,26 @@ import java.util.List;
  */
 public interface AccessedObjectsDetail {
 
-    /** Identifies a known type of conflict. */
+    /**
+     * Identifies a known type of conflict.
+     */
     static enum ConflictType {
-        /** Some access resulted in deadlock between transactions. */
+        /**
+         * Some access resulted in deadlock between transactions.
+         */
         DEADLOCK,
         /**
          * Some requested access was not granted, e.g. due to timeout
          * or a lock being unavailable.
          */
         ACCESS_NOT_GRANTED,
-        /** There was conflict, but the type of conflict is unknown. */
+        /**
+         * There was conflict, but the type of conflict is unknown.
+         */
         UNKNOWN,
-        /** There was no conflict caused by these object accesses. */
+        /**
+         * There was no conflict caused by these object accesses.
+         */
         NONE
     }
 
@@ -73,9 +81,9 @@ public interface AccessedObjectsDetail {
      * fail, if any and if known.
      *
      * @return identifier for the successful transaction that caused conflict,
-     *         or {@code null} if there was no conflict or the accessor
-     *         is unknown
+     * or {@code null} if there was no conflict or the accessor
+     * is unknown
      */
-    byte [] getConflictingId();
+    byte[] getConflictingId();
 
 }

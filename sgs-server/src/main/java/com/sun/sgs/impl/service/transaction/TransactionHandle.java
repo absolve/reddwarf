@@ -28,19 +28,21 @@ import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionListener;
 import com.sun.sgs.service.TransactionParticipant;
 
-/** Defines an interface for managing a transaction. */
+/**
+ * Defines an interface for managing a transaction.
+ */
 public interface TransactionHandle {
 
     /**
      * Returns the transaction associated with this handle.
      *
-     * @return	the transaction
+     * @return the transaction
      */
     Transaction getTransaction();
 
     /**
      * Prepares and commits the transaction associated with this handle. <p>
-     *
+     * <p>
      * If the transaction has been aborted, or when preparing a transaction
      * participant or calling {@link TransactionListener#beforeCompletion
      * beforeCompletion} on a transaction listener aborts the transaction
@@ -54,18 +56,18 @@ public interface TransactionHandle {
      * implement {@code ExceptionRetryStatus} or its {@code shouldRetry} method
      * will return {@code false}.
      *
-     * @throws	TransactionNotActiveException if the transaction has been
-     *		aborted
-     * @throws	TransactionAbortedException if a call to {@link
-     *		TransactionParticipant#prepare prepare} on a transaction
-     *		participant or to {@code beforeCompletion} on a transaction
-     *		listener aborts the transaction but does not throw an exception
-     * @throws	IllegalStateException if {@code prepare} has been called on any
-     *		transaction participant and {@link Transaction#abort abort} has
-     *		not been called on the transaction, or if called from a thread
-     *		that is not the thread that created the transaction
-     * @throws	Exception any exception thrown when calling {@code prepare} on
-     *		a participant or {@code beforeCompletion} on a listener
+     * @throws TransactionNotActiveException if the transaction has been
+     * aborted
+     * @throws TransactionAbortedException if a call to {@link
+     * TransactionParticipant#prepare prepare} on a transaction
+     * participant or to {@code beforeCompletion} on a transaction
+     * listener aborts the transaction but does not throw an exception
+     * @throws IllegalStateException if {@code prepare} has been called on any
+     * transaction participant and {@link Transaction#abort abort} has
+     * not been called on the transaction, or if called from a thread
+     * that is not the thread that created the transaction
+     * @throws Exception any exception thrown when calling {@code prepare} on
+     * a participant or {@code beforeCompletion} on a listener
      */
     void commit() throws Exception;
 }

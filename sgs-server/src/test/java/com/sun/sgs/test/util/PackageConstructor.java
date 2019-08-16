@@ -26,5 +26,6 @@ package com.sun.sgs.test.util;
  * no-arguments constructor.
  */
 class PackageConstructor {
-    PackageConstructor() { }
+    PackageConstructor() {
+    }
 }

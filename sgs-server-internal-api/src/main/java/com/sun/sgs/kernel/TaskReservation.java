@@ -38,8 +38,7 @@ package com.sun.sgs.kernel;
  * and that time has already passed when <code>use</code> is called, then
  * the tasks are run immediately.
  */
-public interface TaskReservation
-{
+public interface TaskReservation {
 
     /**
      * Cancels this reservation, releaseing the reserved space in the

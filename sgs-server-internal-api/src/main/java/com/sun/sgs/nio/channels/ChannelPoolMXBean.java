@@ -37,14 +37,14 @@ package com.sun.sgs.nio.channels;
  * The {@code ObjectName} for uniquely identifying the MXBean of this type
  * within an {@code MBeanServer} is:
  * <blockquote>
- * <code>java.nio:type=ChannelPool,name=<i>pool name</i></code> 
+ * <code>java.nio:type=ChannelPool,name=<i>pool name</i></code>
  * </blockquote>
  */
 public interface ChannelPoolMXBean {
 
     /**
      * Returns the name representing this channel pool.
-     * 
+     *
      * @return the name of this channel pool
      */
     String getName();
@@ -55,7 +55,7 @@ public interface ChannelPoolMXBean {
      * The number of open channels is the number of channels opened since
      * the Java virtual machine has started execution minus the number of
      * channels that have been closed.
-     * 
+     *
      * @return an estimate of the number of open channels in this pool
      */
     long getCount();

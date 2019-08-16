@@ -21,30 +21,23 @@
 
 package com.sun.sgs.impl.nio;
 
+import com.sun.sgs.nio.channels.AlreadyBoundException;
+import com.sun.sgs.nio.channels.AsynchronousServerSocketChannel;
+import com.sun.sgs.nio.channels.AsynchronousSocketChannel;
+import com.sun.sgs.nio.channels.CompletionHandler;
+import com.sun.sgs.nio.channels.*;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.nio.channels.AsynchronousCloseException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.UnresolvedAddressException;
-import java.nio.channels.UnsupportedAddressTypeException;
+import java.nio.channels.*;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
-import com.sun.sgs.nio.channels.AlreadyBoundException;
-import com.sun.sgs.nio.channels.AsynchronousServerSocketChannel;
-import com.sun.sgs.nio.channels.AsynchronousSocketChannel;
-import com.sun.sgs.nio.channels.CompletionHandler;
-import com.sun.sgs.nio.channels.IoFuture;
-import com.sun.sgs.nio.channels.SocketOption;
-import com.sun.sgs.nio.channels.StandardSocketOption;
 
 import static java.nio.channels.SelectionKey.OP_ACCEPT;
 
@@ -54,35 +47,42 @@ import static java.nio.channels.SelectionKey.OP_ACCEPT;
  * returned by this channel's channel group.
  */
 final class AsyncServerSocketChannelImpl
-    extends AsynchronousServerSocketChannel
-{
-    /** The valid socket options for this channel. */
+        extends AsynchronousServerSocketChannel {
+    /**
+     * The valid socket options for this channel.
+     */
     private static final Set<SocketOption> socketOptions;
+
     static {
         Set<? extends SocketOption> es = EnumSet.of(
-            StandardSocketOption.SO_RCVBUF,
-            StandardSocketOption.SO_REUSEADDR);
+                StandardSocketOption.SO_RCVBUF,
+                StandardSocketOption.SO_REUSEADDR);
         socketOptions = Collections.unmodifiableSet(es);
     }
 
-    /** The channel group. */
+    /**
+     * The channel group.
+     */
     final AsyncGroupImpl group;
 
-    /** The underlying {@code ServerSocketChannel}. */
+    /**
+     * The underlying {@code ServerSocketChannel}.
+     */
     final ServerSocketChannel channel;
 
-    /** The {@code AsyncKey} for the underlying channel. */
+    /**
+     * The {@code AsyncKey} for the underlying channel.
+     */
     final AsyncKey key;
 
     /**
      * Creates a new instance registered with the given channel group.
-     * 
+     *
      * @param group the channel group
      * @throws IOException if an I/O error occurs
      */
     AsyncServerSocketChannelImpl(AsyncGroupImpl group)
-        throws IOException
-    {
+            throws IOException {
         super(group.provider());
         this.group = group;
         channel = group.selectorProvider().openServerSocketChannel();
@@ -118,8 +118,7 @@ final class AsyncServerSocketChannelImpl
     @Override
     public AsyncServerSocketChannelImpl bind(SocketAddress local,
                                              int backlog)
-        throws IOException
-    {
+            throws IOException {
         if ((local != null) && (!(local instanceof InetSocketAddress))) {
             throw new UnsupportedAddressTypeException();
         }
@@ -156,10 +155,9 @@ final class AsyncServerSocketChannelImpl
      * {@inheritDoc}
      */
     @Override
-    public AsyncServerSocketChannelImpl setOption(SocketOption name, 
+    public AsyncServerSocketChannelImpl setOption(SocketOption name,
                                                   Object value)
-        throws IOException
-    {
+            throws IOException {
         if (!(name instanceof StandardSocketOption)) {
             throw new IllegalArgumentException("Unsupported option " + name);
         }
@@ -170,20 +168,20 @@ final class AsyncServerSocketChannelImpl
 
         StandardSocketOption stdOpt = (StandardSocketOption) name;
         final ServerSocket socket = channel.socket();
-        
+
         try {
             switch (stdOpt) {
-            case SO_RCVBUF:
-                socket.setReceiveBufferSize(((Integer) value).intValue());
-                break;
+                case SO_RCVBUF:
+                    socket.setReceiveBufferSize(((Integer) value).intValue());
+                    break;
 
-            case SO_REUSEADDR:
-                socket.setReuseAddress(((Boolean) value).booleanValue());
-                break;
+                case SO_REUSEADDR:
+                    socket.setReuseAddress(((Boolean) value).booleanValue());
+                    break;
 
-            default:
-                throw new IllegalArgumentException("Unsupported option " 
-                                                   + name);
+                default:
+                    throw new IllegalArgumentException("Unsupported option "
+                            + name);
             }
         } catch (SocketException e) {
             if (socket.isClosed()) {
@@ -204,18 +202,18 @@ final class AsyncServerSocketChannelImpl
 
         StandardSocketOption stdOpt = (StandardSocketOption) name;
         final ServerSocket socket = channel.socket();
-        
+
         try {
             switch (stdOpt) {
-            case SO_RCVBUF:
-                return socket.getReceiveBufferSize();
+                case SO_RCVBUF:
+                    return socket.getReceiveBufferSize();
 
-            case SO_REUSEADDR:
-                return socket.getReuseAddress();
+                case SO_REUSEADDR:
+                    return socket.getReuseAddress();
 
-            default:
-                throw new IllegalArgumentException("Unsupported option " 
-                                                   + name);
+                default:
+                    throw new IllegalArgumentException("Unsupported option "
+                            + name);
             }
         } catch (SocketException e) {
             if (socket.isClosed()) {
@@ -246,23 +244,23 @@ final class AsyncServerSocketChannelImpl
     @Override
     public <A> IoFuture<AsynchronousSocketChannel, A> accept(
             A attachment,
-            CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
-    {
+            CompletionHandler<AsynchronousSocketChannel, ? super A> handler) {
         return key.execute(
-            OP_ACCEPT, attachment, handler, 0, TimeUnit.MILLISECONDS,
-            new Callable<AsynchronousSocketChannel>() {
-                public AsynchronousSocketChannel call() throws IOException {
-                    try {
-                        SocketChannel newChannel = channel.accept();
-                        if (newChannel == null) {
-                            // TODO re-execute on the key somehow? -JM
-                            throw new IOException("accept failed");
+                OP_ACCEPT, attachment, handler, 0, TimeUnit.MILLISECONDS,
+                new Callable<AsynchronousSocketChannel>() {
+                    public AsynchronousSocketChannel call() throws IOException {
+                        try {
+                            SocketChannel newChannel = channel.accept();
+                            if (newChannel == null) {
+                                // TODO re-execute on the key somehow? -JM
+                                throw new IOException("accept failed");
+                            }
+                            return new AsyncSocketChannelImpl(group, newChannel);
+                        } catch (ClosedChannelException e) {
+                            throw Util.initCause(
+                                    new AsynchronousCloseException(), e);
                         }
-                        return new AsyncSocketChannelImpl(group, newChannel);
-                    } catch (ClosedChannelException e) {
-                        throw Util.initCause(
-                            new AsynchronousCloseException(), e);
                     }
-                } });
+                });
     }
 }

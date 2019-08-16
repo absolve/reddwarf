@@ -37,27 +37,31 @@ class ChannelServiceStats implements ChannelServiceMXBean {
 
     final ProfileOperation createChannelOp;
     final ProfileOperation getChannelOp;
-    
+
     ChannelServiceStats(ProfileCollector collector) {
-        ProfileConsumer consumer = 
-            collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX + 
-                                  "ChannelService");
+        ProfileConsumer consumer =
+                collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX +
+                        "ChannelService");
         ProfileLevel level = ProfileLevel.MAX;
         ProfileDataType type = ProfileDataType.TASK_AND_AGGREGATE;
-        
+
         // Manager operations
         createChannelOp =
-            consumer.createOperation("createChannel", type, level);
+                consumer.createOperation("createChannel", type, level);
         getChannelOp =
-            consumer.createOperation("getChannel", type, level);
+                consumer.createOperation("getChannel", type, level);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getCreateChannelCalls() {
         return ((AggregateProfileOperation) createChannelOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getGetChannelCalls() {
         return ((AggregateProfileOperation) getChannelOp).getCount();
     }

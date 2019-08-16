@@ -22,31 +22,20 @@
 package com.sun.sgs.impl.profile.listener;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.profile.util.NetworkReporter;
-
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskScheduler;
-
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileOperation;
 import com.sun.sgs.profile.ProfileReport;
 
 import java.beans.PropertyChangeEvent;
-
 import java.io.IOException;
-
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -71,7 +60,7 @@ public class AggregateProfileListener implements ProfileListener {
             new HashMap<String, Long>();
     private Map<String, Long> fOpCounts =
             new HashMap<String, Long>();
-    
+
     // the task and time counts for successful and failed tasks
     private volatile long sTaskCount = 0;
     private volatile long sRunTime = 0;
@@ -99,7 +88,7 @@ public class AggregateProfileListener implements ProfileListener {
 
     // the base name for properties
     private static final String PROP_BASE =
-        AggregateProfileListener.class.getName();
+            AggregateProfileListener.class.getName();
 
     // the supported properties and their default values
     private static final String PORT_PROPERTY = PROP_BASE + ".report.port";
@@ -111,18 +100,16 @@ public class AggregateProfileListener implements ProfileListener {
      * Creates an instance of <code>AggregateProfileListener</code>.
      *
      * @param properties the <code>Properties</code> for this listener
-     * @param owner the <code>Identity</code> to use for all tasks run by
-     *              this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *                 available system components
-     *
+     * @param owner      the <code>Identity</code> to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      * @throws IOException if the server socket cannot be created
      */
     public AggregateProfileListener(Properties properties, Identity owner,
                                     ComponentRegistry registry)
-        throws IOException
-    {
-	localCounters = new ConcurrentHashMap<String, Long>();
+            throws IOException {
+        localCounters = new ConcurrentHashMap<String, Long>();
 
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
 
@@ -130,26 +117,29 @@ public class AggregateProfileListener implements ProfileListener {
         networkReporter = new NetworkReporter(port);
 
         long reportPeriod =
-            wrappedProps.getLongProperty(PERIOD_PROPERTY, DEFAULT_PERIOD);
+                wrappedProps.getLongProperty(PERIOD_PROPERTY, DEFAULT_PERIOD);
         handle = registry.getComponent(TaskScheduler.class).
-            scheduleRecurringTask(new AggregatingRunnable(), owner, 
-                                  System.currentTimeMillis() + reportPeriod,
-                                  reportPeriod);
+                scheduleRecurringTask(new AggregatingRunnable(), owner,
+                        System.currentTimeMillis() + reportPeriod,
+                        reportPeriod);
         handle.start();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent event) {
-	if (event.getPropertyName().
-                equals("com.sun.sgs.profile.newop")) 
-        {          
-	    ProfileOperation op = (ProfileOperation) (event.getNewValue());
-	    sOpCounts.put(op.getName(), 0L);
-	    fOpCounts.put(op.getName(), 0L);
-	}
+        if (event.getPropertyName().
+                equals("com.sun.sgs.profile.newop")) {
+            ProfileOperation op = (ProfileOperation) (event.getNewValue());
+            sOpCounts.put(op.getName(), 0L);
+            fOpCounts.put(op.getName(), 0L);
+        }
     }
 
-    /** {@inheritDoc}*/
+    /**
+     * {@inheritDoc}
+     */
     public void report(ProfileReport profileReport) {
         List<String> ops = profileReport.getReportedOperations();
         if (profileReport.wasTaskSuccessful()) {
@@ -157,20 +147,20 @@ public class AggregateProfileListener implements ProfileListener {
             sTaskOpCount += ops.size();
             sRunTime += profileReport.getRunningTime();
             delayTime += (profileReport.getActualStartTime() -
-                          profileReport.getScheduledStartTime());
+                    profileReport.getScheduledStartTime());
             tryCount += profileReport.getRetryCount();
             for (String op : ops) {
                 Long i = sOpCounts.get(op);
-		sOpCounts.put(op, Long.valueOf(i == null ? 1 : i + 1));
-	    }
+                sOpCounts.put(op, Long.valueOf(i == null ? 1 : i + 1));
+            }
         } else {
             fTaskCount++;
             fTaskOpCount += ops.size();
             fRunTime += profileReport.getRunningTime();
             for (String op : ops) {
                 Long i = fOpCounts.get(op);
-		fOpCounts.put(op, Long.valueOf(i == null ? 1 : i + 1));
-	    }
+                fOpCounts.put(op, Long.valueOf(i == null ? 1 : i + 1));
+            }
         }
 
         if (profileReport.wasTaskTransactional()) {
@@ -178,20 +168,22 @@ public class AggregateProfileListener implements ProfileListener {
             tRunTime += profileReport.getRunningTime();
         }
 
-	Map<String, Long> map = profileReport.getUpdatedTaskCounters();
-	if (map != null) {
-	    for (Entry<String, Long> entry : map.entrySet()) {
-		String key = entry.getKey();
-		long value = 0;
-		if (localCounters.containsKey(key)) {
-		    value = localCounters.get(key);
+        Map<String, Long> map = profileReport.getUpdatedTaskCounters();
+        if (map != null) {
+            for (Entry<String, Long> entry : map.entrySet()) {
+                String key = entry.getKey();
+                long value = 0;
+                if (localCounters.containsKey(key)) {
+                    value = localCounters.get(key);
                 }
-		localCounters.put(key, entry.getValue() + value);
-	    }
-	}
+                localCounters.put(key, entry.getValue() + value);
+            }
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         handle.cancel();
         networkReporter.shutdown();
@@ -205,6 +197,7 @@ public class AggregateProfileListener implements ProfileListener {
         public String getBaseTaskType() {
             return AggregatingRunnable.class.getName();
         }
+
         public void run() throws Exception {
             // calculate totals across categories
             long totalTasks = sTaskCount + fTaskCount;
@@ -213,52 +206,52 @@ public class AggregateProfileListener implements ProfileListener {
 
             // average just for transactions
             double transactionalAvgLength =
-                (double) tRunTime / (double) tTaskCount;
+                    (double) tRunTime / (double) tTaskCount;
 
             // averages just for successes
             double avgSuccessfulLength = totalTime / (double) sTaskCount;
-            double avgSuccessfulDelay = 
-                (double) delayTime / (double) sTaskCount;
+            double avgSuccessfulDelay =
+                    (double) delayTime / (double) sTaskCount;
             double avgSuccessfulOps =
-                (double) sTaskOpCount / (double) sTaskCount;
+                    (double) sTaskOpCount / (double) sTaskCount;
 
             // average for failures
             double avgRetries = (double) tryCount / (double) sTaskCount;
             double avgFailedOps = (fTaskCount == 0) ? 0 :
-                (double) fTaskOpCount / (double) fTaskCount;
+                    (double) fTaskOpCount / (double) fTaskCount;
 
-	    Formatter reportStr = new Formatter();
-	    reportStr.format("TaskCounts:%n");
+            Formatter reportStr = new Formatter();
+            reportStr.format("TaskCounts:%n");
             reportStr.format("  TotalTasks=%d", totalTasks);
-	    reportStr.format("  AvgLength=%2.2fms%n", totalAvgLength);
+            reportStr.format("  AvgLength=%2.2fms%n", totalAvgLength);
             reportStr.format("  Transactional=%d", tTaskCount);
-	    reportStr.format("  AvgLength=%2.2fms%n", transactionalAvgLength);
+            reportStr.format("  AvgLength=%2.2fms%n", transactionalAvgLength);
             reportStr.format("  Successful=%d", sTaskCount);
-	    reportStr.format("  AvgLength=%2.2fms", avgSuccessfulLength);
-	    reportStr.format("  AvgStartDelay=%2.2fms", avgSuccessfulDelay);
-	    reportStr.format("  AvgRetries=%2.2f%n", avgRetries);
+            reportStr.format("  AvgLength=%2.2fms", avgSuccessfulLength);
+            reportStr.format("  AvgStartDelay=%2.2fms", avgSuccessfulDelay);
+            reportStr.format("  AvgRetries=%2.2f%n", avgRetries);
             reportStr.format("  AvgOpCountOnSuccess=%2.2f", avgSuccessfulOps);
-	    reportStr.format("  AvgOpCountOnFailure=%2.2f%n", avgFailedOps);
+            reportStr.format("  AvgOpCountOnFailure=%2.2f%n", avgFailedOps);
 
             reportStr.format("OpCounts:%n");
-	    int j, k = 0;
-	    for (String op : sOpCounts.keySet()) {
-		j = sOpCounts.get(op).intValue();
+            int j, k = 0;
+            for (String op : sOpCounts.keySet()) {
+                j = sOpCounts.get(op).intValue();
                 reportStr.format("   %s=%d/%d", op, j, j + fOpCounts.get(op));
-		if (++k % 3 == 0) {
+                if (++k % 3 == 0) {
                     reportStr.format("%n");
                 }
             }
-	    reportStr.format("%n");
+            reportStr.format("%n");
 
-	    if (!localCounters.isEmpty()) {
-		reportStr.format("LocalCounters (avg per task):%n");
-		for (Entry<String, Long> entry : localCounters.entrySet()) {
-		    reportStr.format(
-			"  %s=%2.2f%n", entry.getKey(),
-			entry.getValue() / (double) totalTasks);
+            if (!localCounters.isEmpty()) {
+                reportStr.format("LocalCounters (avg per task):%n");
+                for (Entry<String, Long> entry : localCounters.entrySet()) {
+                    reportStr.format(
+                            "  %s=%2.2f%n", entry.getKey(),
+                            entry.getValue() / (double) totalTasks);
                 }
-	    }
+            }
 
             reportStr.format("%n");
 

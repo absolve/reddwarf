@@ -28,6 +28,7 @@ import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
 import com.sun.sgs.profile.ProfileConsumer;
 import com.sun.sgs.profile.ProfileConsumer.ProfileDataType;
 import edu.uci.ics.jung.graph.Graph;
+
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.StandardMBean;
@@ -36,43 +37,54 @@ import javax.management.StandardMBean;
  * The exposed management information for the affinity graph builder.
  */
 public class AffinityGraphBuilderStats extends StandardMBean
-        implements AffinityGraphBuilderMXBean
-{
+        implements AffinityGraphBuilderMXBean {
     /**
      * Our consumer name, created with at {@code ProfileLevel.MEDIUM}.
      */
     public static final String CONS_NAME = "com.sun.sgs.AffinityGraphBuilder";
-    /** The graph we are building. */
+    /**
+     * The graph we are building.
+     */
     private final Graph<?, ?> graph;
 
     // Configuration info
-    /** Snapshot count. */
+    /**
+     * Snapshot count.
+     */
     private final int snapCount;
-    /** Snapshot period. */
+    /**
+     * Snapshot period.
+     */
     private final long snapPeriod;
 
     // Counters that are updated by the builders
-    /** Time spent processing the graph. */
+    /**
+     * Time spent processing the graph.
+     */
     private final AggregateProfileCounter processingTime;
-    /** Number of graph updates. */
+    /**
+     * Number of graph updates.
+     */
     private final AggregateProfileCounter updateCount;
-    /** Number of graph prunes. */
+    /**
+     * Number of graph prunes.
+     */
     private final AggregateProfileCounter pruneCount;
 
     /**
      * Constructs a stats instance.
-     * @param collector the profile collector
-     * @param graph the graph
-     * @param snapCount the configured snapshot count
+     *
+     * @param collector  the profile collector
+     * @param graph      the graph
+     * @param snapCount  the configured snapshot count
      * @param snapPeriod the configured snapshot period
      */
     public AffinityGraphBuilderStats(ProfileCollector collector,
-            Graph<?, ?> graph, int snapCount, long snapPeriod)
-    {
+                                     Graph<?, ?> graph, int snapCount, long snapPeriod) {
         super(AffinityGraphBuilderMXBean.class, true);
         if (graph == null) {
-	    throw new NullPointerException("null graph");
-	}
+            throw new NullPointerException("null graph");
+        }
         this.graph = graph;
         this.snapCount = snapCount;
         this.snapPeriod = snapPeriod;
@@ -88,37 +100,51 @@ public class AffinityGraphBuilderStats extends StandardMBean
                 consumer.createCounter("pruneCount", type, level);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getNumberEdges() {
         return graph.getEdgeCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getNumberVertices() {
         return graph.getVertexCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getProcessingTime() {
         return processingTime.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getUpdateCount() {
         return updateCount.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getPruneCount() {
         return pruneCount.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getSnapshotCount() {
         return snapCount;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getSnapshotPeriod() {
         return snapPeriod;
     }
@@ -126,12 +152,16 @@ public class AffinityGraphBuilderStats extends StandardMBean
     // Overrides for StandardMBean information, giving JMX clients
     // (like JConsole) more information for better displays.
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected String getDescription(MBeanInfo info) {
         return "An MXBean for examining affinity graph builders";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
         if (info.getName().equals("NumberEdges")) {
@@ -145,10 +175,10 @@ public class AffinityGraphBuilderStats extends StandardMBean
             description = "The number of updates (additions) to the graph.";
         } else if (info.getName().equals("PruneCount")) {
             description = "The number of times the graph was pruned (had dead"
-                   +  " information removed)";
+                    + " information removed)";
         } else if (info.getName().equals("SnapshotCount")) {
             description = "The configured number of live snapshots of the"
-                   + " graph to keep.";
+                    + " graph to keep.";
         } else if (info.getName().equals("SnapshotPeriod")) {
             description = "The configured length of time, in milliseconds,"
                     + " for each snapshot.";
@@ -157,8 +187,10 @@ public class AffinityGraphBuilderStats extends StandardMBean
     }
 
     // Updators
+
     /**
      * Increments the processing time by the input argument.
+     *
      * @param inc the amount to increment the processing time by
      */
     public void processingTimeInc(long inc) {

@@ -25,18 +25,13 @@
 
 package com.sun.sgs.nio.channels;
 
+import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
+
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.AlreadyConnectedException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ConnectionPendingException;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.UnresolvedAddressException;
-import java.nio.channels.UnsupportedAddressTypeException;
+import java.nio.channels.*;
 import java.util.concurrent.TimeUnit;
-
-import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
 
 /**
  * An asynchronous channel for stream-oriented connecting sockets.
@@ -120,8 +115,7 @@ import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
  * not accessed while the channel remains open.
  */
 public abstract class AsynchronousSocketChannel extends AsynchronousChannel
-    implements AsynchronousByteChannel, NetworkChannel
-{
+        implements AsynchronousByteChannel, NetworkChannel {
     /**
      * Initializes a new instance of this class.
      *
@@ -144,13 +138,12 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      *              be bound, or null for the default group
      * @return a new asynchronous socket channel
      * @throws ShutdownChannelGroupException if the specified group is shutdown
-     * @throws IOException if an I/O error occurs
+     * @throws IOException                   if an I/O error occurs
      */
     public static AsynchronousSocketChannel open(AsynchronousChannelGroup group)
-        throws IOException
-    {
+            throws IOException {
         return AsynchronousChannelProvider.provider().
-                   openAsynchronousSocketChannel(group);
+                openAsynchronousSocketChannel(group);
     }
 
     /**
@@ -162,6 +155,7 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * <pre>
      *       open((AsynchronousChannelGroup)null);
      * </pre>
+     *
      * @return a new asynchronous socket channel
      * @throws IOException if an I/O error occurs
      */
@@ -173,13 +167,13 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * {@inheritDoc}
      */
     public abstract AsynchronousSocketChannel bind(SocketAddress local)
-                                            throws IOException;
+            throws IOException;
 
     /**
      * {@inheritDoc}
      */
     public abstract AsynchronousSocketChannel setOption(SocketOption name,
-        Object value) throws IOException;
+                                                        Object value) throws IOException;
 
     /**
      * Shutdown a connection for reading and/or writing without closing the
@@ -196,23 +190,23 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * ClosedChannelException. If the output side of the connection is
      * already shutdown then invoking this method to shutdown the output
      * side of the connection has no effect.
-     * 
+     *
      * @param how specifies if the input, output, or both sides of the
-     *        connection is shutdown
+     *            connection is shutdown
      * @return this channel
      * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws ClosedChannelException if this channel is closed
-     * @throws IOException if some other I/O error occurs
+     * @throws ClosedChannelException   if this channel is closed
+     * @throws IOException              if some other I/O error occurs
      */
     public abstract AsynchronousSocketChannel shutdown(ShutdownType how)
-        throws IOException;
+            throws IOException;
 
     /**
      * Returns the remote address to which this channel's socket is
      * connected, or null if the channel's socket is not connected.
-     * 
+     *
      * @return the remote address; null if the channel is not open or the
-     *         channel's socket is not connected
+     * channel's socket is not connected
      * @throws IOException if an I/O error occurs
      */
     public abstract SocketAddress getConnectedAddress() throws IOException;
@@ -223,9 +217,9 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * The result of this method is a snapshot of the channel state. It may
      * be invalid when the caller goes to examine the result and should not
      * be used for purposes of coordination.
-     * 
+     *
      * @return true if, and only if, a connect is pending for this
-     *         channel but has not yet completed
+     * channel but has not yet completed
      */
     public abstract boolean isConnectionPending();
 
@@ -235,9 +229,9 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * The result of this method is a snapshot of the channel state. It may
      * be invalid when the caller goes to examine the result and should not
      * be used for purposes of coordination.
-     * 
+     *
      * @return true if, and only if, a read is pending for this this channel
-     *         but has not yet completed
+     * but has not yet completed
      * @see ReadPendingException
      */
     public abstract boolean isReadPending();
@@ -248,9 +242,9 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * The result of this method is a snapshot of the channel state. It may
      * be invalid when the caller goes to examine the result and should not
      * be used for purposes of coordination.
-     * 
+     *
      * @return true if, and only if, a write is pending for this this
-     *         channel but has not yet completed
+     * channel but has not yet completed
      * @see WritePendingException
      */
     public abstract boolean isWritePending();
@@ -268,31 +262,31 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * class. That is, if a security manager has been installed then this
      * method verifies that its checkConnect method permits connecting to
      * the address and port number of the given remote endpoint.
-     * 
-     * @param <A> the attachment type
-     * @param remote the remote address to which this channel is to be
-     *        connected
+     *
+     * @param <A>        the attachment type
+     * @param remote     the remote address to which this channel is to be
+     *                   connected
      * @param attachment the object to attach to the returned IoFuture
-     *        object; can be null
-     * @param handler the handler for consuming the result; can be null
+     *                   object; can be null
+     * @param handler    the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws AlreadyConnectedException if this channel is already
-     *         connected
-     * @throws ConnectionPendingException if a connection operation is
-     *         already in progress on this channel
-     * @throws UnresolvedAddressException if the given remote address is not
-     *         fully resolved
-     * @throws UnsupportedAddressTypeException if the type of the given
-     *         remote address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and it does not permit access to the given remote endpoint
+     * @throws AlreadyConnectedException          if this channel is already
+     *                                            connected
+     * @throws ConnectionPendingException         if a connection operation is
+     *                                            already in progress on this channel
+     * @throws UnresolvedAddressException         if the given remote address is not
+     *                                            fully resolved
+     * @throws UnsupportedAddressTypeException    if the type of the given
+     *                                            remote address is not supported
+     * @throws SecurityException                  if a security manager has been installed
+     *                                            and it does not permit access to the given remote endpoint
      * @see #getConnectedAddress()
      * @see #isConnectionPending()
      */
     public abstract <A> IoFuture<Void, A> connect(SocketAddress remote,
-        A attachment,
-        CompletionHandler<Void, ? super A> handler);
+                                                  A attachment,
+                                                  CompletionHandler<Void, ? super A> handler);
 
     /**
      * Connects this channel.
@@ -305,29 +299,28 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * connect(SocketAddress,A,CompletionHandler) with the attachment
      * parameter set to null.
-     * 
-     * @param <A> the attachment type
-     * @param remote the remote address to which this channel is to be
-     *        connected
+     *
+     * @param <A>     the attachment type
+     * @param remote  the remote address to which this channel is to be
+     *                connected
      * @param handler the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws AlreadyConnectedException if this channel is already
-     *         connected
-     * @throws ConnectionPendingException if a connection operation is
-     *         already in progress on this channel
-     * @throws UnresolvedAddressException if the given remote address is not
-     *         fully resolved
-     * @throws UnsupportedAddressTypeException if the type of the given
-     *         remote address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and it does not permit access to the given remote endpoint
+     * @throws AlreadyConnectedException          if this channel is already
+     *                                            connected
+     * @throws ConnectionPendingException         if a connection operation is
+     *                                            already in progress on this channel
+     * @throws UnresolvedAddressException         if the given remote address is not
+     *                                            fully resolved
+     * @throws UnsupportedAddressTypeException    if the type of the given
+     *                                            remote address is not supported
+     * @throws SecurityException                  if a security manager has been installed
+     *                                            and it does not permit access to the given remote endpoint
      * @see #getConnectedAddress()
      * @see #isConnectionPending()
      */
-    public final <A> IoFuture<Void, A> connect(SocketAddress remote, 
-        CompletionHandler<Void, ? super A> handler)
-    {
+    public final <A> IoFuture<Void, A> connect(SocketAddress remote,
+                                               CompletionHandler<Void, ? super A> handler) {
         return connect(remote, null, handler);
     }
 
@@ -347,28 +340,28 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * <p>
      * Otherwise this method works in the same manner as the
      * AsynchronousByteChannel.read(ByteBuffer,A,CompletionHandler) method.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which bytes are to be transferred
-     * @param timeout the timeout, or 0L for no timeout
-     * @param unit the time unit of the timeout argument
+     *
+     * @param <A>        the attachment type
+     * @param dst        the buffer into which bytes are to be transferred
+     * @param timeout    the timeout, or 0L for no timeout
+     * @param unit       the time unit of the timeout argument
      * @param attachment the object to attach to the returned IoFuture
-     *        object; can be null
-     * @param handler the handler for consuming the result; can be null
+     *                   object; can be null
+     * @param handler    the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
-     * @throws IllegalArgumentException if the timeout parameter is negative
+     * @throws IllegalArgumentException           if the timeout parameter is negative
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous read operation on
-     *         the channel completed due to a timeout
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous read operation on
+     *                                            the channel completed due to a timeout
      */
     public abstract <A> IoFuture<Integer, A> read(ByteBuffer dst,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler);
+                                                  long timeout,
+                                                  TimeUnit unit,
+                                                  A attachment,
+                                                  CompletionHandler<Integer, ? super A> handler);
 
     /**
      * Reads a sequence of bytes from this channel into the given buffer.
@@ -382,24 +375,23 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * read(ByteBuffer,long,TimeUnit,A,CompletionHandler) with a timeout of
      * 0L.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which bytes are to be transferred
+     *
+     * @param <A>        the attachment type
+     * @param dst        the buffer into which bytes are to be transferred
      * @param attachment the object to attach to the returned IoFuture
-     *        object; can be null
-     * @param handler the handler for consuming the result; can be null
+     *                   object; can be null
+     * @param handler    the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous read operation on
-     *         the channel completed due to a timeout
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous read operation on
+     *                                            the channel completed due to a timeout
      */
     public final <A> IoFuture<Integer, A> read(ByteBuffer dst,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                               A attachment,
+                                               CompletionHandler<Integer, ? super A> handler) {
         return read(dst, 0L, TimeUnit.NANOSECONDS, attachment, handler);
     }
 
@@ -415,21 +407,20 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * read(ByteBuffer,long,TimeUnit,A,CompletionHandler) with a timeout of
      * 0L, and an attachment of null.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which bytes are to be transferred
+     *
+     * @param <A>     the attachment type
+     * @param dst     the buffer into which bytes are to be transferred
      * @param handler the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous read operation on
-     *         the channel completed due to a timeout
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous read operation on
+     *                                            the channel completed due to a timeout
      */
     public final <A> IoFuture<Integer, A> read(ByteBuffer dst,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                               CompletionHandler<Integer, ? super A> handler) {
         return read(dst, 0L, TimeUnit.NANOSECONDS, null, handler);
     }
 
@@ -468,37 +459,37 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * operation completes then it completes with ExecutionException and
      * cause AbortedByTimeoutException. In that case it is guranteed that no
      * bytes have been read from the channel into the given buffers.
-     * 
-     * @param <A> the attachment type
-     * @param dsts the buffers into which bytes are to be transferred
-     * @param offset the offset within the buffer array of the first buffer
-     *        into which bytes are to be transferred; must be non-negative
-     *        and no larger than dsts.length
-     * @param length the maximum number of buffers to be accessed; must be
-     *        non-negative and no larger than dsts.length - offset
-     * @param timeout the timeout, or 0L for no timeout
-     * @param unit the time unit of the timeout argument
+     *
+     * @param <A>        the attachment type
+     * @param dsts       the buffers into which bytes are to be transferred
+     * @param offset     the offset within the buffer array of the first buffer
+     *                   into which bytes are to be transferred; must be non-negative
+     *                   and no larger than dsts.length
+     * @param length     the maximum number of buffers to be accessed; must be
+     *                   non-negative and no larger than dsts.length - offset
+     * @param timeout    the timeout, or 0L for no timeout
+     * @param unit       the time unit of the timeout argument
      * @param attachment the object to attach to the returned IoFuture
-     *        object; can be null
-     * @param handler the handler for consuming the result; can be null
+     *                   object; can be null
+     * @param handler    the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
-     * @throws IllegalArgumentException if the timeout parameter is
-     *         negative, or the pre-conditions for the offset and length
-     *         parameter aren't met
+     * @throws IllegalArgumentException           if the timeout parameter is
+     *                                            negative, or the pre-conditions for the offset and length
+     *                                            parameter aren't met
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous read operation on
-     *         the channel completed due to a timeout
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous read operation on
+     *                                            the channel completed due to a timeout
      */
     public abstract <A> IoFuture<Long, A> read(ByteBuffer[] dsts,
-        int offset,
-        int length,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<Long, ? super A> handler);
+                                               int offset,
+                                               int length,
+                                               long timeout,
+                                               TimeUnit unit,
+                                               A attachment,
+                                               CompletionHandler<Long, ? super A> handler);
 
     /**
      * Writes a sequence of bytes to this channel from the given buffer.
@@ -515,28 +506,28 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * <p>
      * Otherwise this method works in the same manner as the
      * AsynchronousByteChannel.write(ByteBuffer,A,CompletionHandler) method.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer from which bytes are to be retrieved
-     * @param timeout the timeout, or 0L for no timeout
-     * @param unit the time unit of the timeout argument
+     *
+     * @param <A>        the attachment type
+     * @param src        the buffer from which bytes are to be retrieved
+     * @param timeout    the timeout, or 0L for no timeout
+     * @param unit       the time unit of the timeout argument
      * @param attachment the object to attach to the returned IoFuture
-     *        object; can be null
-     * @param handler the handler for consuming the result; can be null
+     *                   object; can be null
+     * @param handler    the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
-     * @throws IllegalArgumentException if the timeout parameter is negative
+     * @throws IllegalArgumentException           if the timeout parameter is negative
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a write operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous write operation on
-     *         the channel completed due to a timeout
+     * @throws WritePendingException              if a write operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous write operation on
+     *                                            the channel completed due to a timeout
      */
     public abstract <A> IoFuture<Integer, A> write(ByteBuffer src,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler);
+                                                   long timeout,
+                                                   TimeUnit unit,
+                                                   A attachment,
+                                                   CompletionHandler<Integer, ? super A> handler);
 
     /**
      * Writes a sequence of bytes to this channel from the given buffer.
@@ -548,24 +539,23 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * write(ByteBuffer,long,TimeUnit,A,CompletionHandler) with a timeout of
      * 0L.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer from which bytes are to be retrieved
+     *
+     * @param <A>        the attachment type
+     * @param src        the buffer from which bytes are to be retrieved
      * @param attachment the object to attach to the returned IoFuture
-     *        object; can be null
-     * @param handler the handler for consuming the result; can be null
+     *                   object; can be null
+     * @param handler    the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a write operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous write operation on
-     *         the channel completed due to a timeout
+     * @throws WritePendingException              if a write operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous write operation on
+     *                                            the channel completed due to a timeout
      */
     public final <A> IoFuture<Integer, A> write(ByteBuffer src,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                                A attachment,
+                                                CompletionHandler<Integer, ? super A> handler) {
         return write(src, 0L, TimeUnit.NANOSECONDS, attachment, handler);
     }
 
@@ -579,21 +569,20 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * write(ByteBuffer,long,TimeUnit,A,CompletionHandler) with a timeout of
      * 0L, and an attachment of null.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer from which bytes are to be retrieved
+     *
+     * @param <A>     the attachment type
+     * @param src     the buffer from which bytes are to be retrieved
      * @param handler the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a write operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous write operation on
-     *         the channel completed due to a timeout
+     * @throws WritePendingException              if a write operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous write operation on
+     *                                            the channel completed due to a timeout
      */
     public final <A> IoFuture<Integer, A> write(ByteBuffer src,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                                CompletionHandler<Integer, ? super A> handler) {
         return write(src, 0L, TimeUnit.NANOSECONDS, null, handler);
     }
 
@@ -630,35 +619,35 @@ public abstract class AsynchronousSocketChannel extends AsynchronousChannel
      * operation completes then it completes with ExecutionException and
      * cause AbortedByTimeoutException. In that case it is guranteed that no
      * bytes have written to the channel from the given buffers.
-     * 
-     * @param <A> the attachment type
-     * @param srcs the buffers from which bytes are to be retrieved
-     * @param offset the offset within the buffer array of the first buffer
-     *        from which bytes are to be retrieved; must be non-negative and
-     *        no larger than srcs.length.
-     * @param length the maximum number of buffers to be accessed; must be
-     *        non-negative and no larger than srcs.length - offset
-     * @param timeout the timeout, or 0L for no timeout
-     * @param unit the time unit of the timeout argument
+     *
+     * @param <A>        the attachment type
+     * @param srcs       the buffers from which bytes are to be retrieved
+     * @param offset     the offset within the buffer array of the first buffer
+     *                   from which bytes are to be retrieved; must be non-negative and
+     *                   no larger than srcs.length.
+     * @param length     the maximum number of buffers to be accessed; must be
+     *                   non-negative and no larger than srcs.length - offset
+     * @param timeout    the timeout, or 0L for no timeout
+     * @param unit       the time unit of the timeout argument
      * @param attachment the object to attach to the returned IoFuture
-     *        object; can be null
-     * @param handler the handler for consuming the result; can be null
+     *                   object; can be null
+     * @param handler    the handler for consuming the result; can be null
      * @return an IoFuture object representing the pending result
-     * @throws IllegalArgumentException if the timeout parameter is negative
-     *         or the pre-conditions for the offset or length parameter
-     *         aren't met
+     * @throws IllegalArgumentException           if the timeout parameter is negative
+     *                                            or the pre-conditions for the offset or length parameter
+     *                                            aren't met
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a write operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not yet connected
-     * @throws IllegalChannelStateException if a previous write operation on
-     *         the channel completed due to a timeout
+     * @throws WritePendingException              if a write operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not yet connected
+     * @throws IllegalChannelStateException       if a previous write operation on
+     *                                            the channel completed due to a timeout
      */
     public abstract <A> IoFuture<Long, A> write(ByteBuffer[] srcs,
-        int offset,
-        int length,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<Long, ? super A> handler);
+                                                int offset,
+                                                int length,
+                                                long timeout,
+                                                TimeUnit unit,
+                                                A attachment,
+                                                CompletionHandler<Long, ? super A> handler);
 }

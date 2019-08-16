@@ -34,40 +34,48 @@ import java.net.Socket;
  */
 class DataStoreClientRemote extends DataStoreProtocolClient {
 
-    /** The server host name. */
+    /**
+     * The server host name.
+     */
     private final String host;
 
-    /** The server network port. */
+    /**
+     * The server network port.
+     */
     private final int port;
 
-    /** Creates an instance for the specified host and port */
+    /**
+     * Creates an instance for the specified host and port
+     */
     DataStoreClientRemote(String host, int port) {
-	this.host = host;
-	this.port = port;
+        this.host = host;
+        this.port = port;
     }
 
     /**
      * {@inheritDoc} <p>
-     *
+     * <p>
      * This implementation creates a socket.
      */
     @Override
     DataStoreProtocol createHandler() throws IOException {
-	Socket socket = new Socket(host, port);
-	setSocketOptions(socket);
-	return new DataStoreProtocol(
-	    socket.getInputStream(), socket.getOutputStream());
+        Socket socket = new Socket(host, port);
+        setSocketOptions(socket);
+        return new DataStoreProtocol(
+                socket.getInputStream(), socket.getOutputStream());
     }
 
-    /** Sets TcpNoDelay and KeepAlive options, if possible. */
+    /**
+     * Sets TcpNoDelay and KeepAlive options, if possible.
+     */
     private void setSocketOptions(Socket socket) {
-	try {
-	    socket.setTcpNoDelay(true);
-	} catch (Exception e) {
-	}
-	try {
-	    socket.setKeepAlive(true);
-	} catch (Exception e) {
-	}
+        try {
+            socket.setTcpNoDelay(true);
+        } catch (Exception e) {
+        }
+        try {
+            socket.setKeepAlive(true);
+        } catch (Exception e) {
+        }
     }
 }

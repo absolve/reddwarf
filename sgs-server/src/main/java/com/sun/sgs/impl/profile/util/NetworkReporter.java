@@ -23,10 +23,8 @@ package com.sun.sgs.impl.profile.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -49,12 +47,10 @@ public final class NetworkReporter {
      * Creates an instance of <code>NetworkReporter</code>.
      *
      * @param port the port on which to listen for client connections
-     *
      * @throws IOException if the server socket cannot be created
      */
     public NetworkReporter(int port)
-        throws IOException
-    {
+            throws IOException {
         listeners = new HashSet<Socket>();
         serverSocket = new ServerSocket(port);
         reporterThread = new Thread(new NetworkReporterRunnable());
@@ -93,13 +89,16 @@ public final class NetworkReporter {
             // do nothing
         }
     }
+
     /**
      * A private class used to run the long-lived server task. It simply
      * listens for connecting clients, and adds them to the set of connected
      * clients. If accepting a client fails, then the server socket is closed.
      */
     private class NetworkReporterRunnable implements Runnable {
-        NetworkReporterRunnable() { }
+        NetworkReporterRunnable() {
+        }
+
         public void run() {
             try {
                 while (true) {
@@ -110,7 +109,8 @@ public final class NetworkReporter {
             } catch (IOException e) {
                 try {
                     serverSocket.close();
-                } catch (IOException ioe) { }
+                } catch (IOException ioe) {
+                }
             }
         }
     }

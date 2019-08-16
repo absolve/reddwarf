@@ -26,7 +26,6 @@
 package com.sun.sgs.kernel.schedule;
 
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskReservation;
 
@@ -57,9 +56,7 @@ public interface SchedulerQueue {
      * If not waiting, it returns {@code null} if nothing is available.
      *
      * @param wait whether to wait for a task to become available
-     *
      * @return the next {@code ScheduledTask} or {@code null}
-     *
      * @throws InterruptedException if the thread is interrupted while
      *                              waiting for a task
      */
@@ -81,8 +78,7 @@ public interface SchedulerQueue {
      * is ordered.
      *
      * @param tasks the {@code Collection} into which the tasks are put
-     * @param max the maximum number of tasks to get
-     *
+     * @param max   the maximum number of tasks to get
      * @return the number of tasks provided
      */
     int getNextTasks(Collection<? super ScheduledTask> tasks, int max);
@@ -91,9 +87,7 @@ public interface SchedulerQueue {
      * Reserves a space for a task.
      *
      * @param task the {@code ScheduledTask} to reserve
-     *
      * @return a {@code TaskReservation} for the task
-     *
      * @throws TaskRejectedException if a reservation cannot be made, or if
      *                               the task is recurring
      */
@@ -111,7 +105,6 @@ public interface SchedulerQueue {
      * unique instance of {@code ScheduledTask}.
      *
      * @param task the {@code ScheduledTask} to add
-     *
      * @throws TaskRejectedException if the task cannot be added
      */
     void addTask(ScheduledTask task);
@@ -126,14 +119,12 @@ public interface SchedulerQueue {
      * through a call to {@code addTask}.
      *
      * @param task the {@code ScheduledTask} to run recurringly
-     *
      * @return a {@code RecurringTaskHandle} that manages the task
-     *
      * @throws IllegalArgumentException if the task has already been scheduled
      *                                  as a recurring task
      */
     RecurringTaskHandle createRecurringTaskHandle(ScheduledTask task);
-    
+
     /**
      * Notifies the scheduler that the given task has been cancelled. An
      * implementation does not need to do anything in reaction to this call

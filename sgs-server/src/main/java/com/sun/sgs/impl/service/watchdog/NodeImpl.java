@@ -29,12 +29,9 @@ import com.sun.sgs.impl.util.BoundNamesUtil;
 import com.sun.sgs.management.NodeInfo;
 import com.sun.sgs.service.DataService;
 import com.sun.sgs.service.Node;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements the {@link Node} interface.  The state for a given
@@ -44,40 +41,61 @@ import java.util.Set;
  * <p><code>com.sun.sgs.impl.service.watchdog.NodeImpl.<i>nodeId</i></code>
  */
 class NodeImpl
-    implements Node, ManagedObject, Serializable, Comparable<NodeImpl>
-{
-    /** The serialVersionUID of this class. */
+        implements Node, ManagedObject, Serializable, Comparable<NodeImpl> {
+    /**
+     * The serialVersionUID of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The ID for an unknown node. */
+    /**
+     * The ID for an unknown node.
+     */
     public static final long INVALID_ID = -1L;
 
-    /** The name of this class. */
+    /**
+     * The name of this class.
+     */
     private static final String PKG_NAME =
-	"com.sun.sgs.impl.service.watchdog";
+            "com.sun.sgs.impl.service.watchdog";
 
-    /** The prefix for NodeImpl state. */
+    /**
+     * The prefix for NodeImpl state.
+     */
     private static final String NODE_PREFIX = PKG_NAME + ".node";
 
-    /** The node id. */
+    /**
+     * The node id.
+     */
     private final long id;
-    
-    /** The host name, or {@code null}. */
+
+    /**
+     * The host name, or {@code null}.
+     */
     private final String host;
 
-    /** The node's health. */
+    /**
+     * The node's health.
+     */
     private Health health;
-    
-    /** The port JMX can listen on, or {@code -1}. */
+
+    /**
+     * The port JMX can listen on, or {@code -1}.
+     */
     private final int jmxPort;
-    
-    /** The watchdog client, or {@code null}. */
+
+    /**
+     * The watchdog client, or {@code null}.
+     */
     private final WatchdogClient client;
 
-    /** The ID of the backup for this node. */
+    /**
+     * The ID of the backup for this node.
+     */
     private long backupId = INVALID_ID;
 
-    /** The set of primaries for which this node is a backup. */
+    /**
+     * The set of primaries for which this node is a backup.
+     */
     private final Set<Long> primaryIds = new HashSet<Long>();
 
     /**
@@ -89,18 +107,18 @@ class NodeImpl
 
     /**
      * Constructs an instance of this class with the given {@code
-     * nodeId}, {@code hostName}, and {@code client}.  
-     * This instance's alive status is set to {@code true}.  The expiration 
+     * nodeId}, {@code hostName}, and {@code client}.
+     * This instance's alive status is set to {@code true}.  The expiration
      * time for this instance should be set as soon as it is known.
      *
-     * @param 	nodeId a node ID
-     * @param 	hostName a host name
-     * @param   jmxPort  the port JMX is listening on for the node, 
-     *                   or {@code -1}
-     * @param	client a watchdog client
+     * @param nodeId   a node ID
+     * @param hostName a host name
+     * @param jmxPort  the port JMX is listening on for the node,
+     *                 or {@code -1}
+     * @param    client a watchdog client
      */
     NodeImpl(long nodeId, String hostName, int jmxPort, WatchdogClient client) {
-        this (nodeId, hostName, jmxPort, client, Health.GREEN, INVALID_ID);
+        this(nodeId, hostName, jmxPort, client, Health.GREEN, INVALID_ID);
     }
 
     /**
@@ -109,25 +127,25 @@ class NodeImpl
      * instance's watchdog client is set to {@code null} and its
      * backup is unassigned (backup ID is -1).
      *
-     * @param 	nodeId a node ID
-     * @param 	hostName a host name, or {@code null}
-     * @param	health   the node's health
+     * @param nodeId   a node ID
+     * @param hostName a host name, or {@code null}
+     * @param    health the node's health
      */
     NodeImpl(long nodeId, String hostName, Health health) {
-	this(nodeId, hostName, -1, null, health, INVALID_ID);
+        this(nodeId, hostName, -1, null, health, INVALID_ID);
     }
-	
+
     /**
      * Constructs an instance of this class with the given {@code
-     * nodeId}, {@code hostName}, {@code isAlive} status, and 
+     * nodeId}, {@code hostName}, {@code isAlive} status, and
      * {@code backupId}.  This instance's watchdog client is set to
      * {@code null}.
      *
-     * @param 	nodeId a node ID
-     * @param   hostName a host name, or {@code null}
-     * @param	health   the node's health
-     * @param	backupId the ID of the node's backup (-1 if no backup
-     *		is assigned)
+     * @param nodeId   a node ID
+     * @param hostName a host name, or {@code null}
+     * @param    health the node's health
+     * @param    backupId the ID of the node's backup (-1 if no backup
+     * is assigned)
      */
     NodeImpl(long nodeId, String hostName, Health health, long backupId) {
         this(nodeId, hostName, -1, null, health, backupId);
@@ -138,19 +156,18 @@ class NodeImpl
      * nodeId}, {@code hostName}, {@code jmxPort}, {@code client},
      * {@code health}, and {@code backupId}.
      *
-     * @param 	nodeId a node ID
-     * @param   hostName a host name, or {@code null}
-     * @param   jmxPort  the port JMX is listening on, or {@code -1}
-     * @param	client   a watchdog client
-     * @param	health   the node's health
-     * @param	backupId the ID of the node's backup (-1 if no backup
-     *		is assigned)
+     * @param nodeId   a node ID
+     * @param hostName a host name, or {@code null}
+     * @param jmxPort  the port JMX is listening on, or {@code -1}
+     * @param    client a watchdog client
+     * @param    health the node's health
+     * @param    backupId the ID of the node's backup (-1 if no backup
+     * is assigned)
      */
     private NodeImpl(long nodeId, String hostName, int jmxPort,
-                     WatchdogClient client, Health health, long backupId)
-    {
+                     WatchdogClient client, Health health, long backupId) {
         this.id = nodeId;
-	this.host = hostName;
+        this.host = hostName;
         this.client = client;
         this.health = health;
         this.backupId = backupId;
@@ -159,74 +176,90 @@ class NodeImpl
 
     /* -- Implement Node -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getId() {
-	return id;
+        return id;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getHostName() {
-	return host;
-    }
-    
-    /** {@inheritDoc} */
-    public boolean isAlive() {
-	return getHealth().isAlive();
+        return host;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isAlive() {
+        return getHealth().isAlive();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public synchronized Health getHealth() {
         return health;
     }
 
     /* -- Implement Comparable -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int compareTo(NodeImpl o) {
-	long difference = getExpiration() - o.getExpiration();
-	if (difference == 0) {
-	    difference = id - o.id;
-	    if (difference == 0) {
-		difference = compareStrings(host, o.host);
-	    }
-	}
-	return difference < 0 ? -1 : (difference > 0 ? 1 : 0);
+        long difference = getExpiration() - o.getExpiration();
+        if (difference == 0) {
+            difference = id - o.id;
+            if (difference == 0) {
+                difference = compareStrings(host, o.host);
+            }
+        }
+        return difference < 0 ? -1 : (difference > 0 ? 1 : 0);
     }
 
     /* -- Implement Object -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object obj) {
-	if (obj == null) {
-	    return false;
-	} else if (this == obj) {
-	    return true;
-	} else if (obj.getClass() == this.getClass()) {
-	    NodeImpl node = (NodeImpl) obj;
+        if (obj == null) {
+            return false;
+        } else if (this == obj) {
+            return true;
+        } else if (obj.getClass() == this.getClass()) {
+            NodeImpl node = (NodeImpl) obj;
             if (id == node.id) {
                 if (compareStrings(host, node.host) != 0) {
                     throw new RuntimeException("two node objects with ID " +
-                                               id +
-                                               " have different host names: " +
-                                               host + " and " + node.host);
+                            id +
+                            " have different host names: " +
+                            host + " and " + node.host);
                 }
                 return true;
             }
-	}
-	return false;
+        }
+        return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int hashCode() {
-	return ((int) (id >>> 32)) ^ ((int) id);
+        return ((int) (id >>> 32)) ^ ((int) id);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized String toString() {
-	return getClass().getName() + "[" + id + ",health:" +
-	    health.toString() + ",backup:" +
-	    (backupId == INVALID_ID ? "(none)" : backupId) + 
-            "]@" + host;
+        return getClass().getName() + "[" + id + ",health:" +
+                health.toString() + ",backup:" +
+                (backupId == INVALID_ID ? "(none)" : backupId) +
+                "]@" + host;
     }
 
     /* -- package access methods -- */
@@ -235,9 +268,9 @@ class NodeImpl
      * Returns the watchdog client, or {@code null}.
      */
     WatchdogClient getWatchdogClient() {
-	return client;
+        return client;
     }
-    
+
     /**
      * Returns the expiration time.  A value of {@code 0} means that
      * either the value has not been initialized or the value is not
@@ -246,29 +279,29 @@ class NodeImpl
      * not meaningful.
      */
     synchronized long getExpiration() {
-	return expiration;
+        return expiration;
     }
 
     /**
      * Sets the expiration time for this node instance.
      *
-     * @param	newExpiration the new expiration value
+     * @param    newExpiration the new expiration value
      */
     synchronized void setExpiration(long newExpiration) {
-	expiration = newExpiration;
+        expiration = newExpiration;
     }
 
     /**
      * Returns {@code true} if the node is expired, and {@code false}
      * otherwise.
      *
-     * @return	{@code true} if the node is expired, and {@code false}
-     *		otherwise
+     * @return    {@code true} if the node is expired, and {@code false}
+     * otherwise
      */
     synchronized boolean isExpired() {
-	return expiration <= System.currentTimeMillis();
+        return expiration <= System.currentTimeMillis();
     }
-    
+
     /**
      * Sets the health of this node instance to {@code RED},
      * sets this node's backup to the specified {@code backup},
@@ -277,23 +310,23 @@ class NodeImpl
      * dataService}.  Subsequent calls to {@link #isAlive isAlive}
      * will return {@code false}.
      *
-     * @param	dataService a data service
-     * @param	backup a chosen backup
-     * @throws	ObjectNotFoundException if this node has been removed
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @param    backup a chosen backup
+     * @throws ObjectNotFoundException if this node has been removed
      */
     synchronized void setFailed(DataService dataService, NodeImpl backup) {
-	NodeImpl nodeImpl = getForUpdate(dataService);
-	this.health = Health.RED;
-	nodeImpl.health = Health.RED;
-	this.backupId = 
-	    (backup != null) ?
-	    backup.getId() :
-	    INVALID_ID;
-	nodeImpl.backupId = this.backupId;
-	this.primaryIds.clear();
-	nodeImpl.primaryIds.clear();
+        NodeImpl nodeImpl = getForUpdate(dataService);
+        this.health = Health.RED;
+        nodeImpl.health = Health.RED;
+        this.backupId =
+                (backup != null) ?
+                        backup.getId() :
+                        INVALID_ID;
+        nodeImpl.backupId = this.backupId;
+        this.primaryIds.clear();
+        nodeImpl.primaryIds.clear();
     }
 
     /**
@@ -301,18 +334,18 @@ class NodeImpl
      * health is to be set to RED use {@code setFailed}.
      *
      * @param dataService a data service
-     * @param newHealth the new health of this node
-     * @throws	ObjectNotFoundException if this node has been removed
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @param newHealth   the new health of this node
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @throws ObjectNotFoundException if this node has been removed
      */
     synchronized void setHealth(DataService dataService, Health newHealth) {
         if (!newHealth.isAlive()) {
             throw new AssertionError("Call to setHealth with RED health");
         }
-	NodeImpl nodeImpl = getForUpdate(dataService);
-	this.health = newHealth;
-	nodeImpl.health = newHealth;
+        NodeImpl nodeImpl = getForUpdate(dataService);
+        this.health = newHealth;
+        nodeImpl.health = newHealth;
     }
 
     /**
@@ -320,27 +353,31 @@ class NodeImpl
      * for which this node is a backup, and updates the node's state
      * in the specified {@code dataService}.
      *
-     * @param	dataService a data service
-     * @param	primaryId the ID of a primary for which this node is a
-     *		backup
-     * @throws	ObjectNotFoundException if this node has been removed
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @param    primaryId the ID of a primary for which this node is a
+     * backup
+     * @throws ObjectNotFoundException if this node has been removed
      */
     synchronized void addPrimary(DataService dataService, long primaryId) {
-	NodeImpl nodeImpl = getForUpdate(dataService);
-	primaryIds.add(primaryId);
-	nodeImpl.primaryIds.add(primaryId);
+        NodeImpl nodeImpl = getForUpdate(dataService);
+        primaryIds.add(primaryId);
+        nodeImpl.primaryIds.add(primaryId);
     }
 
-    /** Returns the set of primary nodes for which this node is a backup. */
+    /**
+     * Returns the set of primary nodes for which this node is a backup.
+     */
     synchronized Set<Long> getPrimaries() {
-	return primaryIds;
+        return primaryIds;
     }
 
-    /** Returns {@code true} if this node has a backup. */
+    /**
+     * Returns {@code true} if this node has a backup.
+     */
     synchronized boolean hasBackup() {
-	return backupId != INVALID_ID;
+        return backupId != INVALID_ID;
     }
 
     /**
@@ -348,61 +385,61 @@ class NodeImpl
      * is no backup.
      */
     synchronized long getBackupId() {
-	return backupId;
+        return backupId;
     }
 
     /**
      * Stores this instance in the specified {@code dataService}.
      * This method should only be called within a transaction.
      *
-     * @param	dataService a data service
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
      */
     synchronized void putNode(DataService dataService) {
-	dataService.setServiceBinding(getNodeKey(id), this);
+        dataService.setServiceBinding(getNodeKey(id), this);
     }
-    
+
     /**
      * Fetches this node's state from the specified {@code
      * dataService}, marked for update.
      *
-     * @param	dataService a data service
-     * @throws	ObjectNotFoundException if this node has been removed
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @throws ObjectNotFoundException if this node has been removed
      */
-     private NodeImpl getForUpdate(DataService dataService) {
-	NodeImpl nodeImpl = getNodeForUpdate(dataService, id);
-	if (nodeImpl == null) {
-	    throw new ObjectNotFoundException("node is removed");
-	}
-	return nodeImpl;
+    private NodeImpl getForUpdate(DataService dataService) {
+        NodeImpl nodeImpl = getNodeForUpdate(dataService, id);
+        if (nodeImpl == null) {
+            throw new ObjectNotFoundException("node is removed");
+        }
+        return nodeImpl;
     }
 
-     /**
-      * Returns the port used for remote JMX monitoring, or {@code -1}
-      * if only local monitoring is allowed.
-      * 
-      * @return the port used for remote JMX monitoring of this node
-      */
+    /**
+     * Returns the port used for remote JMX monitoring, or {@code -1}
+     * if only local monitoring is allowed.
+     *
+     * @return the port used for remote JMX monitoring of this node
+     */
     private int getJmxPort() {
         return jmxPort;
     }
-    
+
     /**
      * Returns the management information for this node.
-     * 
+     *
      * @return the management information for this node
      */
     NodeInfo getNodeInfo() {
         return new NodeInfo(getHostName(),
-                            getId(),
-                            getHealth(),
-                            getBackupId(),
-                            getJmxPort());
+                getId(),
+                getHealth(),
+                getBackupId(),
+                getJmxPort());
     }
-     
+
     /**
      * Removes the node with the specified {@code nodeId} and its
      * binding from the specified {@code dataService}.  If the binding
@@ -410,20 +447,20 @@ class NodeImpl
      * method takes no action.  This method should only be called
      * within a transaction.
      *
-     * @param	dataService a data service
-     * @param	nodeId a node ID
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @param    nodeId a node ID
      */
     static void removeNode(DataService dataService, long nodeId) {
-	String key = getNodeKey(nodeId);
-	NodeImpl node;
-	try {
-	    node = (NodeImpl) dataService.getServiceBinding(key);
-	    dataService.removeServiceBinding(key);
-	    dataService.removeObject(node);
-	} catch (NameNotBoundException e) {
-	}
+        String key = getNodeKey(nodeId);
+        NodeImpl node;
+        try {
+            node = (NodeImpl) dataService.getServiceBinding(key);
+            dataService.removeServiceBinding(key);
+            dataService.removeObject(node);
+        } catch (NameNotBoundException e) {
+        }
     }
 
     /**
@@ -432,66 +469,65 @@ class NodeImpl
      * null} if the node isn't bound in the data service .  This
      * method should only be called within a transaction.
      *
-     * @param	dataService a data service
-     * @param	nodeId a node ID
-     * @return	the node for the given {@code nodeId}, or {@code null}
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @param    nodeId a node ID
+     * @return the node for the given {@code nodeId}, or {@code null}
      */
     static NodeImpl getNode(DataService dataService, long nodeId) {
-	String key = getNodeKey(nodeId);
-	NodeImpl node = null;
-	try {
-	    node = (NodeImpl) dataService.getServiceBinding(key);
-	} catch (NameNotBoundException e) {
-	}
-	return node;
+        String key = getNodeKey(nodeId);
+        NodeImpl node = null;
+        try {
+            node = (NodeImpl) dataService.getServiceBinding(key);
+        } catch (NameNotBoundException e) {
+        }
+        return node;
     }
-    
+
     /**
      * Returns the {@code Node} instance for the given {@code nodeId},
      * retrieved from the specified {@code dataService} for update.
      * This method returns {@code null} if the node isn't bound in the data
      * service .  This method must only be called within a transaction.
      *
-     * @param	dataService a data service
-     * @param	nodeId a node ID
-     * @return	the node for the given {@code nodeId}, or {@code null}
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @param    nodeId a node ID
+     * @return the node for the given {@code nodeId}, or {@code null}
      */
     static NodeImpl getNodeForUpdate(DataService dataService, long nodeId) {
-	String key = getNodeKey(nodeId);
-	NodeImpl node = null;
-	try {
-	    node = (NodeImpl) dataService.getServiceBinding(key);
-	    dataService.markForUpdate(node);
-	} catch (NameNotBoundException e) {
-	}
-	return node;
+        String key = getNodeKey(nodeId);
+        NodeImpl node = null;
+        try {
+            node = (NodeImpl) dataService.getServiceBinding(key);
+            dataService.markForUpdate(node);
+        } catch (NameNotBoundException e) {
+        }
+        return node;
     }
-    
+
     /**
      * Marks all nodes currently bound in the specified {@code
      * dataService} as failed, and returns a collection of those
      * nodes.  This method should only be called within a transaction.
      *
-     * @param	dataService a data service
-     * @return	a collection of currently bound nodes, each marked as failed
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @return a collection of currently bound nodes, each marked as failed
      */
     static Collection<NodeImpl> markAllNodesFailed(DataService dataService) {
-	Collection<NodeImpl> nodes = new ArrayList<NodeImpl>();
-	for (String key :
-	     BoundNamesUtil.getServiceBoundNamesIterable(
-		dataService, NODE_PREFIX))
-	{
-	    NodeImpl node = (NodeImpl) dataService.getServiceBinding(key);
-	    node.setFailed(dataService, null);
-	    nodes.add(node);
-	}
-	return nodes;
+        Collection<NodeImpl> nodes = new ArrayList<NodeImpl>();
+        for (String key :
+                BoundNamesUtil.getServiceBoundNamesIterable(
+                        dataService, NODE_PREFIX)) {
+            NodeImpl node = (NodeImpl) dataService.getServiceBinding(key);
+            node.setFailed(dataService, null);
+            nodes.add(node);
+        }
+        return nodes;
     }
 
     /**
@@ -501,13 +537,13 @@ class NodeImpl
      * should only be called within a transaction, and the returned
      * iterator should only be used within that transaction.
      *
-     * @param	dataService a data service
-     * @return	an iterator for nodes
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    dataService a data service
+     * @return an iterator for nodes
      */
     static Iterator<Node> getNodes(DataService dataService) {
-	return new NodeIterator(dataService);
+        return new NodeIterator(dataService);
     }
 
     /* -- private methods and classes -- */
@@ -519,30 +555,30 @@ class NodeImpl
      * In this ordering, a string with a value of {@code null} is less
      * than any non-{@code null} string.
      *
-     * @param	s1 a string, or {@code null}
-     * @param	s2 a string, or {@code null}
-     * @return	-1, 0, or 1 according to whether {@code s1} is less than,
-     *		equal to, or greater than {@code s2}
+     * @param    s1 a string, or {@code null}
+     * @param    s2 a string, or {@code null}
+     * @return    -1, 0, or 1 according to whether {@code s1} is less than,
+     * equal to, or greater than {@code s2}
      */
     private static int compareStrings(String s1, String s2) {
-	if (s1 == null) {
-	    return (s2 == null) ? 0 : -1;
-	} else if (s2 == null) {
-	    return 1;
-	} else {
-	    return s1.compareTo(s2);
-	}
+        if (s1 == null) {
+            return (s2 == null) ? 0 : -1;
+        } else if (s2 == null) {
+            return 1;
+        } else {
+            return s1.compareTo(s2);
+        }
     }
-    
+
     /**
      * Returns the key to access from the data service the {@code
      * Node} instance with the specified {@code nodeId}.
      *
-     * @param	a node ID
-     * @return	a key for accessing the {@code Node} instance
+     * @param    a node ID
+     * @return a key for accessing the {@code Node} instance
      */
     private static String getNodeKey(long nodeId) {
-	return NODE_PREFIX + "." + nodeId;
+        return NODE_PREFIX + "." + nodeId;
     }
 
     /**
@@ -550,37 +586,47 @@ class NodeImpl
      */
     private static class NodeIterator implements Iterator<Node> {
 
-	/** The data service. */
-	private final DataService dataService;
+        /**
+         * The data service.
+         */
+        private final DataService dataService;
 
-	/** The underlying iterator for service bound names. */
-	private Iterator<String> iterator;
+        /**
+         * The underlying iterator for service bound names.
+         */
+        private Iterator<String> iterator;
 
-	/**
-	 * Constructs an instance of this class with the specified
-	 * {@code dataService}.
-	 */
-	NodeIterator(DataService dataService) {
-	    this.dataService = dataService;
-	    this.iterator =
-		BoundNamesUtil.getServiceBoundNamesIterator(
-		    dataService, NODE_PREFIX);
-	}
+        /**
+         * Constructs an instance of this class with the specified
+         * {@code dataService}.
+         */
+        NodeIterator(DataService dataService) {
+            this.dataService = dataService;
+            this.iterator =
+                    BoundNamesUtil.getServiceBoundNamesIterator(
+                            dataService, NODE_PREFIX);
+        }
 
-	/** {@inheritDoc} */
-	public boolean hasNext() {
-	    return iterator.hasNext();
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
 
-	/** {@inheritDoc} */
-	public Node next() {
-	    String key = iterator.next();
-	    return (NodeImpl) dataService.getServiceBinding(key);
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public Node next() {
+            String key = iterator.next();
+            return (NodeImpl) dataService.getServiceBinding(key);
+        }
 
-	/** {@inheritDoc} */
-	public void remove() {
-	    throw new UnsupportedOperationException("remove is not supported");
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public void remove() {
+            throw new UnsupportedOperationException("remove is not supported");
+        }
     }
 }

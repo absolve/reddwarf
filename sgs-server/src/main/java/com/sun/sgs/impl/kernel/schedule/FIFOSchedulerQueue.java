@@ -21,20 +21,16 @@
 
 package com.sun.sgs.impl.kernel.schedule;
 
-import com.sun.sgs.kernel.schedule.ScheduledTask;
-import com.sun.sgs.kernel.schedule.SchedulerQueue;
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
-
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskReservation;
+import com.sun.sgs.kernel.schedule.ScheduledTask;
+import com.sun.sgs.kernel.schedule.SchedulerQueue;
 
 import java.util.Collection;
 import java.util.Properties;
-
 import java.util.concurrent.LinkedBlockingQueue;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,8 +46,8 @@ public class FIFOSchedulerQueue implements SchedulerQueue, TimedTaskListener {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(FIFOSchedulerQueue.
-                                           class.getName()));
+            new LoggerWrapper(Logger.getLogger(FIFOSchedulerQueue.
+                    class.getName()));
 
     // the single queue of tasks
     private LinkedBlockingQueue<ScheduledTask> queue;
@@ -86,8 +82,7 @@ public class FIFOSchedulerQueue implements SchedulerQueue, TimedTaskListener {
      * {@inheritDoc}
      */
     public ScheduledTask getNextTask(boolean wait)
-        throws InterruptedException
-    {
+            throws InterruptedException {
         ScheduledTask task = queue.poll();
         if ((task != null) || (!wait)) {
             return task;
@@ -108,7 +103,7 @@ public class FIFOSchedulerQueue implements SchedulerQueue, TimedTaskListener {
     public TaskReservation reserveTask(ScheduledTask task) {
         if (task.isRecurring()) {
             throw new TaskRejectedException("Recurring tasks cannot get " +
-                                            "reservations");
+                    "reservations");
         }
 
         return new SimpleTaskReservation(this, task);
@@ -163,7 +158,7 @@ public class FIFOSchedulerQueue implements SchedulerQueue, TimedTaskListener {
         boolean success;
         do {
             success = queue.offer(task);
-        } while(!success);
+        } while (!success);
     }
 
     /**

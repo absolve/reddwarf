@@ -31,7 +31,7 @@ package com.sun.sgs.impl.util.lock;
  * Records information about an entity that requests locks from a {@link
  * LockManager} and that permits only a single active lock request.
  *
- * @param	<K> the type of key
+ * @param    <K> the type of key
  */
 public class BasicLocker<K> extends Locker<K> {
 
@@ -47,46 +47,46 @@ public class BasicLocker<K> extends Locker<K> {
     /**
      * Creates an instance of this class.
      *
-     * @param	lockManager the lock manager for this locker
+     * @param    lockManager the lock manager for this locker
      */
     public BasicLocker(LockManager<K> lockManager) {
-	super(lockManager);
+        super(lockManager);
     }
 
     /* -- Package access methods -- */
 
     /**
      * {@inheritDoc} <p>
-     *
+     * <p>
      * This implementation returns the lock attempt request associated with
      * this locker, if any.
      */
     @Override
     LockAttemptResult<K> getWaitingFor() {
-	assert lockManager.checkAllowLockerSync(this);
-	synchronized (this) {
-	    return waitingFor;
-	}
+        assert lockManager.checkAllowLockerSync(this);
+        synchronized (this) {
+            return waitingFor;
+        }
     }
 
     /**
      * {@inheritDoc} <p>
-     *
+     * <p>
      * This implementation sets the lock attempt request associated with this
      * locker.
      *
-     * @throws	IllegalArgumentException {@inheritDoc}
+     * @throws IllegalArgumentException {@inheritDoc}
      */
     @Override
     void setWaitingFor(LockAttemptResult<K> waitingFor) {
-	assert lockManager.checkAllowLockerSync(this);
-	if (waitingFor != null && waitingFor.conflict == null) {
-	    throw new IllegalArgumentException(
-		"Attempt to specify a lock attempt result that is not a" +
-		" conflict: " + waitingFor);
-	}
-	synchronized (this) {
-	    this.waitingFor = waitingFor;
-	}
+        assert lockManager.checkAllowLockerSync(this);
+        if (waitingFor != null && waitingFor.conflict == null) {
+            throw new IllegalArgumentException(
+                    "Attempt to specify a lock attempt result that is not a" +
+                            " conflict: " + waitingFor);
+        }
+        synchronized (this) {
+            this.waitingFor = waitingFor;
+        }
     }
 }

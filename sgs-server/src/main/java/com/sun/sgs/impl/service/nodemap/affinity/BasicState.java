@@ -28,19 +28,31 @@ import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
  * {@link AffinityGroupFinder} and {@link AffinityGraphBuilder}.
  */
 public class BasicState {
-    /** Valid states. */
+    /**
+     * Valid states.
+     */
     protected static enum State {
-        /** Newly constructed (no state). */
+        /**
+         * Newly constructed (no state).
+         */
         NONE,
-        /** Enabled, fully functional.  Can be disabled or shutdown. */
-	ENABLED,
-        /** Disabled, can be enabled again or shutdown. */
+        /**
+         * Enabled, fully functional.  Can be disabled or shutdown.
+         */
+        ENABLED,
+        /**
+         * Disabled, can be enabled again or shutdown.
+         */
         DISABLED,
-        /** Disabled, and cannot be enabled again. */
+        /**
+         * Disabled, and cannot be enabled again.
+         */
         SHUTDOWN
     }
 
-    /** The state. */
+    /**
+     * The state.
+     */
     protected volatile State state = State.NONE;
 
     /**
@@ -68,6 +80,7 @@ public class BasicState {
     /**
      * Enable this component.  Multiple calls to enable are allowed.
      * Enabled components can be disabled or shutdown.
+     *
      * @return {@code true} if the state has changed
      */
     protected boolean setEnabledState() {
@@ -89,6 +102,7 @@ public class BasicState {
     /**
      * Shutdown this component.  Multiple shutdown calls are allowed.
      * Once shut down, a component cannot be enabled or disabled.
+     *
      * @return {@code true} if the state has changed
      */
     protected boolean setShutdownState() {
@@ -103,13 +117,14 @@ public class BasicState {
                 return false;
             default:
                 throw new AssertionError();
-	}
+        }
         return true;
     }
 
     /**
      * Throws an IllegalStateException if we are in the {@code SHUTDOWN}
      * state.
+     *
      * @throws IllegalStateException if we are stut down
      */
     protected void checkForShutdownState() {
@@ -121,6 +136,7 @@ public class BasicState {
     /**
      * Throws an IllegalStateException if we are in the {@code SHUTDOWN} or
      * {@code DISABLED} state.
+     *
      * @throws IllegalStateException if we are shut down or disabled
      */
     protected void checkForDisabledOrShutdownState() {

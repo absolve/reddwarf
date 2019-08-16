@@ -33,8 +33,10 @@ import org.junit.runner.RunWith;
 @RunWith(FilteredNameRunner.class)
 public class TestAbstractDataStoreTxnIsolation extends BasicTxnIsolationTest {
 
-    /** Creates an {@link InMemoryDataStore}. */
+    /**
+     * Creates an {@link InMemoryDataStore}.
+     */
     protected DataStore createDataStore() {
-	return new InMemoryDataStore(props, env.systemRegistry, txnProxy);
+        return new InMemoryDataStore(props, env.systemRegistry, txnProxy);
     }
 }

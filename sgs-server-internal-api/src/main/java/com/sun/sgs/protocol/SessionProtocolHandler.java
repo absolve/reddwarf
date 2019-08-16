@@ -28,7 +28,6 @@ package com.sun.sgs.protocol;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * A handler for session and channel protocol messages for an associated
@@ -55,11 +54,11 @@ import java.util.concurrent.Future;
  * can be obtained by invoking the {@link RequestFailureException#getReason
  * getReason} method on the {@code RequestFailureException}.  The request
  * may fail for one of the following {@linkplain RequestFailureException
- * reasons}: 
+ * reasons}:
  * <ul>
  * <li>{@code LOGIN_PENDING}: the client session has not completed login
  * <li>{@code RELOCATION_PENDING}: the client session is relocating to
- * another node 
+ * another node
  * <li>{@code DISCONNECT_PENDING}: the client session is disconnecting
  * <li>{@code OTHER}: some other failure occurred, and invoking {@link
  * Throwable#getCause getCause} on the {@code RequestFailureException}
@@ -75,16 +74,16 @@ public interface SessionProtocolHandler {
      * processing the message.  The message starts at the buffer's current
      * position and ends at the buffer's limit.  The buffer's position is
      * not modified by this operation.
-     * 
+     *
      * <p>The {@code ByteBuffer} may be reused immediately after this method
      * returns.  Changes made to the buffer after this method returns will
      * have no effect on the message supplied to this method.
      *
-     * @param	message a message
-     * @param	completionHandler a completion handler
+     * @param    message a message
+     * @param    completionHandler a completion handler
      */
     void sessionMessage(
-	ByteBuffer message, RequestCompletionHandler<Void> completionHandler);
+            ByteBuffer message, RequestCompletionHandler<Void> completionHandler);
 
     /**
      * Processes a channel message sent by the associated client on the
@@ -94,25 +93,25 @@ public interface SessionProtocolHandler {
      * processing the channel message.  The message starts at the buffer's
      * current position and ends at the buffer's limit.  The buffer's position
      * is not modified by this operation.
-     * 
+     *
      * <p>The {@code ByteBuffer} may be reused immediately after this method
      * returns.  Changes made to the buffer after this method returns will
      * have no effect on the message supplied to this method.
      *
-     * @param	channelId a channel ID
-     * @param	message a message
-     * @param	completionHandler a completion handler
+     * @param    channelId a channel ID
+     * @param    message a message
+     * @param    completionHandler a completion handler
      */
     void channelMessage(BigInteger channelId, ByteBuffer message,
-			RequestCompletionHandler<Void> completionHandler);
-    
+                        RequestCompletionHandler<Void> completionHandler);
+
     /**
      * Processes a logout request from the associated client, and invokes the
      * {@link RequestCompletionHandler#completed completed} method on the
      * given {@code completionHandler} when this handler has completed
      * processing the logout request.
      *
-     * @param	completionHandler a completion handler
+     * @param    completionHandler a completion handler
      */
     void logoutRequest(RequestCompletionHandler<Void> completionHandler);
 
@@ -122,7 +121,7 @@ public interface SessionProtocolHandler {
      * completed} method on the given {@code completionHandler} when this
      * handler has completed processing the disconnection.
      *
-     * @param	completionHandler a completion handler
+     * @param    completionHandler a completion handler
      */
     void disconnect(RequestCompletionHandler<Void> completionHandler);
 }

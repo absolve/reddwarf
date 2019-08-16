@@ -21,13 +21,7 @@
 
 package com.sun.sgs.impl.service.task;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.ObjectNotFoundException;
-import com.sun.sgs.app.Task;
-
+import com.sun.sgs.app.*;
 import com.sun.sgs.auth.Identity;
 
 import java.io.Serializable;
@@ -60,7 +54,7 @@ class PendingTask implements ManagedObject, Serializable {
     private long startTime;
     private long period;
     private long lastStartTime;
-    
+
     // identifies whether this instance is free for re-use
     private boolean reusable;
 
@@ -106,7 +100,7 @@ class PendingTask implements ManagedObject, Serializable {
            case we set one of the two fields to null to disambiguate
            what the situation is. */
         if (t instanceof ManagedObject) {
-            taskRef = dm.createReference(t); 
+            taskRef = dm.createReference(t);
             task = null;
         } else {
             task = t;
@@ -122,12 +116,16 @@ class PendingTask implements ManagedObject, Serializable {
         this.runningNode = -1;
     }
 
-    /** Returns whether this {@code PendingTask} is free to be re-used. */
+    /**
+     * Returns whether this {@code PendingTask} is free to be re-used.
+     */
     boolean isReusable() {
         return reusable;
     }
 
-    /** Re-sets the task state so that the task can be re-used. */
+    /**
+     * Re-sets the task state so that the task can be re-used.
+     */
     void setReusable() {
         AppContext.getDataManager().markForUpdate(this);
         reusable = true;
@@ -140,7 +138,9 @@ class PendingTask implements ManagedObject, Serializable {
         runningNode = -1;
     }
 
-    /** Returns the type of the pending task. */
+    /**
+     * Returns the type of the pending task.
+     */
     String getBaseTaskType() {
         return taskType;
     }
@@ -186,7 +186,7 @@ class PendingTask implements ManagedObject, Serializable {
     void setRunningNode(long nodeId) {
         if (!isPeriodic()) {
             throw new IllegalStateException("Cannot assign running node " +
-                                            "for a non-periodic task");
+                    "for a non-periodic task");
         }
         AppContext.getDataManager().markForUpdate(this);
         runningNode = nodeId;
@@ -202,12 +202,16 @@ class PendingTask implements ManagedObject, Serializable {
         this.lastStartTime = lastStartTime;
     }
 
-    /** Checks if this is a periodic task. */
+    /**
+     * Checks if this is a periodic task.
+     */
     boolean isPeriodic() {
         return (period != TaskServiceImpl.PERIOD_NONE);
     }
 
-    /** Returns the identity that owns this task. */
+    /**
+     * Returns the identity that owns this task.
+     */
     Identity getIdentity() {
         return identity;
     }
@@ -223,7 +227,7 @@ class PendingTask implements ManagedObject, Serializable {
             return true;
         }
         if (taskRef == null) {
-          return false;
+            return false;
         }
         try {
             taskRef.get();

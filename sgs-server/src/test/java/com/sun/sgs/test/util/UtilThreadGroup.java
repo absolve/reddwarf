@@ -22,7 +22,6 @@
 package com.sun.sgs.test.util;
 
 import java.util.concurrent.CountDownLatch;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -57,12 +56,12 @@ public class UtilThreadGroup implements Runnable {
      *
      * @param tasks an array of <code>Runnable</code>s
      */
-    public UtilThreadGroup(Runnable [] tasks) {
+    public UtilThreadGroup(Runnable[] tasks) {
         startLatch = new CountDownLatch(1);
         endLatch = new CountDownLatch(tasks.length);
         failures = new AtomicInteger(0);
         threadGroup = new ThreadGroup("ThreadUtility.ThreadGroup");
-     
+
         for (Runnable r : tasks)
             (new Thread(threadGroup, new Wrapper(r))).start();
     }
@@ -94,9 +93,11 @@ public class UtilThreadGroup implements Runnable {
     // reporting Exceptions as failures
     private class Wrapper implements Runnable {
         private Runnable r;
+
         public Wrapper(Runnable r) {
             this.r = r;
         }
+
         public void run() {
             try {
                 startLatch.await();

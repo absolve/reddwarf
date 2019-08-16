@@ -21,42 +21,48 @@
 
 package com.sun.sgs.tutorial.server.swordworld;
 
+import com.sun.sgs.app.*;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.NameNotBoundException;
-
 /**
  * Represents a player in the {@link SwordWorld} example MUD.
  */
 public class SwordWorldPlayer
-    extends SwordWorldObject
-    implements ClientSessionListener
-{
-    /** The version of the serialized form of this class. */
+        extends SwordWorldObject
+        implements ClientSessionListener {
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(SwordWorldPlayer.class.getName());
+            Logger.getLogger(SwordWorldPlayer.class.getName());
 
-    /** The message encoding. */
+    /**
+     * The message encoding.
+     */
     public static final String MESSAGE_CHARSET = "UTF-8";
 
-    /** The prefix for player bindings in the {@code DataManager}. */
+    /**
+     * The prefix for player bindings in the {@code DataManager}.
+     */
     protected static final String PLAYER_BIND_PREFIX = "Player.";
 
-    /** The {@code ClientSession} for this player, or null if logged out. */
+    /**
+     * The {@code ClientSession} for this player, or null if logged out.
+     */
     private ManagedReference<ClientSession> currentSessionRef = null;
 
-    /** The {@link SwordWorldRoom} this player is in, or null if none. */
+    /**
+     * The {@link SwordWorldRoom} this player is in, or null if none.
+     */
     private ManagedReference<SwordWorldRoom> currentRoomRef = null;
 
     /**
@@ -96,7 +102,7 @@ public class SwordWorldPlayer
 
     /**
      * Returns the session for this listener.
-     * 
+     *
      * @return the session for this listener
      */
     protected ClientSession getSession() {
@@ -119,8 +125,8 @@ public class SwordWorldPlayer
         currentSessionRef = dataMgr.createReference(session);
 
         logger.log(Level.INFO,
-            "Set session for {0} to {1}",
-            new Object[] { this, session });
+                "Set session for {0} to {1}",
+                new Object[]{this, session});
     }
 
     /**
@@ -130,19 +136,21 @@ public class SwordWorldPlayer
      */
     public void enter(SwordWorldRoom room) {
         logger.log(Level.INFO, "{0} enters {1}",
-            new Object[] { this, room }
+                new Object[]{this, room}
         );
         room.addPlayer(this);
         setRoom(room);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void receivedMessage(ByteBuffer message) {
         String command = decodeString(message);
 
         logger.log(Level.INFO,
-            "{0} received command: {1}",
-            new Object[] { this, command }
+                "{0} received command: {1}",
+                new Object[]{this, command}
         );
 
         if (command.equalsIgnoreCase("look")) {
@@ -150,15 +158,17 @@ public class SwordWorldPlayer
             getSession().send(encodeString(reply));
         } else {
             logger.log(Level.WARNING,
-                "{0} unknown command: {1}",
-                new Object[] { this, command }
+                    "{0} unknown command: {1}",
+                    new Object[]{this, command}
             );
             // We could disconnect the rogue player at this point.
             //currentSession.disconnect();
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void disconnected(boolean graceful) {
         setSession(null);
         logger.log(Level.INFO, "Disconnected: {0}", this);
@@ -170,6 +180,7 @@ public class SwordWorldPlayer
      * Returns the room this player is currently in, or {@code null} if
      * this player is not in a room.
      * <p>
+     *
      * @return the room this player is currently in, or {@code null}
      */
     protected SwordWorldRoom getRoom() {
@@ -184,6 +195,7 @@ public class SwordWorldPlayer
      * Sets the room this player is currently in.  If the room given
      * is null, marks the player as not in any room.
      * <p>
+     *
      * @param room the room this player should be in, or {@code null}
      */
     protected void setRoom(SwordWorldRoom room) {
@@ -198,7 +210,9 @@ public class SwordWorldPlayer
         currentRoomRef = dataManager.createReference(room);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder(getName());
@@ -222,7 +236,7 @@ public class SwordWorldPlayer
             return ByteBuffer.wrap(s.getBytes(MESSAGE_CHARSET));
         } catch (UnsupportedEncodingException e) {
             throw new Error("Required character set " + MESSAGE_CHARSET +
-                " not found", e);
+                    " not found", e);
         }
     }
 
@@ -239,7 +253,7 @@ public class SwordWorldPlayer
             return new String(bytes, MESSAGE_CHARSET);
         } catch (UnsupportedEncodingException e) {
             throw new Error("Required character set " + MESSAGE_CHARSET +
-                " not found", e);
+                    " not found", e);
         }
     }
 }

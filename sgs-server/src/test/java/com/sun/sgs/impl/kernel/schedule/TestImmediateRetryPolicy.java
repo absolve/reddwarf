@@ -25,13 +25,14 @@ import com.sun.sgs.app.ExceptionRetryStatus;
 import com.sun.sgs.kernel.schedule.ScheduledTask;
 import com.sun.sgs.kernel.schedule.SchedulerRetryAction;
 import com.sun.sgs.tools.test.FilteredNameRunner;
-import java.util.Properties;
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Properties;
 
 /**
  * Test the {@code ImmediateRetryPolicy} in isolation.
@@ -68,12 +69,12 @@ public class TestImmediateRetryPolicy {
         EasyMock.verify(task);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testNullTask() {
         policy.getRetryAction(null);
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testNullResult() {
         setupTask(null);
         replayMocks();
@@ -132,7 +133,7 @@ public class TestImmediateRetryPolicy {
 
     private static class RetryableException extends Exception
             implements ExceptionRetryStatus {
-        
+
         private final boolean retryable;
 
         public RetryableException(boolean retryable) {

@@ -44,8 +44,7 @@ import javax.security.auth.login.LoginException;
  * FIXME: When the IO interfaces are ready, these should also be provided
  * to the constructor.
  */
-public interface IdentityAuthenticator
-{
+public interface IdentityAuthenticator {
 
     /**
      * Returns the identifiers for this <code>IdentityAuthenticator</code>'s
@@ -56,19 +55,17 @@ public interface IdentityAuthenticator
      *
      * @return the identifiers for the supported credential types
      */
-    String [] getSupportedCredentialTypes();
+    String[] getSupportedCredentialTypes();
 
     /**
      * Authenticates the given credentials. The returned <code>Identity</code>
      * is valid, but has not yet been notified as logged in.
      *
      * @param credentials the <code>IdentityCredentials</code> to authenticate
-     *
      * @return an authenticated <code>Identity</code>
-     *
      * @throws LoginException if authentication fails
      */
     Identity authenticateIdentity(IdentityCredentials credentials)
-        throws LoginException;
+            throws LoginException;
 
 }

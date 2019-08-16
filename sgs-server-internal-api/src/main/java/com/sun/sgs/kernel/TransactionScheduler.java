@@ -26,7 +26,6 @@
 package com.sun.sgs.kernel;
 
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.auth.Identity;
 
 
@@ -62,11 +61,9 @@ public interface TransactionScheduler {
     /**
      * Reserves the ability to run the given task.
      *
-     * @param task the {@code KernelRunnable} to execute
+     * @param task  the {@code KernelRunnable} to execute
      * @param owner the entity on who's behalf this task is run
-     *
      * @return a {@code TaskReservation} for the task
-     *
      * @throws TaskRejectedException if a reservation cannot be made
      */
     TaskReservation reserveTask(KernelRunnable task, Identity owner);
@@ -76,12 +73,10 @@ public interface TransactionScheduler {
      * the future. The {@code startTime} is a value in milliseconds
      * measured from 1/1/1970.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task      the {@code KernelRunnable} to execute
+     * @param owner     the entity on who's behalf this task is run
      * @param startTime the time at which to start the task
-     *
      * @return a {@code TaskReservation} for the task
-     *
      * @throws TaskRejectedException if a reservation cannot be made
      */
     TaskReservation reserveTask(KernelRunnable task, Identity owner,
@@ -91,9 +86,8 @@ public interface TransactionScheduler {
      * Schedules a task to run as soon as possible based on the specific
      * scheduler implementation.
      *
-     * @param task the {@code KernelRunnable} to execute
+     * @param task  the {@code KernelRunnable} to execute
      * @param owner the entity on who's behalf this task is run
-     *
      * @throws TaskRejectedException if the given task is not accepted
      */
     void scheduleTask(KernelRunnable task, Identity owner);
@@ -104,10 +98,9 @@ public interface TransactionScheduler {
      * 1/1/1970. If the starting time has already passed, then the task is
      * run immediately.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task      the {@code KernelRunnable} to execute
+     * @param owner     the entity on who's behalf this task is run
      * @param startTime the time at which to start the task
-     *
      * @throws TaskRejectedException if the given task is not accepted
      */
     void scheduleTask(KernelRunnable task, Identity owner, long startTime);
@@ -126,15 +119,13 @@ public interface TransactionScheduler {
      * fail. Regardless, the scheduler will always try again at the next
      * execution time.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task      the {@code KernelRunnable} to execute
+     * @param owner     the entity on who's behalf this task is run
      * @param startTime the time at which to start the task
-     * @param period the length of time in milliseconds between each
-     *               recurring task execution
-     *
+     * @param period    the length of time in milliseconds between each
+     *                  recurring task execution
      * @return a {@code RecurringTaskHandle} used to manage the
-     *         recurring task
-     *
+     * recurring task
      * @throws IllegalArgumentException if {@code period} is less than or
      *                                  equal to zero
      */
@@ -173,13 +164,12 @@ public interface TransactionScheduler {
      * is because the system does not support nested transactions, and so
      * the decision to commit or re-try is left to the active transaction.
      *
-     * @param task the {@code KernelRunnable} to execute
+     * @param task  the {@code KernelRunnable} to execute
      * @param owner the entity on who's behalf this task is run
-     *
      * @throws TaskRejectedException if the given task is not accepted
-     * @throws InterruptedException if the calling thread is interrupted and
-     *                              the associated task does not complete
-     * @throws Exception if the task fails and is not re-tried
+     * @throws InterruptedException  if the calling thread is interrupted and
+     *                               the associated task does not complete
+     * @throws Exception             if the task fails and is not re-tried
      */
     void runTask(KernelRunnable task, Identity owner) throws Exception;
 

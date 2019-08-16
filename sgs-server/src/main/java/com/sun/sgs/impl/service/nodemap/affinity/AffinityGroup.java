@@ -22,6 +22,7 @@
 package com.sun.sgs.impl.service.nodemap.affinity;
 
 import com.sun.sgs.auth.Identity;
+
 import java.util.Set;
 
 /**
@@ -36,6 +37,7 @@ import java.util.Set;
 public interface AffinityGroup {
     /**
      * Returns the affinity group identifier.
+     *
      * @return the affinity group identifier
      */
     long getId();
@@ -43,6 +45,7 @@ public interface AffinityGroup {
     /**
      * Returns the set of {@code Identities} which are members of this group.
      * The set will contain at least one member.
+     *
      * @return the set of {@code Identities} which are members of this group
      */
     Set<Identity> getIdentities();
@@ -53,6 +56,7 @@ public interface AffinityGroup {
      * they can be used as the set of communities found at that time.
      * Affinity groups with the same identifier but different generations
      * cannot be compared;  they are independent.
+     *
      * @return the generation number for this affinity group
      */
     long getGeneration();

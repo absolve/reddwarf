@@ -19,7 +19,9 @@
  * --
  */
 
-/** Provides an implementation of {@link
- * com.sun.sgs.service.WatchdogService}. */
+/**
+ * Provides an implementation of {@link
+ * com.sun.sgs.service.WatchdogService}.
+ */
 package com.sun.sgs.impl.service.watchdog;
 

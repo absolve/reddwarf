@@ -34,6 +34,7 @@ import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
 import com.sun.sgs.kernel.schedule.ScheduledTask;
 import com.sun.sgs.kernel.schedule.SchedulerRetryAction;
 import com.sun.sgs.kernel.schedule.SchedulerRetryPolicy;
+
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,14 +54,14 @@ import java.util.logging.Logger;
  * <dl style="margin-left: 1em">
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #RETRY_BACKOFF_THRESHOLD_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #DEFAULT_RETRY_BACKOFF_THRESHOLD}
+ * {@value #RETRY_BACKOFF_THRESHOLD_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #DEFAULT_RETRY_BACKOFF_THRESHOLD}
  *
  * <dd style="padding-top: .5em">If a task has been retried more than this
- *      number of times, then the task's transaction restrictions are loosened
- *      the next time it runs and the task is scheduled to be retried later.
- *      This value must be greater than or equal to {@code 1}.
+ * number of times, then the task's transaction restrictions are loosened
+ * the next time it runs and the task is scheduled to be retried later.
+ * This value must be greater than or equal to {@code 1}.
  *
  * </dl> <p>
  */
@@ -68,8 +69,8 @@ public class NowOrLaterRetryPolicy implements SchedulerRetryPolicy {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(NowOrLaterRetryPolicy.
-                                           class.getName()));
+            new LoggerWrapper(Logger.getLogger(NowOrLaterRetryPolicy.
+                    class.getName()));
 
     /**
      * The property used to define the retry count threshold to use before
@@ -100,9 +101,9 @@ public class NowOrLaterRetryPolicy implements SchedulerRetryPolicy {
                 1, Integer.MAX_VALUE);
 
         logger.log(Level.CONFIG,
-                   "Created NowOrLaterRetryPolicy with properties:" +
-                   "\n  " + RETRY_BACKOFF_THRESHOLD_PROPERTY + "=" +
-                   retryBackoffThreshold);
+                "Created NowOrLaterRetryPolicy with properties:" +
+                        "\n  " + RETRY_BACKOFF_THRESHOLD_PROPERTY + "=" +
+                        retryBackoffThreshold);
     }
 
     /**
@@ -125,35 +126,35 @@ public class NowOrLaterRetryPolicy implements SchedulerRetryPolicy {
         Throwable result = task.getLastFailure();
         if (result == null) {
             throw new IllegalStateException("task's last failure " +
-                                            "cannot be null");
+                    "cannot be null");
         }
 
         if ((result instanceof ExceptionRetryStatus) &&
-            (((ExceptionRetryStatus) result).shouldRetry())) {
+                (((ExceptionRetryStatus) result).shouldRetry())) {
 
             // Always retry in place unless we are above the backoff threshold
             // Also note, once a task is retried more than the backoff
             // threshold, each subsequent retry will trigger this condition
             if (task.getTryCount() > retryBackoffThreshold) {
                 if (result instanceof TransactionTimeoutException &&
-                    task.getTimeout() * 2L < (long) Integer.MAX_VALUE) {
+                        task.getTimeout() * 2L < (long) Integer.MAX_VALUE) {
                     // double the timeout, and reschedule for RETRY_LATER
                     // if the timeout has not exceeded max int
                     logger.logThrow(Level.WARNING,
-                                    task.getLastFailure(),
-                                    "Task has been retried {0} times: {1}\n" +
+                            task.getLastFailure(),
+                            "Task has been retried {0} times: {1}\n" +
                                     "Increasing its timeout to {2} ms and " +
                                     "scheduling its retry for later",
-                                    task.getTryCount(), task, task.getTimeout() * 2);
+                            task.getTryCount(), task, task.getTimeout() * 2);
                     task.setTimeout(task.getTimeout() * 2);
                 } else {
                     // just schedule to retry later if the task failure is
                     // not due to transaction timeout
                     logger.logThrow(Level.WARNING,
-                                    task.getLastFailure(),
-                                    "Task has been retried {0} times: {1}\n" +
+                            task.getLastFailure(),
+                            "Task has been retried {0} times: {1}\n" +
                                     "scheduling its retry for later",
-                                    task.getTryCount(), task);
+                            task.getTryCount(), task);
                 }
                 return SchedulerRetryAction.RETRY_LATER;
             } else {
@@ -165,13 +166,13 @@ public class NowOrLaterRetryPolicy implements SchedulerRetryPolicy {
             if (logger.isLoggable(Level.FINE)) {
                 if (task.isRecurring()) {
                     logger.log(Level.FINE,
-                               "skipping a recurrence of a task because it " +
-                               "failed with a non-retryable exception: {0}",
-                               task);
+                            "skipping a recurrence of a task because it " +
+                                    "failed with a non-retryable exception: {0}",
+                            task);
                 } else {
                     logger.log(Level.FINE,
-                               "dropping a task because it failed with a " +
-                               "non-retryable exception: {0}", task);
+                            "dropping a task because it failed with a " +
+                                    "non-retryable exception: {0}", task);
                 }
             }
 

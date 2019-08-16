@@ -23,6 +23,7 @@ package com.sun.sgs.impl.service.watchdog;
 
 import com.sun.sgs.app.AppListener;
 import com.sun.sgs.service.Node.Health;
+
 import java.io.IOException;
 import java.rmi.Remote;
 
@@ -44,22 +45,20 @@ public interface WatchdogServer extends Remote {
      * client} will be notified of these status changes via its {@link
      * WatchdogClient#nodeStatusChanges nodeStatusChanges} method.
      *
-     * @param	nodeId the node ID of the node
-     * @param	host  a host name
-     * @param	client a watchdog client
-     * @param   jmxPort the port JMX is listening on, or -1 if JMX is not
-     *                   enabled for remote listening on the node
-     *
-     * @return 	the renew interval (in milliseconds)
-     *
-     * @throws	IOException if a communication problem occurs while
-     * 		invoking this method
-     * @throws	NodeRegistrationFailedException if there is a problem
-     * 		registering the node
+     * @param jmxPort the port JMX is listening on, or -1 if JMX is not
+     *                enabled for remote listening on the node
+     * @return the renew interval (in milliseconds)
+     * @param    nodeId the node ID of the node
+     * @param    host a host name
+     * @param    client a watchdog client
+     * @throws IOException if a communication problem occurs while
+     * invoking this method
+     * @throws NodeRegistrationFailedException if there is a problem
+     * registering the node
      */
     long registerNode(
-	long nodeId, String host, WatchdogClient client, int jmxPort)
-	throws NodeRegistrationFailedException, IOException;
+            long nodeId, String host, WatchdogClient client, int jmxPort)
+            throws NodeRegistrationFailedException, IOException;
 
     /**
      * Notifies this watchdog that the node with the specified {@code
@@ -72,13 +71,11 @@ public interface WatchdogServer extends Remote {
      * for a given {@code nodeId}, the caller should not retry this
      * method because the node is considered to have failed.
      *
-     * @param	nodeId	a node ID
-     *
-     * @return	{@code true} if the node is considered alive,
-     *		{@code false} otherwise
-     *
-     * @throws	IOException if a communication problem occurs while
-     * 		invoking this method
+     * @param    nodeId    a node ID
+     * @return    {@code true} if the node is considered alive,
+     * {@code false} otherwise
+     * @throws IOException if a communication problem occurs while
+     * invoking this method
      */
     boolean renewNode(long nodeId) throws IOException;
 
@@ -87,10 +84,10 @@ public interface WatchdogServer extends Remote {
      * nodeId} has been recovered by the node with the specified
      * {@code backupId}.
      *
-     * @param	nodeId the recovered node's ID
-     * @param	backupId the backup node's ID
-     * @throws	IOException if a communication problem occurs while
-     * 		invoking this method
+     * @param    nodeId the recovered node's ID
+     * @param    backupId the backup node's ID
+     * @throws IOException if a communication problem occurs while
+     * invoking this method
      */
     void recoveredNode(long nodeId, long backupId) throws IOException;
 
@@ -105,20 +102,20 @@ public interface WatchdogServer extends Remote {
      * parameter may be any identifying string, but is typically the class
      * name of the component that reported the specified health.
      *
-     * @param nodeId the node's ID
-     * @param isLocal specifies if the node is reporting health on itself or
-     * a remote node
-     * @param health the node's health
-     * @param component the component reported the specified health
+     * @param nodeId              the node's ID
+     * @param isLocal             specifies if the node is reporting health on itself or
+     *                            a remote node
+     * @param health              the node's health
+     * @param component           the component reported the specified health
      * @param maxNumberOfAttempts the maximum number of attempts to try and
-     * resolve an {@code IOException}
+     *                            resolve an {@code IOException}
      * @throws IOException if a communication error occurs while trying to set
-     * the node's health
+     *                     the node's health
      */
     void setNodeHealth(long nodeId, boolean isLocal,
                        Health health, String component,
                        int maxNumberOfAttempts)
-	    throws IOException;
+            throws IOException;
 
     /**
      * Returns the global application time in milliseconds as it is maintained
@@ -132,9 +129,9 @@ public interface WatchdogServer extends Remote {
      * network latency.
      *
      * @return the global application time in milliseconds according to the
-     *         central time server
-     * @throws	IOException if a communication error occurs while
-     * 		invoking this method
+     * central time server
+     * @throws IOException if a communication error occurs while
+     * invoking this method
      */
     long currentAppTimeMillis() throws IOException;
 }

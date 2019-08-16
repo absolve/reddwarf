@@ -26,7 +26,7 @@
  */
 
 /**
- * Provides utilities to shutdown a 
+ * Provides utilities to shutdown a
  * RedDwarf Server application.
  */
 package com.sun.sgs.system.stop;

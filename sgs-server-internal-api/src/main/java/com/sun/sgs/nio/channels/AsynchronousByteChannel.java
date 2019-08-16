@@ -81,20 +81,20 @@ public interface AsynchronousByteChannel extends Channel {
      * When the read operation completes the handler's
      * {@link CompletionHandler#completed(IoFuture) completed} method is
      * executed.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which bytes are to be transferred
+     *
+     * @param <A>        the attachment type
+     * @param dst        the buffer into which bytes are to be transferred
      * @param attachment the object to {@link IoFuture#attach attach}
-     *        to the returned {@link IoFuture} object; can be {@code null}
-     * @param handler the completion handler object; can be {@code null}
+     *                   to the returned {@link IoFuture} object; can be {@code null}
+     * @param handler    the completion handler object; can be {@code null}
      * @return a future representing the result of the operation
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if the channel does not allow more than
-     *         one read to be outstanding and a previous read has not
-     *         completed
+     * @throws ReadPendingException               if the channel does not allow more than
+     *                                            one read to be outstanding and a previous read has not
+     *                                            completed
      */
     <A> IoFuture<Integer, A> read(ByteBuffer dst, A attachment,
-        CompletionHandler<Integer, ? super A> handler);
+                                  CompletionHandler<Integer, ? super A> handler);
 
     /**
      * Reads a sequence of bytes from this channel into the given buffer.
@@ -104,18 +104,19 @@ public interface AsynchronousByteChannel extends Channel {
      * <pre>
      *   c.read(dst, null, handler);
      * </pre>
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which bytes are to be transferred
+     *
+     * @param <A>     the attachment type
+     * @param dst     the buffer into which bytes are to be transferred
      * @param handler the completion handler object; can be {@code null}
      * @return a future representing the result of the operation
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if the channel does not allow more than
-     *         one read to be outstanding and a previous read has not
-     *         completed
+     * @throws ReadPendingException               if the channel does not allow more than
+     *                                            one read to be outstanding and a previous read has not
+     *                                            completed
      */
     <A> IoFuture<Integer, A> read(ByteBuffer dst,
-        CompletionHandler<Integer, ? super A> handler);
+                                  CompletionHandler<Integer, ? super A> handler);
+
     /**
      * Writes a sequence of bytes to this channel from the given buffer.
      * <p>
@@ -153,20 +154,20 @@ public interface AsynchronousByteChannel extends Channel {
      * When the write operation completes the handler's
      * {@link CompletionHandler#completed(IoFuture) completed} method is
      * executed.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer from which bytes are to be retrieved
+     *
+     * @param <A>        the attachment type
+     * @param src        the buffer from which bytes are to be retrieved
      * @param attachment the object to {@link IoFuture#attach attach}
-     *        to the returned {@link IoFuture} object; can be {@code null}
-     * @param handler the completion handler object; can be {@code null}
+     *                   to the returned {@link IoFuture} object; can be {@code null}
+     * @param handler    the completion handler object; can be {@code null}
      * @return a future representing the result of the operation
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if the channel does not allow more than
-     *         one write to be outstanding and a previous write has not
-     *         completed
+     * @throws WritePendingException              if the channel does not allow more than
+     *                                            one write to be outstanding and a previous write has not
+     *                                            completed
      */
     <A> IoFuture<Integer, A> write(ByteBuffer src, A attachment,
-        CompletionHandler<Integer, ? super A> handler);
+                                   CompletionHandler<Integer, ? super A> handler);
 
     /**
      * Writes a sequence of bytes to this channel from the given buffer.
@@ -176,16 +177,16 @@ public interface AsynchronousByteChannel extends Channel {
      * <pre>
      *   c.write(src, null, handler);
      * </pre>
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer from which bytes are to be retrieved
+     *
+     * @param <A>     the attachment type
+     * @param src     the buffer from which bytes are to be retrieved
      * @param handler the completion handler object; can be {@code null}
      * @return a future representing the result of the operation
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if the channel does not allow more than
-     *         one write to be outstanding and a previous write has not
-     *         completed
+     * @throws WritePendingException              if the channel does not allow more than
+     *                                            one write to be outstanding and a previous write has not
+     *                                            completed
      */
     <A> IoFuture<Integer, A> write(ByteBuffer src,
-        CompletionHandler<Integer, ? super A> handler);
+                                   CompletionHandler<Integer, ? super A> handler);
 }

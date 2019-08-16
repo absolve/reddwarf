@@ -27,8 +27,8 @@ import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.Delivery;
 
 /**
- * This is implementation of {@code ChannelManager} simply calls its 
- * backing manager for each manager method. 
+ * This is implementation of {@code ChannelManager} simply calls its
+ * backing manager for each manager method.
  */
 public class ProfileChannelManager implements ChannelManager {
 
@@ -48,9 +48,8 @@ public class ProfileChannelManager implements ChannelManager {
      * {@inheritDoc}
      */
     public Channel createChannel(String name,
-				 ChannelListener listener,
-				 Delivery delivery) 
-    {
+                                 ChannelListener listener,
+                                 Delivery delivery) {
         return backingManager.createChannel(name, listener, delivery);
     }
 
@@ -58,7 +57,7 @@ public class ProfileChannelManager implements ChannelManager {
      * {@inheritDoc}
      */
     public Channel getChannel(String name) {
-	return backingManager.getChannel(name);
+        return backingManager.getChannel(name);
     }
-     
+
 }

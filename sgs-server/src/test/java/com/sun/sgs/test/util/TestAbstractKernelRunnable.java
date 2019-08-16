@@ -29,8 +29,10 @@ import com.sun.sgs.impl.util.AbstractKernelRunnable;
  */
 public abstract class TestAbstractKernelRunnable extends AbstractKernelRunnable {
 
-    /** Constructs an instance. */
+    /**
+     * Constructs an instance.
+     */
     public TestAbstractKernelRunnable() {
-	super(null);
+        super(null);
     }
 }

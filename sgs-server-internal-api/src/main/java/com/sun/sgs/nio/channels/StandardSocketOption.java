@@ -34,7 +34,7 @@ import java.nio.channels.SelectableChannel;
  * <p>
  * A network channel supports a subset of the socket options defined by
  * this enum and may support additional implementation specific socket
- * options. 
+ * options.
  */
 public enum StandardSocketOption implements SocketOption {
 
@@ -53,9 +53,9 @@ public enum StandardSocketOption implements SocketOption {
      * may require that the Java virtual machine be started with
      * implementation specific privileges to enable this option or send
      * broadcast datagrams.
-     * 
+     *
      * @see <a href="http://www.ietf.org/rfc/rfc919.txt">RFC 929:
-     *      Broadcasting Internet Datagrams</a>
+     * Broadcasting Internet Datagrams</a>
      */
     SO_BROADCAST(Boolean.class),
 
@@ -72,9 +72,9 @@ public enum StandardSocketOption implements SocketOption {
      * <p>
      * The initial value of this socket option is {@code false}. The socket
      * option may be enabled or disabled at any time.
-     * 
+     *
      * @see <a href="http://www.ietf.org/rfc/rfc1122.txt">RFC 1122
-     *      Requirements for Internet Hosts -- Communication Layers</a>
+     * Requirements for Internet Hosts -- Communication Layers</a>
      */
     SO_KEEPALIVE(Boolean.class),
 
@@ -141,9 +141,9 @@ public enum StandardSocketOption implements SocketOption {
      * or binding the socket. It is implementation specific whether the
      * option can be used to change the size of the socket receive buffer
      * after the socket is bound.
-     * 
+     *
      * @see <a href="http://www.ietf.org/rfc/rfc1323.txt">RFC 1323: TCP
-     *      Extensions for High Performance</a>
+     * Extensions for High Performance</a>
      */
     SO_RCVBUF(Integer.class),
 
@@ -171,9 +171,9 @@ public enum StandardSocketOption implements SocketOption {
      * The SO_REUSEADDR socket option must be configured prior to connecting
      * or binding the channel's socket. The initial value of this socket
      * option is implementation specific.
-     * 
+     *
      * @see <a href="http://www.ietf.org/rfc/rfc793.txt">RFC 793:
-     *      Transmission Control Protocol</a>
+     * Transmission Control Protocol</a>
      */
     SO_REUSEADDR(Boolean.class),
 
@@ -257,7 +257,7 @@ public enum StandardSocketOption implements SocketOption {
      * The network interface for outgoing multicast datagrams can be set
      * after the socket is bound. It is implementation specific whether this
      * option can be queried or changed prior to binding the socket.
-     * 
+     *
      * @see MulticastChannel
      */
     IP_MULTICAST_IF(NetworkInterface.class),
@@ -285,7 +285,7 @@ public enum StandardSocketOption implements SocketOption {
      * specific but is typically {@code 1}. It is also implementation
      * specific whether this option can be queried or changed prior to
      * binding the socket.
-     * 
+     *
      * @see MulticastChannel
      */
     IP_MULTICAST_TTL(Integer.class),
@@ -310,7 +310,7 @@ public enum StandardSocketOption implements SocketOption {
      * but is typically {@code true}. It is also implementation specific
      * whether this option can be queried or changed prior to binding the
      * socket.
-     * 
+     *
      * @see MulticastChannel
      */
     IP_MULTICAST_LOOP(Boolean.class),
@@ -331,18 +331,21 @@ public enum StandardSocketOption implements SocketOption {
      * the option is enabled, it is implementation specific whether it can
      * be subsequently disabled. In that case, invoking the
      * {@code setOption} method to disable the option has no effect.
-     * 
+     *
      * @see <a href="http://www.ietf.org/rfc/rfc1122.txt">RFC 1122:
-     *      Requirements for Internet Hosts -- Communication Layers</a>
+     * Requirements for Internet Hosts -- Communication Layers</a>
      */
     TCP_NODELAY(Boolean.class);
 
-    /** The type of the socket option value. */
+    /**
+     * The type of the socket option value.
+     */
     private final Class<?> type;
 
     /**
      * Constructs a socket option with the given value type.
      * <p>
+     *
      * @param type the type of the socket option value
      */
     private StandardSocketOption(Class<?> type) {

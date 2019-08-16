@@ -22,30 +22,36 @@
 package com.sun.sgs.tutorial.server.lesson4;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.Task;
+
 import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.Task;
 
 /**
  * A simple repeating Task that tracks and prints the time since it was
  * last run.
  */
 public class TrivialTimedTask
-    implements Serializable,  // for persistence, as required by ManagedObject.
-               ManagedObject, // to let the SGS manage our persistence.
-               Task           // to schedule future calls to our run() method.
+        implements Serializable,  // for persistence, as required by ManagedObject.
+        ManagedObject, // to let the SGS manage our persistence.
+        Task           // to schedule future calls to our run() method.
 {
-    /** The version of the serialized form of this class. */
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(TrivialTimedTask.class.getName());
+            Logger.getLogger(TrivialTimedTask.class.getName());
 
-    /**  The timestamp when this task was last run. */
+    /**
+     * The timestamp when this task was last run.
+     */
     private long lastTimestamp = System.currentTimeMillis();
 
     // implement Task
@@ -66,8 +72,8 @@ public class TrivialTimedTask
         lastTimestamp = timestamp;
 
         logger.log(Level.INFO,
-            "timestamp = {0,number,#}, delta = {1,number,#}",
-            new Object[] { timestamp, delta }
+                "timestamp = {0,number,#}, delta = {1,number,#}",
+                new Object[]{timestamp, delta}
         );
     }
 }

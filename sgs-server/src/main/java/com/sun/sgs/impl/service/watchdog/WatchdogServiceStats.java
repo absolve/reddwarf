@@ -33,13 +33,12 @@ import com.sun.sgs.profile.ProfileOperation;
 import com.sun.sgs.service.Node.Health;
 
 /**
- *
  * The Statistics MBean object for the watchdog service.
  */
 class WatchdogServiceStats implements WatchdogServiceMXBean {
     // the backing watchdog service
     final WatchdogServiceImpl watchdog;
-    
+
     // the profiled operations
     final ProfileOperation addNodeListenerOp;
     final ProfileOperation addRecoveryListenerOp;
@@ -50,96 +49,120 @@ class WatchdogServiceStats implements WatchdogServiceMXBean {
     final ProfileOperation getLocalNodeHealthNonTransOp;
     final ProfileOperation isLocalNodeAliveOp;
     final ProfileOperation isLocalNodeAliveNonTransOp;
-    
+
     WatchdogServiceStats(ProfileCollector collector, WatchdogServiceImpl wdog) {
         watchdog = wdog;
-        
-        ProfileConsumer consumer = 
-            collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX + 
-                                  "WatchdogService");
+
+        ProfileConsumer consumer =
+                collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX +
+                        "WatchdogService");
         ProfileLevel level = ProfileLevel.MAX;
         ProfileDataType type = ProfileDataType.TASK_AND_AGGREGATE;
-        
+
         addNodeListenerOp =
-            consumer.createOperation("addNodeListener", type, level);
+                consumer.createOperation("addNodeListener", type, level);
         addRecoveryListenerOp =
-            consumer.createOperation("addRecoveryListener", type, level);
-        getBackupOp = 
-            consumer.createOperation("getBackup", type, level);
+                consumer.createOperation("addRecoveryListener", type, level);
+        getBackupOp =
+                consumer.createOperation("getBackup", type, level);
         getNodeOp =
-            consumer.createOperation("getNode", type, level);
+                consumer.createOperation("getNode", type, level);
         getNodesOp =
-            consumer.createOperation("getNodes", type, level);
+                consumer.createOperation("getNodes", type, level);
         getLocalNodeHealthOp =
-            consumer.createOperation("getLocalNodeHealth", type, level);
+                consumer.createOperation("getLocalNodeHealth", type, level);
         getLocalNodeHealthNonTransOp =
-            consumer.createOperation("getLocalNodeHealthNonTransactional",
-                                     type, level);
+                consumer.createOperation("getLocalNodeHealthNonTransactional",
+                        type, level);
         isLocalNodeAliveOp =
-            consumer.createOperation("isLocalNodeAlive", type, level);
+                consumer.createOperation("isLocalNodeAlive", type, level);
         isLocalNodeAliveNonTransOp =
-            consumer.createOperation("isLocalNodeAliveNonTransactional", 
-                                     type, level);
+                consumer.createOperation("isLocalNodeAliveNonTransactional",
+                        type, level);
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public Health getNodeHealth() {
         return watchdog.getLocalNodeHealthNonTransactional();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setNodeHealth(Health health) {
         watchdog.reportHealth(health, WatchdogServiceStats.class.getName());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getAddNodeListenerCalls() {
         return ((AggregateProfileOperation) addNodeListenerOp).getCount();
     }
-        
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getAddRecoveryListenerCalls() {
         return ((AggregateProfileOperation) addRecoveryListenerOp).getCount();
     }
-        
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getGetBackupCalls() {
         return ((AggregateProfileOperation) getBackupOp).getCount();
     }
-        
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getGetNodeCalls() {
         return ((AggregateProfileOperation) getNodeOp).getCount();
     }
-        
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getGetNodesCalls() {
         return ((AggregateProfileOperation) getNodesOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getGetLocalNodeHealthCalls() {
         return ((AggregateProfileOperation) getLocalNodeHealthOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getGetLocalNodeHealthNonTransactionalCalls() {
         return ((AggregateProfileOperation) getLocalNodeHealthNonTransOp).
                 getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getIsLocalNodeAliveCalls() {
         return ((AggregateProfileOperation) isLocalNodeAliveOp).getCount();
     }
-        
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getIsLocalNodeAliveNonTransactionalCalls() {
         return ((AggregateProfileOperation) isLocalNodeAliveNonTransOp).
                 getCount();
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public NodeInfo getStatusInfo() {
         return watchdog.getNodeStatusInfo();
     }

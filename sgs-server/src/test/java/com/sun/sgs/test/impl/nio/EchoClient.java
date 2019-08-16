@@ -21,71 +21,78 @@
 
 package com.sun.sgs.test.impl.nio;
 
+import com.sun.sgs.nio.channels.*;
+import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.sgs.nio.channels.AsynchronousChannelGroup;
-import com.sun.sgs.nio.channels.AsynchronousSocketChannel;
-import com.sun.sgs.nio.channels.CompletionHandler;
-import com.sun.sgs.nio.channels.IoFuture;
-import com.sun.sgs.nio.channels.StandardSocketOption;
-import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
 
 /**
  * An echo client for testing.
  */
 public class EchoClient {
 
-    /** The default host: {@value} */
+    /**
+     * The default host: {@value}
+     */
     public static final String DEFAULT_HOST = "127.0.0.1";
 
-    /** The default port: {@value} */
+    /**
+     * The default port: {@value}
+     */
     public static final String DEFAULT_PORT = "5150";
 
-    /** The default message size: {@value}  */
+    /**
+     * The default message size: {@value}
+     */
     public static final String DEFAULT_BUFFER_SIZE = "32";
 
-    /** The default number of clients: {@value} */
+    /**
+     * The default number of clients: {@value}
+     */
     public static final String DEFAULT_NUM_CLIENTS = "4";
 
-    /** The default number of threads: {@value} */
+    /**
+     * The default number of threads: {@value}
+     */
     public static final String DEFAULT_NUM_THREADS = "4";
 
-    /**  The default maximum number of threads: {@value} */
+    /**
+     * The default maximum number of threads: {@value}
+     */
     public static final int DEFAULT_MAX_THREADS = Integer.MAX_VALUE;
 
-    /** The default number of messages to send: {@value} */
+    /**
+     * The default number of messages to send: {@value}
+     */
     public static final String DEFAULT_NUM_MSGS = "8";
 
-    /** Whether to disable the Nagle algorithm by default: {@value} */
+    /**
+     * Whether to disable the Nagle algorithm by default: {@value}
+     */
     public static final String DEFAULT_DISABLE_NAGLE = "false";
 
     private static final int BUFFER_SIZE =
-        Integer.valueOf(System.getProperty("buffer_size", DEFAULT_BUFFER_SIZE));
+            Integer.valueOf(System.getProperty("buffer_size", DEFAULT_BUFFER_SIZE));
     private static final int NUM_CLIENTS =
-        Integer.valueOf(System.getProperty("clients", DEFAULT_NUM_CLIENTS));
+            Integer.valueOf(System.getProperty("clients", DEFAULT_NUM_CLIENTS));
     private static final int NUM_MSGS =
-        Integer.valueOf(System.getProperty("messages", DEFAULT_NUM_MSGS));
+            Integer.valueOf(System.getProperty("messages", DEFAULT_NUM_MSGS));
     private static final int NUM_THREADS =
-        Integer.valueOf(System.getProperty("threads", DEFAULT_NUM_THREADS));
+            Integer.valueOf(System.getProperty("threads", DEFAULT_NUM_THREADS));
     private static final int MAX_THREADS =
-        Integer.valueOf(System.getProperty("maxthreads",
-            String.valueOf(DEFAULT_MAX_THREADS)));
+            Integer.valueOf(System.getProperty("maxthreads",
+                    String.valueOf(DEFAULT_MAX_THREADS)));
     private static final boolean DISABLE_NAGLE =
-        Boolean.valueOf(System.getProperty("tcp_nodelay",
-            DEFAULT_DISABLE_NAGLE));
+            Boolean.valueOf(System.getProperty("tcp_nodelay",
+                    DEFAULT_DISABLE_NAGLE));
 
     static final Logger log = Logger.getAnonymousLogger();
 
@@ -105,7 +112,7 @@ public class EchoClient {
     /**
      * Constructs a new instance of the echo client with the given
      * {@link AsynchronousChannelGroup}.
-     * 
+     *
      * @param group the asynchronous channel group for this client
      */
     protected EchoClient(AsynchronousChannelGroup group) {
@@ -124,9 +131,9 @@ public class EchoClient {
             throw e;
         }
         channel.connect(new InetSocketAddress(host, port),
-            new ConnectHandler()).get();
+                new ConnectHandler()).get();
     }
- 
+
     void start() throws Exception {
         WriteHandler wh = new WriteHandler();
         ReadHandler rh = new ReadHandler();
@@ -135,8 +142,7 @@ public class EchoClient {
     }
 
     final class ConnectHandler
-        implements CompletionHandler<Void, Object>
-    {
+            implements CompletionHandler<Void, Object> {
         /**
          * {@inheritDoc}
          */
@@ -162,10 +168,9 @@ public class EchoClient {
     }
 
     final class ReadHandler
-        implements CompletionHandler<Integer, Integer>
-    {
+            implements CompletionHandler<Integer, Integer> {
         final ByteBuffer buf = allocateBuffer(BUFFER_SIZE);
-        
+
         void start() {
             channel.read(buf, NUM_MSGS - 1, this);
         }
@@ -218,14 +223,14 @@ public class EchoClient {
     }
 
     final class WriteHandler
-        implements CompletionHandler<Integer, Integer>
-    {
+            implements CompletionHandler<Integer, Integer> {
         final ByteBuffer buf = allocateBuffer(BUFFER_SIZE);
+
         WriteHandler() {
             fillBuffer(buf);
             buf.rewind();
         }
-        
+
         void start() {
             channel.write(buf, NUM_MSGS - 1, this);
         }
@@ -236,7 +241,7 @@ public class EchoClient {
         public void completed(IoFuture<Integer, Integer> result) {
             try {
                 int wc =
-                    result.getNow();
+                        result.getNow();
                 log.log(Level.FINEST, "Wrote {0} bytes", wc);
                 bytesWritten += wc;
                 int opsRemaining = result.attachment();
@@ -265,8 +270,8 @@ public class EchoClient {
     void disconnected() {
         if (log.isLoggable(Level.FINE)) {
             log.log(Level.FINE,
-                "Disconnected {0} read:{1} wrote:{2}",
-                new Object[] { channel, bytesRead, bytesWritten });
+                    "Disconnected {0} read:{1} wrote:{2}",
+                    new Object[]{channel, bytesRead, bytesWritten});
         }
 
         try {
@@ -291,26 +296,26 @@ public class EchoClient {
     public final static void main(String[] args) throws Exception {
 
         ThreadFactory threadFactory =
-            new VerboseThreadFactory(log, Executors.defaultThreadFactory());
+                new VerboseThreadFactory(log, Executors.defaultThreadFactory());
 
         ThreadPoolExecutor executor = (ThreadPoolExecutor)
-            ((MAX_THREADS == Integer.MAX_VALUE)
-                 ? Executors.newCachedThreadPool(threadFactory)
-                 : Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
+                ((MAX_THREADS == Integer.MAX_VALUE)
+                        ? Executors.newCachedThreadPool(threadFactory)
+                        : Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
         executor.setKeepAliveTime(10, TimeUnit.SECONDS);
         executor.setCorePoolSize(NUM_THREADS);
 
         log.log(Level.INFO,
-            "Prestarting {0,number,integer} threads", NUM_THREADS);
+                "Prestarting {0,number,integer} threads", NUM_THREADS);
 
         executor.prestartAllCoreThreads();
 
         AsynchronousChannelProvider provider =
-            AsynchronousChannelProvider.provider();
+                AsynchronousChannelProvider.provider();
 
         AsynchronousChannelGroup group =
-            provider.openAsynchronousChannelGroup(executor);
+                provider.openAsynchronousChannelGroup(executor);
 
         log.log(Level.INFO, "ChannelGroup is a {0}", group.getClass());
 
@@ -340,22 +345,22 @@ public class EchoClient {
         long ops = NUM_CLIENTS * NUM_MSGS * 2;
         long elapsed = System.nanoTime() - startTime;
         log.log(Level.INFO, "Bytes read: {0}  written:{1}",
-            new Object[] {
-                totalBytesRead.get(),
-                totalBytesWritten.get()
-            });
+                new Object[]{
+                        totalBytesRead.get(),
+                        totalBytesWritten.get()
+                });
         System.out.format("%d ops in %d seconds = %d ops/sec\n",
                 ops,
                 TimeUnit.NANOSECONDS.toSeconds(elapsed),
                 TimeUnit.SECONDS.toNanos(ops) / elapsed
-            );
+        );
 
         group.shutdown();
-        log.info("Awaiting group termination");        
-        if (! group.awaitTermination(5, TimeUnit.SECONDS)) {
+        log.info("Awaiting group termination");
+        if (!group.awaitTermination(5, TimeUnit.SECONDS)) {
             log.warning("Forcing group termination");
             group.shutdownNow();
-            if (! group.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!group.awaitTermination(5, TimeUnit.SECONDS)) {
                 log.warning("Group could not be forcibly terminated");
             }
         }
@@ -364,11 +369,11 @@ public class EchoClient {
 
         log.info("Terminating executor");
         executor.shutdown();
-        log.info("Awaiting executor termination");        
-        if (! executor.awaitTermination(5, TimeUnit.SECONDS)) {
+        log.info("Awaiting executor termination");
+        if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
             log.warning("Forcing executor termination");
             executor.shutdownNow();
-            if (! executor.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
                 log.warning("Executor could not be forcibly terminated");
             }
         }

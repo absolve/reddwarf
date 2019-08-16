@@ -32,29 +32,35 @@ import com.sun.sgs.service.TransactionProxy;
  */
 public class BindingKeyedCollectionsImpl implements BindingKeyedCollections {
 
-    /** The transaction proxy, or null if the constructor hasn't been called. */
+    /**
+     * The transaction proxy, or null if the constructor hasn't been called.
+     */
     private static TransactionProxy txnProxy;
 
     /**
      * Constructs an instance with the specified transaction proxy.
      *
-     * @param	txnProxy the transaction proxy
+     * @param    txnProxy the transaction proxy
      */
     public BindingKeyedCollectionsImpl(TransactionProxy txnProxy) {
-	assert txnProxy != null;
-	synchronized (BindingKeyedCollectionsImpl.class) {
-	    BindingKeyedCollectionsImpl.txnProxy = txnProxy;
-	}
+        assert txnProxy != null;
+        synchronized (BindingKeyedCollectionsImpl.class) {
+            BindingKeyedCollectionsImpl.txnProxy = txnProxy;
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public <V> BindingKeyedMap<V> newMap(String keyPrefix) {
-	return new BindingKeyedMapImpl<V>(keyPrefix);
+        return new BindingKeyedMapImpl<V>(keyPrefix);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public <V> BindingKeyedSet<V> newSet(String keyPrefix) {
-	return new BindingKeyedSetImpl<V>(keyPrefix);
+        return new BindingKeyedSetImpl<V>(keyPrefix);
     }
 
     /**
@@ -62,16 +68,16 @@ public class BindingKeyedCollectionsImpl implements BindingKeyedCollections {
      * method is used by {@link BindingKeyedMapImpl} to obtain the data
      * service to store key/value pairs.
      *
-     * @return	the data service relevant to the current context
-     * @throws	IllegalStateException if an instance of this class has not
-     *		been initialized
+     * @return the data service relevant to the current context
+     * @throws IllegalStateException if an instance of this class has not
+     * been initialized
      */
     static synchronized DataService getDataService() {
-	if (txnProxy == null) {
-	    throw new IllegalStateException(
-		"BindingKeyedCollections not initialized");
-	} else {
-	    return txnProxy.getService(DataService.class);
-	}
+        if (txnProxy == null) {
+            throw new IllegalStateException(
+                    "BindingKeyedCollections not initialized");
+        } else {
+            return txnProxy.getService(DataService.class);
+        }
     }
 }

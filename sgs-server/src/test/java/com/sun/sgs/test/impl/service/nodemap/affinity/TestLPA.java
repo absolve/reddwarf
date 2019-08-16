@@ -26,11 +26,11 @@ import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
 import com.sun.sgs.impl.service.nodemap.affinity.AffinitySet;
 import com.sun.sgs.impl.service.nodemap.affinity.LPADriver;
 import com.sun.sgs.impl.service.nodemap.affinity.RelocatingAffinityGroup;
-import com.sun.sgs.impl.service.nodemap.affinity.dlpa.graph.DLPAGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LPAClient;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LPAServer;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagation;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagationServer;
+import com.sun.sgs.impl.service.nodemap.affinity.dlpa.graph.DLPAGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
 import com.sun.sgs.impl.util.Exporter;
@@ -44,36 +44,29 @@ import com.sun.sgs.tools.test.FilteredNameRunner;
 import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.graph.util.Graphs;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.runner.RunWith;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.runner.RunWith;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests for distributed label propagation algorithm.
- * 
  */
 @RunWith(FilteredNameRunner.class)
 public class TestLPA {
-    /** Max number of times we'll call Thread.sleep in a loop. */
+    /**
+     * Max number of times we'll call Thread.sleep in a loop.
+     */
     private final static int MAX_SLEEP_COUNT = 50;
 
     private TestLPAServer server;
@@ -85,19 +78,19 @@ public class TestLPA {
     @Before
     public void setup() throws Exception {
         props = SgsTestNode.getDefaultProperties("TestLPA", null, null);
-        props.put("com.sun.sgs.impl.kernel.profile.level", 
-                   ProfileLevel.MAX.name());
+        props.put("com.sun.sgs.impl.kernel.profile.level",
+                ProfileLevel.MAX.name());
         // We are creating this SgsTestNode so we can get at its watchdog
         // and profile collector only - the LPAServer we are testing is
         // created outside this framework so we could easily extend the type.
         serverNode = new SgsTestNode("TestLPA", null, props);
         int serverPort = SgsTestNode.getNextUniquePort();
         props.put("com.sun.sgs.impl.service.nodemap.affinity.server.port",
-                   String.valueOf(serverPort));
+                String.valueOf(serverPort));
         props.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads", "1");
         props.setProperty(LPADriver.UPDATE_FREQ_PROPERTY, "3600"); // one hour
         collector =
-            serverNode.getSystemRegistry().getComponent(ProfileCollector.class);
+                serverNode.getSystemRegistry().getComponent(ProfileCollector.class);
         wdog = serverNode.getWatchdogService();
         server = new TestLPAServer(collector, wdog, props);
     }
@@ -143,7 +136,7 @@ public class TestLPA {
             identitySet.add(new DummyIdentity("8"));
             identitySet.add(new DummyIdentity("9"));
             AffinitySet b = new AffinitySet(3, generation, identitySet);
-            
+
             group2.add(b);
         }
         Set<AffinityGroup> group3 = new HashSet<AffinityGroup>();
@@ -169,7 +162,7 @@ public class TestLPA {
         long now = System.currentTimeMillis();
         Set<RelocatingAffinityGroup> groups = server.findAffinityGroups();
         System.out.printf("finished in %d milliseconds %n",
-                          System.currentTimeMillis() - now);
+                System.currentTimeMillis() - now);
         for (TestLPAClient client : clients) {
             assertFalse(client.failed);
             assertTrue(client.currentIter >= client.convergeCount);
@@ -207,14 +200,14 @@ public class TestLPA {
         // We'll just use the server's watchdog - safe because we aren't
         // testing node failures here.
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         LabelPropagation lp2 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
-                    wdog, PartialToyBuilder.NODE2, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
+                        wdog, PartialToyBuilder.NODE2, props);
         LabelPropagation lp3 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
-                    wdog, PartialToyBuilder.NODE3, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
+                        wdog, PartialToyBuilder.NODE3, props);
         Set<RelocatingAffinityGroup> groups = server.findAffinityGroups();
         assertTrue(groups.size() != 0);
     }
@@ -225,14 +218,14 @@ public class TestLPA {
         // We'll just use the server's watchdog - safe because we aren't
         // testing node failures here.
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         LabelPropagation lp2 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
-                    wdog, PartialToyBuilder.NODE2, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
+                        wdog, PartialToyBuilder.NODE2, props);
         LabelPropagation lp3 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
-                    wdog, PartialToyBuilder.NODE3, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
+                        wdog, PartialToyBuilder.NODE3, props);
         Set<RelocatingAffinityGroup> groups = server.findAffinityGroups();
         assertTrue(groups.size() != 0);
         groups = server.findAffinityGroups();
@@ -248,8 +241,8 @@ public class TestLPA {
         // other nodes, so it doesn't fail immediately because the other nodes
         // are down.
         LabelPropagation lp3 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
-                    wdog, PartialToyBuilder.NODE3, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
+                        wdog, PartialToyBuilder.NODE3, props);
         Set<RelocatingAffinityGroup> groups = server.findAffinityGroups();
         assertTrue(groups.size() != 0);
     }
@@ -269,8 +262,8 @@ public class TestLPA {
         // We'll just use the server's watchdog - safe because we aren't
         // testing node failures here.
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         server.shutdown();
         lp1.prepareAlgorithm(1);
     }
@@ -279,7 +272,7 @@ public class TestLPA {
     public void testRegister() throws Exception {
         final int nodeId = 10;
         TestLPAClient client1 = new TestLPAClient(server, nodeId, 10, 3,
-               new HashSet<AffinityGroup>());
+                new HashSet<AffinityGroup>());
         Exporter<TestLPAClientIface> exporter =
                 new Exporter<TestLPAClientIface>(TestLPAClientIface.class);
         exporter.export(client1, 0);
@@ -302,7 +295,7 @@ public class TestLPA {
     public void testRegisterTwice() throws Exception {
         final int nodeId = 10;
         TestLPAClient client1 = new TestLPAClient(server, nodeId, 10, 3,
-               new HashSet<AffinityGroup>());
+                new HashSet<AffinityGroup>());
         Exporter<TestLPAClientIface> exporter =
                 new Exporter<TestLPAClientIface>(TestLPAClientIface.class);
         exporter.export(client1, 0);
@@ -327,7 +320,7 @@ public class TestLPA {
         LPAClient proxy = server.getLPAClientProxy(222);
         assertNull(proxy);
     }
-    
+
     @Test
     public void testServerShutdownTwice() throws Exception {
         // Should be no problem to call shutdown twice
@@ -341,8 +334,8 @@ public class TestLPA {
     @Test
     public void testAffinityGroupsTwice() throws Exception {
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         lp1.prepareAlgorithm(1);
         int count = 0;
         while (server.readyToBeginCount() < 1) {
@@ -367,8 +360,8 @@ public class TestLPA {
     @Test
     public void testPrepareTwice() throws Exception {
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         lp1.prepareAlgorithm(1);
         lp1.prepareAlgorithm(1);
         int count = 0;
@@ -385,8 +378,8 @@ public class TestLPA {
     @Test
     public void testIterationTwice() throws Exception {
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         lp1.prepareAlgorithm(1);
         int count = 0;
         while (server.readyToBeginCount() < 1) {
@@ -404,7 +397,7 @@ public class TestLPA {
                 fail("Too much time sleeping");
             }
         }
-        Thread.sleep(50); 
+        Thread.sleep(50);
         assertEquals(1, server.finishedIterationCount());
     }
 
@@ -412,8 +405,8 @@ public class TestLPA {
     @Test(expected = IllegalArgumentException.class)
     public void testAffinityGroupsRunMismatch() throws Exception {
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         lp1.prepareAlgorithm(1);
         int count = 0;
         while (server.readyToBeginCount() < 1) {
@@ -429,8 +422,8 @@ public class TestLPA {
     @Test
     public void testIterationMismatch() throws Exception {
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         lp1.prepareAlgorithm(1);
         int count = 0;
         while (server.readyToBeginCount() < 1) {
@@ -464,14 +457,14 @@ public class TestLPA {
     @Test
     public void testCrossNodeData() throws Exception {
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         LabelPropagation lp2 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
-                    wdog, PartialToyBuilder.NODE2, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
+                        wdog, PartialToyBuilder.NODE2, props);
         LabelPropagation lp3 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
-                    wdog, PartialToyBuilder.NODE3, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
+                        wdog, PartialToyBuilder.NODE3, props);
 
         long run = 1;
         lp1.prepareAlgorithm(run);
@@ -573,14 +566,12 @@ public class TestLPA {
     private void printNodeConflictMap(LabelPropagation lp) {
 
         for (Map.Entry<Long, Map<Object, Long>> entry :
-             lp.getNodeConflictMap().entrySet())
-        {
+                lp.getNodeConflictMap().entrySet()) {
             StringBuilder sb1 = new StringBuilder();
             sb1.append(entry.getKey());
             sb1.append(":  ");
             for (Map.Entry<Object, Long> subEntry :
-                 entry.getValue().entrySet())
-            {
+                    entry.getValue().entrySet()) {
                 sb1.append(subEntry.getKey() + "," + subEntry.getValue() + " ");
             }
             System.out.println(sb1.toString());
@@ -595,14 +586,14 @@ public class TestLPA {
         Identity id3 = new DummyIdentity("3");
         Identity id4 = new DummyIdentity("4");
         LabelPropagation lp1 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
-                    wdog, PartialToyBuilder.NODE1, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE1),
+                        wdog, PartialToyBuilder.NODE1, props);
         LabelPropagation lp2 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
-                    wdog, PartialToyBuilder.NODE2, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE2),
+                        wdog, PartialToyBuilder.NODE2, props);
         LabelPropagation lp3 =
-            new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
-                    wdog, PartialToyBuilder.NODE3, props);
+                new LabelPropagation(new PartialToyBuilder(PartialToyBuilder.NODE3),
+                        wdog, PartialToyBuilder.NODE3, props);
         lp1.prepareAlgorithm(1);
         lp2.prepareAlgorithm(1);
         lp3.prepareAlgorithm(1);
@@ -653,8 +644,8 @@ public class TestLPA {
         // maps, and check it.  We do this, rather than running an iteration,
         // because we don't want the labels to change.
         Method updateRemoteLabelsMethod =
-            UtilReflection.getMethod(LabelPropagation.class,
-                                     "updateRemoteLabels");
+                UtilReflection.getMethod(LabelPropagation.class,
+                        "updateRemoteLabels");
 
         updateRemoteLabelsMethod.invoke(lp1);
         updateRemoteLabelsMethod.invoke(lp2);
@@ -665,7 +656,7 @@ public class TestLPA {
                 lp1.getRemoteLabelMap();
         assertEquals(2, rlm.size());
         for (Identity id : rlm.keySet()) {
-            assertTrue (id.equals(id1) || id.equals(id2));
+            assertTrue(id.equals(id1) || id.equals(id2));
         }
         Map<Integer, Long> labelWeight = rlm.get(id1);
         assertEquals(1, labelWeight.size());
@@ -713,7 +704,7 @@ public class TestLPA {
     public interface TestLPAClientIface extends LPAClient {
         boolean finishedExchangeInfo() throws IOException;
     }
-    
+
     private class TestLPAClient implements TestLPAClientIface {
         private final long sleepTime;
         private final long nodeId;
@@ -728,9 +719,8 @@ public class TestLPA {
         boolean finishedStartIter = false;
         int currentIter = -1;
 
-        public TestLPAClient(LPAServer server, long nodeId, long sleepTime, 
-                int convergeCount, Set<AffinityGroup> result)
-        {
+        public TestLPAClient(LPAServer server, long nodeId, long sleepTime,
+                             int convergeCount, Set<AffinityGroup> result) {
             this.server = server;
             this.nodeId = nodeId;
             this.convergeCount = convergeCount;
@@ -741,15 +731,19 @@ public class TestLPA {
         public boolean finishedExchangeInfo() {
             return finishedExchangeInfo;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public Set<AffinityGroup> getAffinityGroups(long runNumber,
                                                     boolean done)
-                throws IOException
-        {
+                throws IOException {
             return result;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void prepareAlgorithm(long runNumber) throws IOException {
             startedExchangeInfo = true;
             try {
@@ -761,7 +755,9 @@ public class TestLPA {
             server.readyToBegin(nodeId, false);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void startIteration(int iteration) throws IOException {
             // Should not be called if we haven't completed exchanging info
             failed = failed || !finishedExchangeInfo;
@@ -783,29 +779,39 @@ public class TestLPA {
             server.finishedIteration(nodeId, converged, failed, currentIter);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void notifyCrossNodeEdges(Collection<Object> objIds, long nodeId)
-                throws IOException
-        {
+                throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public Map<Object, Map<Integer, List<Long>>> getRemoteLabels(
-                Collection<Object> objIds) throws IOException
-        {
+                Collection<Object> objIds) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void shutdown() throws IOException {
             return;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void enable() throws IOException {
             return;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void disable() throws IOException {
             return;
         }
@@ -819,25 +825,26 @@ public class TestLPA {
         private AtomicInteger finishedIterationCount = new AtomicInteger(0);
         private AtomicInteger readyToBeginCount = new AtomicInteger(0);
 
-        public TestLPAServer(ProfileCollector col, 
+        public TestLPAServer(ProfileCollector col,
                              WatchdogService wdog,
                              Properties properties)
-                throws IOException
-        {
+                throws IOException {
             super(col, wdog, properties);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void finishedIteration(long nodeId, boolean converged,
-                boolean failed, int iteration) throws IOException
-        {
+                                      boolean failed, int iteration) throws IOException {
             finishedIterationCount.incrementAndGet();
             super.finishedIteration(nodeId, converged, failed, iteration);
         }
 
-        /** {@inheritDoc} */
-        public void readyToBegin(long nodeId, boolean failed) throws IOException
-        {
+        /**
+         * {@inheritDoc}
+         */
+        public void readyToBegin(long nodeId, boolean failed) throws IOException {
             readyToBeginCount.incrementAndGet();
             super.readyToBegin(nodeId, failed);
         }
@@ -845,18 +852,20 @@ public class TestLPA {
         public int finishedIterationCount() {
             return finishedIterationCount.get();
         }
+
         public int readyToBeginCount() {
             return readyToBeginCount.get();
         }
+
         public void clear() {
             finishedIterationCount.getAndSet(0);
             readyToBeginCount.getAndSet(0);
         }
     }
+
     // Simple builder spread across 3 nodes
-    private class PartialToyBuilder extends AbstractTestGraphBuilder 
-            implements DLPAGraphBuilder
-    {
+    private class PartialToyBuilder extends AbstractTestGraphBuilder
+            implements DLPAGraphBuilder {
         private final ConcurrentMap<Long, Map<Object, Long>> conflictMap =
                 new ConcurrentHashMap<Long, Map<Object, Long>>();
         private final ConcurrentMap<Object, Map<Identity, Long>> objUseMap =
@@ -865,6 +874,7 @@ public class TestLPA {
         static final long NODE1 = 1;
         static final long NODE2 = 2;
         static final long NODE3 = 3;
+
         // location of identities
         // node1: 1,2
         // node2: 3
@@ -878,14 +888,14 @@ public class TestLPA {
             if (node == NODE1) {
                 // Create a partial graph
                 Identity[] idents = {new DummyIdentity("1"),
-                                     new DummyIdentity("2")};
+                        new DummyIdentity("2")};
                 // Obj uses
                 Map<Identity, Long> tempMap =
                         new HashMap<Identity, Long>();
                 tempMap.put(idents[0], 2L);
                 tempMap.put(idents[1], 2L);
                 objUseMap.put("obj1", tempMap);
-                tempMap =  new HashMap<Identity, Long>();
+                tempMap = new HashMap<Identity, Long>();
                 tempMap.put(idents[1], 1L);
                 objUseMap.put("obj2", tempMap);
 
@@ -896,7 +906,7 @@ public class TestLPA {
             } else if (node == NODE2) {
                 // Create a partial graph
                 Identity ident = new DummyIdentity("3");
-                
+
                 // Obj uses
                 Map<Identity, Long> tempMap = new HashMap<Identity, Long>();
                 tempMap.put(ident, 1L);
@@ -908,33 +918,39 @@ public class TestLPA {
                 conflictMap.put(NODE1, conflict);
             } else if (node == NODE3) {
                 Identity[] idents = {new DummyIdentity("4"),
-                                     new DummyIdentity("5")};
+                        new DummyIdentity("5")};
 
                 // Obj uses
                 Map<Identity, Long> tempMap = new HashMap<Identity, Long>();
                 tempMap.put(idents[0], 1L);
                 tempMap.put(idents[1], 1L);
                 objUseMap.put("obj3", tempMap);
-                tempMap =  new HashMap<Identity, Long>();
+                tempMap = new HashMap<Identity, Long>();
                 tempMap.put(idents[0], 1L);
                 objUseMap.put("obj2", tempMap);
-                
+
                 // conflicts - data cache evictions due to conflict
                 // none on this node
             }
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public Map<Long, Map<Object, Long>> getConflictMap() {
             return conflictMap;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void removeNode(long nodeId) {
             conflictMap.remove(nodeId);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public Map<Object, Map<Identity, Long>> getObjectUseMap() {
             return objUseMap;
         }
@@ -942,15 +958,14 @@ public class TestLPA {
 
     //
     private UndirectedGraph<LabelVertex, WeightedEdge>
-            createPartialToyBuilderGraph(long node)
-    {
+    createPartialToyBuilderGraph(long node) {
         UndirectedGraph<LabelVertex, WeightedEdge> graph =
                 new UndirectedSparseGraph<LabelVertex, WeightedEdge>();
 
         if (node == PartialToyBuilder.NODE1) {
             // Create a partial graph
             Identity[] idents = {new DummyIdentity("1"),
-                                 new DummyIdentity("2")};
+                    new DummyIdentity("2")};
             LabelVertex[] nodes = new LabelVertex[2];
             for (int i = 0; i < nodes.length; i++) {
                 nodes[i] = new LabelVertex(idents[i]);
@@ -966,7 +981,7 @@ public class TestLPA {
 
         } else if (node == PartialToyBuilder.NODE3) {
             Identity[] idents = {new DummyIdentity("4"),
-                                 new DummyIdentity("5")};
+                    new DummyIdentity("5")};
             LabelVertex[] nodes = new LabelVertex[2];
             for (int i = 0; i < nodes.length; i++) {
                 nodes[i] = new LabelVertex(idents[i]);

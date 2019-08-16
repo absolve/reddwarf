@@ -37,68 +37,90 @@ import com.sun.sgs.profile.TransactionListenerDetail;
 public class ProfileCollectorHandleImpl implements ProfileCollectorHandle {
 
     private ProfileCollectorImpl profileCollector;
-    
+
     /**
      * Instantiate a ProfileCollectorHandle.
+     *
      * @param profileCollector the backing profile collector
      */
     public ProfileCollectorHandleImpl(ProfileCollectorImpl profileCollector) {
         this.profileCollector = profileCollector;
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void notifyThreadAdded() {
         profileCollector.notifyThreadAdded();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void notifyThreadRemoved() {
         profileCollector.notifyThreadRemoved();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void notifyNodeIdAssigned(long nodeId) {
         profileCollector.notifyNodeIdAssigned(nodeId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void startTask(KernelRunnable task, Identity owner,
-            long scheduledStartTime, int readyCount)
-    {
+                          long scheduledStartTime, int readyCount) {
         profileCollector.startTask(task, owner, scheduledStartTime, readyCount);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void noteTransactional(byte[] transactionId) {
         profileCollector.noteTransactional(transactionId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addParticipant(ProfileParticipantDetail participantDetail) {
         profileCollector.addParticipant(participantDetail);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addListener(TransactionListenerDetail listenerDetail) {
         profileCollector.addTransactionListener(listenerDetail);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setAccessedObjectsDetail(AccessedObjectsDetail detail) {
         profileCollector.setAccessedObjectsDetail(detail);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void finishTask(int tryCount) {
         profileCollector.finishTask(tryCount);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void finishTask(int tryCount, Throwable t) {
         profileCollector.finishTask(tryCount, t);
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public ProfileCollector getCollector() {
         return profileCollector;
     }

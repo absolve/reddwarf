@@ -31,16 +31,17 @@ import com.sun.sgs.service.WatchdogService;
 /**
  * The management interface for the watchdog service.
  * <p>
- * An instance implementing this MBean can be obtained from the from the 
- * {@link java.lang.management.ManagementFactory.html#getPlatformMBeanServer() 
+ * An instance implementing this MBean can be obtained from the from the
+ * {@link java.lang.management.ManagementFactory.html#getPlatformMBeanServer()
  * getPlatformMBeanServer} method.
  * <p>
  * The {@code ObjectName} for uniquely identifying this MBean is
  * {@value #MXBEAN_NAME}.
- * 
  */
 public interface WatchdogServiceMXBean {
-    /** The name for uniquely identifying this MBean. */
+    /**
+     * The name for uniquely identifying this MBean.
+     */
     String MXBEAN_NAME = "com.sun.sgs.service:type=WatchdogService";
 
     /**
@@ -61,41 +62,41 @@ public interface WatchdogServiceMXBean {
     void setNodeHealth(Health health);
 
     /**
-     * Returns the number of times {@link WatchdogService#addNodeListener 
+     * Returns the number of times {@link WatchdogService#addNodeListener
      * addNodeListener} has been called.
-     * 
+     *
      * @return the number of times {@code addNodeListener} has been called
      */
     long getAddNodeListenerCalls();
-        
+
     /**
-     * Returns the number of times {@link WatchdogService#addRecoveryListener 
+     * Returns the number of times {@link WatchdogService#addRecoveryListener
      * addRecoveryListener} has been called.
-     * 
+     *
      * @return the number of times {@code addRecoveryListener} has been called
      */
     long getAddRecoveryListenerCalls();
-        
+
     /**
-     * Returns the number of times {@link WatchdogService#getBackup 
+     * Returns the number of times {@link WatchdogService#getBackup
      * getBackup} has been called.
-     * 
+     *
      * @return the number of times {@code getBackup} has been called
      */
     long getGetBackupCalls();
-        
+
     /**
-     * Returns the number of times {@link WatchdogService#getNode 
+     * Returns the number of times {@link WatchdogService#getNode
      * getNode} has been called.
-     * 
+     *
      * @return the number of times {@code getNode} has been called
      */
     long getGetNodeCalls();
-        
+
     /**
-     * Returns the number of times {@link WatchdogService#getNodes 
+     * Returns the number of times {@link WatchdogService#getNodes
      * getNodes} has been called.
-     * 
+     *
      * @return the number of times {@code getNodes} has been called
      */
     long getGetNodesCalls();
@@ -114,31 +115,31 @@ public interface WatchdogServiceMXBean {
      * getLocalNodeHealthNonTransactional} has been called.
      *
      * @return the number of times {@code getLocalNodeHealthNonTransactional}
-     *         has been called
+     * has been called
      */
     long getGetLocalNodeHealthNonTransactionalCalls();
 
     /**
-     * Returns the number of times {@link WatchdogService#isLocalNodeAlive 
+     * Returns the number of times {@link WatchdogService#isLocalNodeAlive
      * isLocalNodeAlive} has been called.
-     * 
+     *
      * @return the number of times {@code isLocalNodeAlive} has been called
      */
     long getIsLocalNodeAliveCalls();
-        
+
     /**
-     * Returns the number of times 
-     * {@link WatchdogService#isLocalNodeAliveNonTransactional 
+     * Returns the number of times
+     * {@link WatchdogService#isLocalNodeAliveNonTransactional
      * isLocalNodeAliveNonTransactional} has been called.
-     * 
-     * @return the number of times {@code isLocalNodeAliveNonTransactional} 
-     *         has been called
+     *
+     * @return the number of times {@code isLocalNodeAliveNonTransactional}
+     * has been called
      */
     long getIsLocalNodeAliveNonTransactionalCalls();
-    
+
     /**
      * Returns status information about this node.
-     * 
+     *
      * @return status information about this node
      */
     NodeInfo getStatusInfo();

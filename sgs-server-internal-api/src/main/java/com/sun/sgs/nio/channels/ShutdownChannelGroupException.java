@@ -30,9 +30,10 @@ package com.sun.sgs.nio.channels;
  * in a group that is shutdown.
  */
 public class ShutdownChannelGroupException
-    extends IllegalStateException
-{
-    /** The version of the serialized representation of this class. */
+        extends IllegalStateException {
+    /**
+     * The version of the serialized representation of this class.
+     */
     private static final long serialVersionUID = 1L;
 
     /**

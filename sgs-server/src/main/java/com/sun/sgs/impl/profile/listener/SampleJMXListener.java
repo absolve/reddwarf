@@ -32,6 +32,7 @@ import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
 import com.sun.sgs.profile.ProfileConsumer;
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
+
 import java.beans.PropertyChangeEvent;
 import java.util.Date;
 import java.util.Map;
@@ -43,13 +44,13 @@ import java.util.Properties;
  * <p>
  * Every 5 seconds, this listener reports the total number of
  * successful tasks, the average lag time for successful tasks,
- * and the number of successful tasks which were owned by 
+ * and the number of successful tasks which were owned by
  * the kernel.
  * <p>
  * It is an example of using information about particular tasks, which can only
  * be gathered through a ProfileListener, as well as using aggregated
  * information about all tasks, which is available through a registered JMX
- * MBean.  
+ * MBean.
  */
 public class SampleJMXListener implements ProfileListener {
     // the MBean for task aggregated statistics
@@ -59,31 +60,30 @@ public class SampleJMXListener implements ProfileListener {
     // the number of successful tasks that have been run which are
     // not run for the kernel
     private volatile long numSuccessfulNonKernelTasks = 0;
-    
+
     /**
      * Creates an instance of {@code SampleJMXListener}.
      *
      * @param properties the {@code Properties} for this listener
-     * @param owner the {@code Identity} to use for all tasks run by
-     *        this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *        available system components
+     * @param owner      the {@code Identity} to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      */
     public SampleJMXListener(Properties properties, Identity owner,
-                                 ComponentRegistry registry)
-    {
+                             ComponentRegistry registry) {
         // Find the MBean which collects our overall task statistics
-        ProfileCollector collector = 
+        ProfileCollector collector =
                 registry.getComponent(ProfileCollector.class);
-        taskBean = (TaskAggregateMXBean) 
+        taskBean = (TaskAggregateMXBean)
                 collector.getRegisteredMBean(TaskAggregateMXBean.MXBEAN_NAME);
         if (taskBean == null) {
             // The bean hasn't been registerd yet.  This is unexpected,
             // so throw an exception to indicate we're in a bad state.
-            throw 
-               new IllegalStateException("Could not find task aggregate mbean");
+            throw
+                    new IllegalStateException("Could not find task aggregate mbean");
         }
-        
+
         // Ensure that the taskBean statistics are being generated.
         // This means we don't have to enable a default profiling level
         // through a property at start-up.
@@ -98,16 +98,16 @@ public class SampleJMXListener implements ProfileListener {
                 break;
             }
         }
-        
+
         // Schedule a periodic task to print reports
         long reportPeriod = 1000 * 5;  // 5 seconds between reports
         handle = registry.getComponent(TaskScheduler.class).
-            scheduleRecurringTask(new TaskRunnable(), owner, 
-                                  System.currentTimeMillis() + reportPeriod,
-                                  reportPeriod);
+                scheduleRecurringTask(new TaskRunnable(), owner,
+                        System.currentTimeMillis() + reportPeriod,
+                        reportPeriod);
         handle.start();
     }
-    
+
     /**
      * Update statistics about particular tasks.  In this case, we
      * are reporting the number of successful tasks of a particular type.
@@ -123,16 +123,20 @@ public class SampleJMXListener implements ProfileListener {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent event) {
-	// unused
+        // unused
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         handle.cancel();
     }
-    
+
     /**
      * A runnable for periodically reporting task summaries to the
      * network.
@@ -141,19 +145,20 @@ public class SampleJMXListener implements ProfileListener {
         public String getBaseTaskType() {
             return TaskRunnable.class.getName();
         }
+
         public void run() throws Exception {
-            System.out.println("Time:  " + 
-                               new Date(System.currentTimeMillis()));
+            System.out.println("Time:  " +
+                    new Date(System.currentTimeMillis()));
             System.out.printf("  Total tasks run: %d%n" +
-                              "  Successful tasks: %d%n" +
-                              "  Successful non-kernel tasks: %d%n" +
-                              "  Average lag time: %.2fms%n",
-                              taskBean.getTaskCount(),
-                              (taskBean.getTaskCount() - 
-                                  taskBean.getTaskFailureCount()),
-                              numSuccessfulNonKernelTasks,
-                              taskBean.getSuccessfulLagTimeAvg()
-                              );
+                            "  Successful tasks: %d%n" +
+                            "  Successful non-kernel tasks: %d%n" +
+                            "  Average lag time: %.2fms%n",
+                    taskBean.getTaskCount(),
+                    (taskBean.getTaskCount() -
+                            taskBean.getTaskFailureCount()),
+                    numSuccessfulNonKernelTasks,
+                    taskBean.getSuccessfulLagTimeAvg()
+            );
         }
     }
 }

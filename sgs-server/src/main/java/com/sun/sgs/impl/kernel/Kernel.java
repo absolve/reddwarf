@@ -21,72 +21,51 @@
 
 package com.sun.sgs.impl.kernel;
 
-import com.sun.sgs.kernel.NodeType;
 import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.util.ManagedSerializable;
-import com.sun.sgs.internal.InternalContext;
-
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCoordinator;
-
 import com.sun.sgs.impl.auth.IdentityImpl;
-
 import com.sun.sgs.impl.kernel.StandardProperties.ServiceNodeTypes;
 import com.sun.sgs.impl.kernel.StandardProperties.StandardService;
-
 import com.sun.sgs.impl.kernel.logging.TransactionAwareLogManager;
-
 import com.sun.sgs.impl.profile.ProfileCollectorHandle;
 import com.sun.sgs.impl.profile.ProfileCollectorHandleImpl;
 import com.sun.sgs.impl.profile.ProfileCollectorImpl;
-
 import com.sun.sgs.impl.service.transaction.TransactionCoordinator;
 import com.sun.sgs.impl.service.transaction.TransactionCoordinatorImpl;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.impl.util.AbstractKernelRunnable;
 import com.sun.sgs.impl.util.BindingKeyedCollections;
 import com.sun.sgs.impl.util.BindingKeyedCollectionsImpl;
 import com.sun.sgs.impl.util.Version;
-
+import com.sun.sgs.internal.InternalContext;
 import com.sun.sgs.kernel.ComponentRegistry;
-
+import com.sun.sgs.kernel.NodeType;
 import com.sun.sgs.management.KernelMXBean;
-
 import com.sun.sgs.profile.ProfileCollector;
 import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
 import com.sun.sgs.profile.ProfileListener;
-
 import com.sun.sgs.service.DataService;
 import com.sun.sgs.service.Service;
 import com.sun.sgs.service.TransactionProxy;
-
 import com.sun.sgs.service.WatchdogService;
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
 
-import java.net.URL;
-
-import java.lang.reflect.Constructor;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.LogManager;
 import javax.management.JMException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * This is the core class for the server. It is the first class that is
@@ -101,101 +80,101 @@ import javax.management.JMException;
  * properties</a>.  It can also be configured with any of the properties
  * specified in the {@link StandardProperties} class, and supports
  * the following additional configuration properties:
- * 
+ *
  * <dl style="margin-left: 1em">
  *
  * <dt> <i>Property:</i> <code><b>{@value #PROFILE_LEVEL_PROPERTY}
- *	</b></code> <br>
- *	<i>Default:</i> <code>MIN</code>
+ * </b></code> <br>
+ * <i>Default:</i> <code>MIN</code>
  *
- * <dd style="padding-top: .5em">By default, the minimal amount of profiling 
- *      which is used internally by the system is enabled.  To enable more 
- *      profiling, this property must be set to a valid level for {@link 
- *      ProfileCollector#setDefaultProfileLevel(ProfileLevel)}. <p>
+ * <dd style="padding-top: .5em">By default, the minimal amount of profiling
+ * which is used internally by the system is enabled.  To enable more
+ * profiling, this property must be set to a valid level for {@link
+ * ProfileCollector#setDefaultProfileLevel(ProfileLevel)}. <p>
  *
  * <dt> <i>Property:</i> <code><b>{@value #PROFILE_LISTENERS}
- *	</b></code> <br>
- *	<i>Default:</i> No Default
+ * </b></code> <br>
+ * <i>Default:</i> No Default
  *
  * <dd style="padding-top: .5em">By default, no profile listeners are enabled.
- *      To enable a set of listeners, set this property to a colon-separated
- *      list of fully-qualified class 
- *      names, each of which implements {@link ProfileListener}.  A number
- *      of listeners are provided with the system in the
- *      {@link com.sun.sgs.impl.profile.listener} package.<p>
+ * To enable a set of listeners, set this property to a colon-separated
+ * list of fully-qualified class
+ * names, each of which implements {@link ProfileListener}.  A number
+ * of listeners are provided with the system in the
+ * {@link com.sun.sgs.impl.profile.listener} package.<p>
  *
  * <dt> <i>Property:</i> <code><b>{@value #ACCESS_COORDINATOR_PROPERTY}
- *	</b></code> <br>
- *	<i>Default:</i> <code>{@link TrackingAccessCoordinator}</code>
+ * </b></code> <br>
+ * <i>Default:</i> <code>{@link TrackingAccessCoordinator}</code>
  *
  * <dd style="padding-top: .5em">The implementation class used to track
- *      access to shared objects.  The value of this property should be the
- *      name of a public, non-abstract class that implements the
- *      {@link AccessCoordinatorHandle} interface, and that provides a public
- *      constructor with the three parameters {@link Properties},
- *      {@link TransactionProxy}, and {@link ProfileCollectorHandle}.<p>
+ * access to shared objects.  The value of this property should be the
+ * name of a public, non-abstract class that implements the
+ * {@link AccessCoordinatorHandle} interface, and that provides a public
+ * constructor with the three parameters {@link Properties},
+ * {@link TransactionProxy}, and {@link ProfileCollectorHandle}.<p>
  *
- * 
+ *
  * </dl>
  */
 class Kernel {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(Kernel.class.getName()));
+            new LoggerWrapper(Logger.getLogger(Kernel.class.getName()));
 
     // the property for setting profiling levels
     public static final String PROFILE_LEVEL_PROPERTY =
-        "com.sun.sgs.impl.kernel.profile.level";
+            "com.sun.sgs.impl.kernel.profile.level";
     // the property for setting the profile listeners
     public static final String PROFILE_LISTENERS =
-        "com.sun.sgs.impl.kernel.profile.listeners";
+            "com.sun.sgs.impl.kernel.profile.listeners";
     // The property for specifying the access coordinator
     public static final String ACCESS_COORDINATOR_PROPERTY =
-	"com.sun.sgs.impl.kernel.access.coordinator";
+            "com.sun.sgs.impl.kernel.access.coordinator";
 
     // The default access coordinator to use if we are using je
     private static final String DEFAULT_ACCESS_COORDINATOR_JE =
-        "com.sun.sgs.impl.kernel.LockingAccessCoordinator";
+            "com.sun.sgs.impl.kernel.LockingAccessCoordinator";
     // the default access coordinator to use if we are using bdb
     private static final String DEFAULT_ACCESS_COORDINATOR_BDB =
-        "com.sun.sgs.impl.kernel.TrackingAccessCoordinator";
+            "com.sun.sgs.impl.kernel.TrackingAccessCoordinator";
     // the default access coordinator to use if the db type is unknown
     private static final String DEFAULT_ACCESS_COORDINATOR =
-        "com.sun.sgs.impl.kernel.LockingAccessCoordinator";
+            "com.sun.sgs.impl.kernel.LockingAccessCoordinator";
 
     // the default authenticator
     private static final String DEFAULT_IDENTITY_AUTHENTICATOR =
-        "com.sun.sgs.impl.auth.NullAuthenticator";
+            "com.sun.sgs.impl.auth.NullAuthenticator";
 
     // the default services
     private static final String DEFAULT_CHANNEL_SERVICE =
-        "com.sun.sgs.impl.service.channel.ChannelServiceImpl";
+            "com.sun.sgs.impl.service.channel.ChannelServiceImpl";
     private static final String DEFAULT_CLIENT_SESSION_SERVICE =
-        "com.sun.sgs.impl.service.session.ClientSessionServiceImpl";
+            "com.sun.sgs.impl.service.session.ClientSessionServiceImpl";
     private static final String DEFAULT_DATA_SERVICE =
-        "com.sun.sgs.impl.service.data.DataServiceImpl";
+            "com.sun.sgs.impl.service.data.DataServiceImpl";
     private static final String DEFAULT_TASK_SERVICE =
-        "com.sun.sgs.impl.service.task.TaskServiceImpl";
+            "com.sun.sgs.impl.service.task.TaskServiceImpl";
     private static final String DEFAULT_WATCHDOG_SERVICE =
-        "com.sun.sgs.impl.service.watchdog.WatchdogServiceImpl";
+            "com.sun.sgs.impl.service.watchdog.WatchdogServiceImpl";
     private static final String DEFAULT_NODE_MAPPING_SERVICE =
-        "com.sun.sgs.impl.service.nodemap.NodeMappingServiceImpl";
+            "com.sun.sgs.impl.service.nodemap.NodeMappingServiceImpl";
 
     // the default managers
     private static final String DEFAULT_CHANNEL_MANAGER =
-        "com.sun.sgs.impl.app.profile.ProfileChannelManager";
+            "com.sun.sgs.impl.app.profile.ProfileChannelManager";
     private static final String DEFAULT_DATA_MANAGER =
-        "com.sun.sgs.impl.app.profile.ProfileDataManager";
+            "com.sun.sgs.impl.app.profile.ProfileDataManager";
     private static final String DEFAULT_TASK_MANAGER =
-        "com.sun.sgs.impl.app.profile.ProfileTaskManager";
-    
+            "com.sun.sgs.impl.app.profile.ProfileTaskManager";
+
     // default timeout the kernel's shutdown method (15 minutes)
     private static final int DEFAULT_SHUTDOWN_TIMEOUT = 15 * 60000;
-    
+
     // the proxy used by all transactional components
     private static final TransactionProxy proxy = new TransactionProxyImpl();
-    
+
     // the properties used to start the application
     private final PropertiesWrapper wrappedProperties;
 
@@ -205,23 +184,23 @@ class Kernel {
 
     // the application that is running in this kernel
     private KernelContext application;
-    
+
     // The system registry which contains all shared system components
     private final ComponentRegistryImpl systemRegistry;
-    
+
     // collector of profile information, and an associated handle
     private final ProfileCollectorImpl profileCollector;
     private final ProfileCollectorHandleImpl profileCollectorHandle;
-    
+
     // shutdown controller that can be passed to components who need to be able 
     // to issue a kernel shutdown. the watchdog also constains a reference for
     // services to call shutdown.
-    private final KernelShutdownControllerImpl shutdownCtrl = 
+    private final KernelShutdownControllerImpl shutdownCtrl =
             new KernelShutdownControllerImpl();
-    
+
     // specifies whether this node has already been shutdown
     private boolean isShutdown = false;
-    
+
     /**
      * Creates an instance of <code>Kernel</code>. Once this is created
      * the code components of the system are running and ready. Creating
@@ -229,12 +208,10 @@ class Kernel {
      * the application and its associated services.
      *
      * @param appProperties application properties
-     *
      * @throws Exception if for any reason the kernel cannot be started
      */
     protected Kernel(Properties appProperties)
-        throws Exception 
-    {
+            throws Exception {
         // output the entire set of configuration properties to the logger
         if (logger.isLoggable(Level.CONFIG)) {
             StringBuffer propOutput = new StringBuffer(
@@ -242,14 +219,14 @@ class Kernel {
             for (String key : new TreeSet<String>(
                     appProperties.stringPropertyNames())) {
                 propOutput.append("\n  " + key + "=" +
-                                  appProperties.getProperty(key));
+                        appProperties.getProperty(key));
             }
             logger.log(Level.CONFIG, propOutput.toString());
         }
-                
+
         // filter the properties with appropriate defaults
         filterProperties(appProperties);
-        
+
         // check the standard properties
         checkProperties(appProperties);
         this.wrappedProperties = new PropertiesWrapper(appProperties);
@@ -260,27 +237,27 @@ class Kernel {
                     ProfileLevel.MIN.name());
             ProfileLevel profileLevel;
             try {
-                profileLevel = 
+                profileLevel =
                         ProfileLevel.valueOf(level.toUpperCase());
                 if (logger.isLoggable(Level.CONFIG)) {
                     logger.log(Level.CONFIG, "Profiling level is {0}", level);
                 }
             } catch (IllegalArgumentException iae) {
                 if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING, "Unknown profile level {0}", 
-                               level);
+                    logger.log(Level.WARNING, "Unknown profile level {0}",
+                            level);
                 }
                 throw iae;
             }
-            
+
             // Create the system registry
             systemRegistry = new ComponentRegistryImpl();
-            
-            profileCollector = new ProfileCollectorImpl(profileLevel, 
-                                                        appProperties,
-                                                        systemRegistry);
-            profileCollectorHandle = 
-                new ProfileCollectorHandleImpl(profileCollector);
+
+            profileCollector = new ProfileCollectorImpl(profileLevel,
+                    appProperties,
+                    systemRegistry);
+            profileCollectorHandle =
+                    new ProfileCollectorHandleImpl(profileCollector);
 
             // with profiling setup, register all MXBeans
             registerMXBeans(appProperties);
@@ -291,20 +268,20 @@ class Kernel {
 
             // initialize the transaction coordinator
             TransactionCoordinator transactionCoordinator =
-                new TransactionCoordinatorImpl(appProperties,
-                                               profileCollectorHandle);
+                    new TransactionCoordinatorImpl(appProperties,
+                            profileCollectorHandle);
 
-	    // possibly upgrade loggers to be transactional
-	    LogManager logManager = LogManager.getLogManager();
+            // possibly upgrade loggers to be transactional
+            LogManager logManager = LogManager.getLogManager();
 
-	    // if the logging system has been configured to be
-	    // transactional, the LogManager installed should be an
-	    // instance of TransactionAwareLogManager
-	    if (logManager instanceof TransactionAwareLogManager) {
-		TransactionAwareLogManager txnAwareLogManager =
-		    (TransactionAwareLogManager) logManager;
-		txnAwareLogManager.configure(appProperties, proxy);
-	    }
+            // if the logging system has been configured to be
+            // transactional, the LogManager installed should be an
+            // instance of TransactionAwareLogManager
+            if (logManager instanceof TransactionAwareLogManager) {
+                TransactionAwareLogManager txnAwareLogManager =
+                        (TransactionAwareLogManager) logManager;
+                txnAwareLogManager.configure(appProperties, proxy);
+            }
 
             // create the access coordinator
             AccessCoordinatorHandle accessCoordinator = getAccessCoordinator(
@@ -313,16 +290,16 @@ class Kernel {
             // create the schedulers, and provide an empty context in case
             // any profiling components try to do transactional work
             transactionScheduler =
-                new TransactionSchedulerImpl(appProperties,
-                                             transactionCoordinator,
-                                             profileCollectorHandle,
-                                             accessCoordinator);
+                    new TransactionSchedulerImpl(appProperties,
+                            transactionCoordinator,
+                            profileCollectorHandle,
+                            accessCoordinator);
             taskScheduler =
-                new TaskSchedulerImpl(appProperties, profileCollectorHandle);
+                    new TaskSchedulerImpl(appProperties, profileCollectorHandle);
 
-	    BindingKeyedCollections collectionsFactory =
-		new BindingKeyedCollectionsImpl(proxy);
-                        
+            BindingKeyedCollections collectionsFactory =
+                    new BindingKeyedCollectionsImpl(proxy);
+
             KernelContext ctx = new StartupKernelContext("Kernel");
             transactionScheduler.setContext(ctx);
             taskScheduler.setContext(ctx);
@@ -333,13 +310,13 @@ class Kernel {
             systemRegistry.addComponent(taskScheduler);
             systemRegistry.addComponent(identityCoordinator);
             systemRegistry.addComponent(profileCollector);
-	    systemRegistry.addComponent(collectionsFactory);
+            systemRegistry.addComponent(collectionsFactory);
 
             // create the profiling listeners.  It is important to not
             // do this until we've finished adding components to the
             // system registry, as some listeners use those components.
             loadProfileListeners(profileCollector);
-            
+
             if (logger.isLoggable(Level.INFO)) {
                 logger.log(Level.INFO, "The Kernel is ready, version: {0}",
                         Version.getVersion());
@@ -357,7 +334,7 @@ class Kernel {
             throw e;
         }
     }
-    
+
     /**
      * Construct the AccessCoordinatorHandle.  Our default access
      * coordinator is different depending on whether we are using bdb or je.
@@ -380,20 +357,22 @@ class Kernel {
                 "com.sun.sgs.impl.service.data.store.db.bdb.BdbEnvironment")) {
             defaultCoordinatorClass = DEFAULT_ACCESS_COORDINATOR_BDB;
         }
-        
+
         return wrappedProperties.getClassInstanceProperty(
                 ACCESS_COORDINATOR_PROPERTY,
                 defaultCoordinatorClass,
                 AccessCoordinatorHandle.class,
                 new Class[]{
-                    Properties.class,
-                    TransactionProxy.class,
-                    ProfileCollectorHandle.class
+                        Properties.class,
+                        TransactionProxy.class,
+                        ProfileCollectorHandle.class
                 },
                 properties, proxy, profileCollectorHandle);
     }
 
-    /** Private helper that registers MXBeans for management. */
+    /**
+     * Private helper that registers MXBeans for management.
+     */
     private void registerMXBeans(Properties p) throws Exception {
         // Create the configuration MBean and register it.  This is
         // used during the construction of later components.
@@ -412,7 +391,7 @@ class Kernel {
         KernelManager kernelManager = new KernelManager();
         try {
             profileCollector.registerMBean(kernelManager,
-                                           KernelManager.MXBEAN_NAME);
+                    KernelManager.MXBEAN_NAME);
         } catch (JMException e) {
             logger.logThrow(Level.WARNING, e, "Could not register MBean");
             throw e;
@@ -426,11 +405,11 @@ class Kernel {
     private void loadProfileListeners(ProfileCollector profileCollector) {
         List<String> listenerList =
                 wrappedProperties.getListProperty(
-                PROFILE_LISTENERS, String.class, "");
+                        PROFILE_LISTENERS, String.class, "");
         List<String> extListenerList =
                 wrappedProperties.getListProperty(
-                BootProperties.EXTENSION_PROFILE_LISTENERS_PROPERTY,
-                String.class, "");
+                        BootProperties.EXTENSION_PROFILE_LISTENERS_PROPERTY,
+                        String.class, "");
 
         List<String> allListenerNames = extListenerList;
         allListenerNames.addAll(listenerList);
@@ -442,17 +421,17 @@ class Kernel {
                 // Strip off exceptions found via reflection
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.logThrow(Level.WARNING, e.getCause(),
-                                    "Failed to load ProfileListener {0} ... " +
+                            "Failed to load ProfileListener {0} ... " +
                                     "it will not be available for profiling",
-                                    listenerClassName);
+                            listenerClassName);
                 }
 
             } catch (Exception e) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.logThrow(Level.WARNING, e,
-                                    "Failed to load ProfileListener {0} ... " +
+                            "Failed to load ProfileListener {0} ... " +
                                     "it will not be available for profiling",
-                                    listenerClassName);
+                            listenerClassName);
                 }
             }
         }
@@ -465,10 +444,10 @@ class Kernel {
     }
 
     /**
-     * Helper that starts an application. This method 
+     * Helper that starts an application. This method
      * configures the <code>Service</code>s associated with the
      * application and then starts the application.
-     * 
+     *
      * @throws Exception if there is any error in startup
      */
     private void createAndStartApplication() throws Exception {
@@ -490,9 +469,8 @@ class Kernel {
      * <code>Manager</code>s (if any) in order, in preparation for starting
      * up an application.
      */
-    private void createServices(String appName, Identity owner) 
-        throws Exception
-    {
+    private void createServices(String appName, Identity owner)
+            throws Exception {
         if (logger.isLoggable(Level.CONFIG)) {
             logger.log(Level.CONFIG, "{0}: starting services", appName);
         }
@@ -505,13 +483,13 @@ class Kernel {
 
         // tell the AppContext how to find the managers
         InternalContext.setManagerLocator(new ManagerLocatorImpl());
-        
+
         try {
             fetchServices((StartupKernelContext) application);
         } catch (Exception e) {
             if (logger.isLoggable(Level.SEVERE)) {
                 logger.logThrow(Level.SEVERE, e, "{0}: failed to create " +
-                                "services", appName);
+                        "services", appName);
             }
             throw e;
         }
@@ -521,18 +499,18 @@ class Kernel {
         transactionScheduler.setContext(application);
         taskScheduler.setContext(application);
         ContextResolver.setTaskState(application, owner);
-        
+
         // notify all of the services that the application state is ready
         try {
             application.notifyReady();
         } catch (Exception e) {
             if (logger.isLoggable(Level.SEVERE)) {
                 logger.logThrow(Level.SEVERE, e, "{0}: failed when notifying " +
-                                "services that application is ready", appName);
+                        "services that application is ready", appName);
             }
             throw e;
         }
-        
+
         // enable the shutdown controller once the components and services
         // are setup to allow a node shutdown call from either of them.
         shutdownCtrl.setReady();
@@ -543,9 +521,8 @@ class Kernel {
      * taking care to call out the standard services first, because we need
      * to get the ordering constant and make sure that they're all present.
      */
-    private void fetchServices(StartupKernelContext startupContext) 
-       throws Exception 
-    {
+    private void fetchServices(StartupKernelContext startupContext)
+            throws Exception {
         // retrieve any specified external services
         // and fold in any extension library services
         List<String> externalServices = wrappedProperties.getListProperty(
@@ -560,14 +537,14 @@ class Kernel {
 
         List<ServiceNodeTypes> externalNodeTypes =
                 wrappedProperties.getEnumListProperty(
-                StandardProperties.SERVICE_NODE_TYPES,
-                ServiceNodeTypes.class,
-                ServiceNodeTypes.ALL);
+                        StandardProperties.SERVICE_NODE_TYPES,
+                        ServiceNodeTypes.class,
+                        ServiceNodeTypes.ALL);
         List<ServiceNodeTypes> extensionNodeTypes =
                 wrappedProperties.getEnumListProperty(
-                BootProperties.EXTENSION_SERVICE_NODE_TYPES_PROPERTY,
-                ServiceNodeTypes.class,
-                ServiceNodeTypes.ALL);
+                        BootProperties.EXTENSION_SERVICE_NODE_TYPES_PROPERTY,
+                        ServiceNodeTypes.class,
+                        ServiceNodeTypes.ALL);
 
         if (externalServices.size() == 1 && externalManagers.size() == 0) {
             externalManagers.add("");
@@ -594,18 +571,20 @@ class Kernel {
         allNodeTypes.addAll(externalNodeTypes);
 
         NodeType type =
-            NodeType.valueOf(
-                wrappedProperties.getProperty(StandardProperties.NODE_TYPE));
+                NodeType.valueOf(
+                        wrappedProperties.getProperty(StandardProperties.NODE_TYPE));
 
         loadCoreServices(type, startupContext);
-        loadExternalServices(allServices, 
-                             allManagers,
-                             allNodeTypes,
-                             type,
-                             startupContext);
+        loadExternalServices(allServices,
+                allManagers,
+                allNodeTypes,
+                type,
+                startupContext);
     }
 
-    /** Private helper used to load all core services and managers. */
+    /**
+     * Private helper used to load all core services and managers.
+     */
     private void loadCoreServices(NodeType type,
                                   StartupKernelContext startupContext)
             throws Exception {
@@ -622,7 +601,7 @@ class Kernel {
                 break;
             default:
                 throw new IllegalArgumentException("Invalid node type : " +
-                                                   type);
+                        type);
         }
 
         final int finalServiceOrdinal = finalStandardService.ordinal();
@@ -636,8 +615,8 @@ class Kernel {
         setupService(dataServiceClass, dataManagerClass, startupContext);
         // provide the node id to the shutdown controller and profile collector
         long nodeId =
-            startupContext.getService(DataService.class).getLocalNodeId();
-	shutdownCtrl.setNodeId(nodeId);
+                startupContext.getService(DataService.class).getLocalNodeId();
+        shutdownCtrl.setNodeId(nodeId);
         profileCollectorHandle.notifyNodeIdAssigned(nodeId);
 
         // load the watch-dog service, which has no associated manager
@@ -656,8 +635,7 @@ class Kernel {
 
         // load the node mapping service, which has no associated manager
 
-        if (StandardService.NodeMappingService.ordinal() > finalServiceOrdinal)
-        {
+        if (StandardService.NodeMappingService.ordinal() > finalServiceOrdinal) {
             return;
         }
 
@@ -681,8 +659,7 @@ class Kernel {
         // load the client session service, which has no associated manager
 
         if (StandardService.ClientSessionService.ordinal() >
-                finalServiceOrdinal)
-        {
+                finalServiceOrdinal) {
             return;
         }
 
@@ -704,26 +681,27 @@ class Kernel {
         setupService(channelServiceClass, channelManagerClass, startupContext);
     }
 
-    /** Private helper used to load all external services and managers. */
+    /**
+     * Private helper used to load all external services and managers.
+     */
     private void loadExternalServices(List<String> externalServices,
                                       List<String> externalManagers,
                                       List<ServiceNodeTypes> externalNodeTypes,
                                       NodeType type,
                                       StartupKernelContext startupContext)
-        throws Exception
-    {
+            throws Exception {
         if (externalServices.size() != externalManagers.size() ||
-            externalServices.size() != externalNodeTypes.size()) {
+                externalServices.size() != externalNodeTypes.size()) {
             if (logger.isLoggable(Level.SEVERE)) {
                 logger.log(Level.SEVERE, "External service count " +
-                           "({0}), manager count ({1}), and node type count " +
-                           "({2}) do not match.",
-                           externalServices.size(),
-                           externalManagers.size(),
-                           externalNodeTypes.size());
+                                "({0}), manager count ({1}), and node type count " +
+                                "({2}) do not match.",
+                        externalServices.size(),
+                        externalManagers.size(),
+                        externalNodeTypes.size());
             }
             throw new IllegalArgumentException("Mis-matched service, manager " +
-                                               "and node type count");
+                    "and node type count");
         }
 
         for (int i = 0; i < externalServices.size(); i++) {
@@ -734,7 +712,7 @@ class Kernel {
 
             if (!externalManagers.get(i).equals("")) {
                 setupService(externalServices.get(i), externalManagers.get(i),
-                             startupContext);
+                        startupContext);
             } else {
                 setupServiceNoManager(externalServices.get(i), startupContext);
             }
@@ -745,9 +723,8 @@ class Kernel {
      * Sets up a service with no manager based on fully qualified class name.
      */
     private void setupServiceNoManager(String className,
-                                       StartupKernelContext startupContext) 
-        throws Exception
-    {
+                                       StartupKernelContext startupContext)
+            throws Exception {
         Class<?> serviceClass = Class.forName(className);
         Service service = createService(serviceClass);
         startupContext.addService(service);
@@ -759,8 +736,7 @@ class Kernel {
      */
     private void setupService(String serviceName, String managerName,
                               StartupKernelContext startupContext)
-        throws Exception
-    {
+            throws Exception {
         // get the service class and instance
         Class<?> serviceClass = Class.forName(serviceName);
         Service service = createService(serviceClass);
@@ -768,10 +744,10 @@ class Kernel {
         // resolve the class and the constructor, checking for constructors
         // by type since they likely take a super-type of Service
         Class<?> managerClass = Class.forName(managerName);
-        Constructor<?> [] constructors = managerClass.getConstructors();
+        Constructor<?>[] constructors = managerClass.getConstructors();
         Constructor<?> managerConstructor = null;
         for (int i = 0; i < constructors.length; i++) {
-            Class<?> [] types = constructors[i].getParameterTypes();
+            Class<?>[] types = constructors[i].getParameterTypes();
             if (types.length == 1) {
                 if (types[0].isAssignableFrom(serviceClass)) {
                     managerConstructor = constructors[i];
@@ -783,7 +759,7 @@ class Kernel {
         // if we didn't find a matching manager constructor, it's an error
         if (managerConstructor == null) {
             throw new NoSuchMethodException("Could not find a constructor " +
-                                            "that accepted the Service");
+                    "that accepted the Service");
         }
 
         // create the manager and put it and the service in the collections
@@ -803,7 +779,7 @@ class Kernel {
             // find the appropriate constructor
             serviceConstructor =
                     serviceClass.getConstructor(Properties.class,
-                    ComponentRegistry.class, TransactionProxy.class);
+                            ComponentRegistry.class, TransactionProxy.class);
             // return a new instance
             return (Service) (serviceConstructor.newInstance(
                     wrappedProperties.getProperties(), systemRegistry, proxy));
@@ -812,8 +788,8 @@ class Kernel {
             // services with shutdown privileges.
             serviceConstructor =
                     serviceClass.getConstructor(Properties.class,
-                    ComponentRegistry.class, TransactionProxy.class,
-                    KernelShutdownController.class);
+                            ComponentRegistry.class, TransactionProxy.class,
+                            KernelShutdownController.class);
             // return a new instance
             return (Service) (serviceConstructor.newInstance(
                     wrappedProperties.getProperties(), systemRegistry,
@@ -821,42 +797,43 @@ class Kernel {
         }
     }
 
-    /** Start the application, throwing an exception if there is a problem. */
-    private void startApplication(String appName, Identity owner) 
-        throws Exception
-    {
+    /**
+     * Start the application, throwing an exception if there is a problem.
+     */
+    private void startApplication(String appName, Identity owner)
+            throws Exception {
         // at this point the services are ready, so the final step
         // is to initialize the application by running a special
         // KernelRunnable in an unbounded transaction, unless we're
         // running without an application
-        NodeType type = 
-            NodeType.valueOf(
-                wrappedProperties.getProperty(StandardProperties.NODE_TYPE));
+        NodeType type =
+                NodeType.valueOf(
+                        wrappedProperties.getProperty(StandardProperties.NODE_TYPE));
         if (!type.equals(NodeType.coreServerNode)) {
             try {
                 if (logger.isLoggable(Level.CONFIG)) {
                     logger.log(Level.CONFIG, "{0}: starting application",
-                               appName);
+                            appName);
                 }
 
                 transactionScheduler.
-                    runUnboundedTask(
-                        new AppStartupRunner(wrappedProperties.getProperties()),
-                        owner);
+                        runUnboundedTask(
+                                new AppStartupRunner(wrappedProperties.getProperties()),
+                                owner);
 
-                logger.log(Level.INFO, 
-                           "{0}: application is ready", application);
+                logger.log(Level.INFO,
+                        "{0}: application is ready", application);
             } catch (Exception e) {
                 if (logger.isLoggable(Level.CONFIG)) {
                     logger.logThrow(Level.CONFIG, e, "{0}: failed to " +
-                                    "start application", appName);
+                            "start application", appName);
                 }
                 throw e;
             }
         } else {
             // we're running without an application, so we're finished
             logger.log(Level.INFO, "{0}: non-application context is ready",
-                       application);
+                    application);
         }
     }
 
@@ -873,12 +850,12 @@ class Kernel {
             }
         }, timeout);
     }
-    
+
     /**
      * Shut down all services (in reverse order) and the schedulers.
      */
     synchronized void shutdown() {
-        if (isShutdown) { 
+        if (isShutdown) {
             return;
         }
         startShutdownTimeout(DEFAULT_SHUTDOWN_TIMEOUT);
@@ -897,7 +874,7 @@ class Kernel {
         if (taskScheduler != null) {
             taskScheduler.shutdown();
         }
-        
+
         logger.log(Level.FINE, "Node is shut down.");
         isShutdown = true;
     }
@@ -915,11 +892,11 @@ class Kernel {
             throws Exception {
         List<String> authClassNameList =
                 wrappedProperties.getListProperty(
-                StandardProperties.AUTHENTICATORS, String.class, "");
+                        StandardProperties.AUTHENTICATORS, String.class, "");
         List<String> extAuthClassNameList =
                 wrappedProperties.getListProperty(
-                BootProperties.EXTENSION_AUTHENTICATORS_PROPERTY,
-                String.class, "");
+                        BootProperties.EXTENSION_AUTHENTICATORS_PROPERTY,
+                        String.class, "");
 
         List<String> allAuthClassNames = extAuthClassNameList;
         allAuthClassNames.addAll(authClassNameList);
@@ -928,7 +905,7 @@ class Kernel {
         }
 
         ArrayList<IdentityAuthenticator> authenticators =
-                                         new ArrayList<IdentityAuthenticator>();
+                new ArrayList<IdentityAuthenticator>();
         for (String authClassName : allAuthClassNames) {
             authenticators.add(getAuthenticator(
                     authClassName,
@@ -937,28 +914,26 @@ class Kernel {
 
         return new IdentityCoordinatorImpl(authenticators);
     }
-    
+
     /**
      * Creates a new identity authenticator.
      */
     private IdentityAuthenticator getAuthenticator(String authClassName,
                                                    Properties properties)
-        throws Exception
-    {
+            throws Exception {
         Class<?> authenticatorClass = Class.forName(authClassName);
         Constructor<?> authenticatorConstructor =
-            authenticatorClass.getConstructor(Properties.class);
+                authenticatorClass.getConstructor(Properties.class);
         return (IdentityAuthenticator) (authenticatorConstructor.
-                                        newInstance(properties));
+                newInstance(properties));
     }
 
     /**
      * Helper method for loading properties files with backing properties.
      */
     private static Properties loadProperties(URL resource,
-                                             Properties backingProperties) 
-            throws Exception
-    {
+                                             Properties backingProperties)
+            throws Exception {
         InputStream in = null;
         try {
             Properties properties;
@@ -969,12 +944,12 @@ class Kernel {
             }
             in = resource.openStream();
             properties.load(in);
-            
+
             return properties;
         } catch (IOException ioe) {
             if (logger.isLoggable(Level.SEVERE)) {
                 logger.logThrow(Level.SEVERE, ioe, "Unable to load " +
-                                "from resource {0}: ", resource);
+                        "from resource {0}: ", resource);
             }
             throw ioe;
         } finally {
@@ -984,20 +959,19 @@ class Kernel {
                 } catch (IOException e) {
                     if (logger.isLoggable(Level.CONFIG)) {
                         logger.logThrow(Level.CONFIG, e, "failed to close " +
-                                        "resource {0}", resource);
+                                "resource {0}", resource);
                     }
                 }
             }
         }
     }
-    
+
     /**
      * Helper method that filters properties, loading appropriate defaults
      * if necessary.
      */
     private static Properties filterProperties(Properties properties)
-        throws Exception
-    {
+            throws Exception {
         try {
             // Expand properties as needed.
             String value = properties.getProperty(StandardProperties.NODE_TYPE);
@@ -1020,18 +994,17 @@ class Kernel {
         } catch (IllegalArgumentException iae) {
             if (logger.isLoggable(Level.SEVERE)) {
                 logger.logThrow(Level.SEVERE, iae, "Illegal data in " +
-                                "properties");
+                        "properties");
             }
             throw iae;
-        } 
+        }
     }
 
     /**
      * Check for obvious errors in the properties file, logging and
      * throwing an {@code IllegalArgumentException} if there is a problem.
      */
-    private static void checkProperties(Properties appProperties) 
-    {
+    private static void checkProperties(Properties appProperties) {
         String appName =
                 appProperties.getProperty(StandardProperties.APP_NAME);
 
@@ -1039,39 +1012,38 @@ class Kernel {
         // they are then start the application
         if (appName == null) {
             logger.log(Level.SEVERE, "Missing required property " +
-                       StandardProperties.APP_NAME);
+                    StandardProperties.APP_NAME);
             throw new IllegalArgumentException("Missing required property " +
                     StandardProperties.APP_NAME);
         }
-        
+
         if (appProperties.getProperty(StandardProperties.APP_ROOT) == null) {
             logger.log(Level.SEVERE, "Missing required property " +
-                       StandardProperties.APP_ROOT + " for application: " +
-                       appName);
+                    StandardProperties.APP_ROOT + " for application: " +
+                    appName);
             throw new IllegalArgumentException("Missing required property " +
-                       StandardProperties.APP_ROOT + " for application: " +
-                       appName);
+                    StandardProperties.APP_ROOT + " for application: " +
+                    appName);
         }
-        
-        NodeType type = 
-            NodeType.valueOf(
-                appProperties.getProperty(StandardProperties.NODE_TYPE));
+
+        NodeType type =
+                NodeType.valueOf(
+                        appProperties.getProperty(StandardProperties.NODE_TYPE));
         if (!type.equals(NodeType.coreServerNode)) {
-            if (appProperties.getProperty(StandardProperties.APP_LISTENER) == 
-                null)
-            {
+            if (appProperties.getProperty(StandardProperties.APP_LISTENER) ==
+                    null) {
                 logger.log(Level.SEVERE, "Missing required property " +
-                       StandardProperties.APP_LISTENER +
-                       " for application: " + appName);
+                        StandardProperties.APP_LISTENER +
+                        " for application: " + appName);
                 throw new IllegalArgumentException(
-                       "Missing required property " +
-                       StandardProperties.APP_LISTENER +
-                       " for application: " + appName);
-                
+                        "Missing required property " +
+                                StandardProperties.APP_LISTENER +
+                                " for application: " + appName);
+
             }
         }
     }
-    
+
     /**
      * This runnable calls the application's <code>initialize</code> method,
      * if it hasn't been called before, to start the application for the
@@ -1082,25 +1054,29 @@ class Kernel {
         // the properties for the application
         private final Properties properties;
 
-        /** Creates an instance of <code>AppStartupRunner</code>. */
+        /**
+         * Creates an instance of <code>AppStartupRunner</code>.
+         */
         AppStartupRunner(Properties properties) {
-	    super(null);
+            super(null);
             this.properties = properties;
         }
 
-        /** Starts the application, throwing an exception on failure. */
+        /**
+         * Starts the application, throwing an exception on failure.
+         */
         public void run() throws Exception {
             DataService dataService =
-                Kernel.proxy.getService(DataService.class);
+                    Kernel.proxy.getService(DataService.class);
             try {
                 // test to see if this name if the listener is already bound...
                 dataService.getServiceBinding(StandardProperties.APP_LISTENER);
             } catch (NameNotBoundException nnbe) {
                 // ...if it's not, create and then bind the listener
                 AppListener listener =
-                    (new PropertiesWrapper(properties)).
-                    getClassInstanceProperty(StandardProperties.APP_LISTENER,
-                                             AppListener.class, new Class[] {});
+                        (new PropertiesWrapper(properties)).
+                                getClassInstanceProperty(StandardProperties.APP_LISTENER,
+                                        AppListener.class, new Class[]{});
                 if (listener instanceof ManagedObject) {
                     dataService.setServiceBinding(
                             StandardProperties.APP_LISTENER, listener);
@@ -1116,26 +1092,27 @@ class Kernel {
             }
         }
     }
-    
+
     /**
-     * This is an object created by the {@code Kernel} and passed to the 
-     * services and components which are given shutdown privileges. This object 
+     * This is an object created by the {@code Kernel} and passed to the
+     * services and components which are given shutdown privileges. This object
      * allows the {@code Kernel} to be referenced when a shutdown of the node is
      * necessary, such as when a service on the node has failed or has become
      * inconsistent. This class can only be instantiated by the {@code Kernel}.
      */
     private final class KernelShutdownControllerImpl implements
-            KernelShutdownController 
-    {
-	private volatile long nodeId = -1;
+            KernelShutdownController {
+        private volatile long nodeId = -1;
         private WatchdogService watchdogSvc = null;
         private boolean shutdownQueued = false;
         private boolean isReady = false;
         private final Object shutdownQueueLock = new Object();
 
-        /** Provides the shutdown controller with the local node id. */
+        /**
+         * Provides the shutdown controller with the local node id.
+         */
         public void setNodeId(long id) {
-	    nodeId = id;
+            nodeId = id;
         }
 
         /**
@@ -1152,7 +1129,7 @@ class Kernel {
             }
             this.watchdogSvc = watchdogSvc;
         }
-        
+
         /**
          * This method flags the controller as being ready to issue shutdowns.
          * If a shutdown was previously queued, then shutdown the node now.
@@ -1165,7 +1142,7 @@ class Kernel {
                 }
             }
         }
-        
+
         /**
          * {@inheritDoc}
          */
@@ -1181,8 +1158,8 @@ class Kernel {
                         // cleanup and notify the server first
                         if (nodeId != -1 && watchdogSvc != null) {
                             watchdogSvc.
-                                reportFailure(nodeId,
-                                              caller.getClass().toString());
+                                    reportFailure(nodeId,
+                                            caller.getClass().toString());
                         } else {
                             // shutdown directly if data service and watchdog
                             // have not been setup
@@ -1195,9 +1172,9 @@ class Kernel {
                 }
             }
         }
-        
+
         /**
-         * Shutdown the node. This is run in a different thread to prevent a 
+         * Shutdown the node. This is run in a different thread to prevent a
          * possible deadlock due to a service or component's doShutdown()
          * method waiting for the thread it was issued from to shutdown.
          * For example, the watchdog service's shutdown method would block if
@@ -1214,14 +1191,18 @@ class Kernel {
         }
     }
 
-    /** Basic implementation of the kernel management interface. */
+    /**
+     * Basic implementation of the kernel management interface.
+     */
     public class KernelManager implements KernelMXBean {
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void requestShutdown() {
             shutdownCtrl.shutdownNode(this);
         }
     }
-    
+
     /**
      * This method is used to automatically determine an application's set
      * of configuration properties.
@@ -1231,7 +1212,7 @@ class Kernel {
         // properties if it exists
         Properties baseProperties = new Properties();
         String extPropFile =
-            System.getProperty(BootProperties.EXTENSION_FILE_PROPERTY);
+                System.getProperty(BootProperties.EXTENSION_FILE_PROPERTY);
         if (extPropFile != null) {
             File extFile = new File(extPropFile);
             if (extFile.isFile() && extFile.canRead()) {
@@ -1239,7 +1220,7 @@ class Kernel {
             } else {
                 logger.log(Level.SEVERE, "can't access file: " + extPropFile);
                 throw new IllegalArgumentException("can't access file " +
-                                                   extPropFile);
+                        extPropFile);
             }
         }
 
@@ -1250,7 +1231,7 @@ class Kernel {
         if (propsIn != null) {
             appProperties = loadProperties(propsIn, baseProperties);
         }
-        
+
         // load the overriding set of configuration properties from the
         // file indicated by the filename argument
         Properties fileProperties = appProperties;
@@ -1258,59 +1239,59 @@ class Kernel {
             File propFile = new File(propLoc);
             if (!propFile.isFile() || !propFile.canRead()) {
                 logger.log(Level.SEVERE, "can't access file : " + propFile);
-                throw new IllegalArgumentException("can't access file " + 
-                                                   propFile);
+                throw new IllegalArgumentException("can't access file " +
+                        propFile);
             }
             fileProperties = loadProperties(propFile.toURI().toURL(),
-                                            appProperties);
+                    appProperties);
         }
-        
+
         // if a properties file exists in the user's home directory, use
         // it to override any properties
         Properties homeProperties = fileProperties;
         File homeConfig = new File(System.getProperty("user.home") +
-                                   File.separator + 
-                                   BootProperties.DEFAULT_HOME_CONFIG_FILE);
+                File.separator +
+                BootProperties.DEFAULT_HOME_CONFIG_FILE);
         if (homeConfig.isFile() && homeConfig.canRead()) {
             homeProperties = loadProperties(homeConfig.toURI().toURL(),
-                                            fileProperties);
+                    fileProperties);
         } else if (homeConfig.isFile() && !homeConfig.canRead()) {
             logger.log(Level.WARNING, "can't access file : " + homeConfig);
         }
-        
+
         // override any properties with the values from the System properties
         Properties finalProperties = new Properties(homeProperties);
         finalProperties.putAll(System.getProperties());
 
         return finalProperties;
     }
-    
+
     /**
      * Main-line method that starts the {@code Kernel}. Each kernel
      * instance runs a single application.
      * <p>
-     * If a single argument is given, the value of the argument is assumed 
+     * If a single argument is given, the value of the argument is assumed
      * to be a filename.  This file
-     * is used in combination with additional configuration settings to 
+     * is used in combination with additional configuration settings to
      * determine an application's configuration properties.
      * <p>
      * The order of precedence for properties is as follows (from highest
      * to lowest):
      * <ol>
-     * <li>System properties specified on the command line using a 
+     * <li>System properties specified on the command line using a
      * "-D" flag</li>
      * <li>Properties specified in the file from the user's home directory
      * with the name specified by
      * {@link BootProperties#DEFAULT_HOME_CONFIG_FILE}.</li>
-     * <li>Properties specified in the file given as a command line 
+     * <li>Properties specified in the file given as a command line
      * argument.</li>
-     * <li>Properties specified in the resource with the name 
+     * <li>Properties specified in the resource with the name
      * {@link BootProperties#DEFAULT_APP_PROPERTIES}
      * This file is typically included as part of the application jar file.</li>
      * <li>Properties specified in the file named by the optional
      * {@link BootProperties#EXTENSION_FILE_PROPERTY} system property.</li>
      * </ol>
-     * 
+     * <p>
      * If no value is specified for a given property in any of these places,
      * then a default is used or an <code>Exception</code> is thrown
      * (depending on whether a default value is available). Certain
@@ -1318,19 +1299,18 @@ class Kernel {
      * configuration.
      * <p>
      * See {@link StandardProperties} for the required and optional properties.
-     * 
-     * @param args optional filename for <code>Properties</code> file 
-     *             associated with the application to run
      *
+     * @param args optional filename for <code>Properties</code> file
+     *             associated with the application to run
      * @throws Exception if there is any problem starting the system
      */
-    public static void main(String [] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         // ensure we don't have too many arguments
         if (args.length > 1) {
             logger.log(Level.SEVERE, "Invalid number of arguments: halting");
             System.exit(1);
         }
-        
+
         // if an argument is specified on the command line, use it
         // for the value of the filename
         Properties appProperties;
@@ -1339,7 +1319,7 @@ class Kernel {
         } else {
             appProperties = findProperties(null);
         }
-        
+
         // boot the kernel
         new Kernel(appProperties);
     }

@@ -51,7 +51,7 @@ import edu.uci.ics.jung.graph.UndirectedGraph;
  * The transaction proxy can be {@code null} for testing outside of the
  * Darkstar service framework.
  */
-public interface AffinityGraphBuilder { 
+public interface AffinityGraphBuilder {
     /**
      * Update the graph based on the objects accessed in a task. If the
      * builder is disabled, does nothing.
@@ -60,9 +60,9 @@ public interface AffinityGraphBuilder {
      * @param detail detailed information about the object accesses, including
      *               a list of the accessed objects
      * @throws UnsupportedOperationException if this builder cannot access
-     *      the affinity graph.  Typically, this occurs because the builder
-     *      itself is distributed.
-     * @throws IllegalStateException if the builder is shut down
+     *                                       the affinity graph.  Typically, this occurs because the builder
+     *                                       itself is distributed.
+     * @throws IllegalStateException         if the builder is shut down
      */
     void updateGraph(Identity owner, AccessedObjectsDetail detail);
 
@@ -76,14 +76,15 @@ public interface AffinityGraphBuilder {
      *
      * @return the graph of access information
      * @throws UnsupportedOperationException if this builder cannot access
-     *      the affinity graph.  Typically, this occurs because the builder
-     *      itself is distributed.
+     *                                       the affinity graph.  Typically, this occurs because the builder
+     *                                       itself is distributed.
      */
     UndirectedGraph<LabelVertex, WeightedEdge> getAffinityGraph();
 
     /**
      * Enables this builder.  Enabled builders can be disabled or shutdown.
      * Multiple calls to enable are allowed.
+     *
      * @throws IllegalStateException if the builder has been shut down
      */
     void enable();
@@ -94,6 +95,7 @@ public interface AffinityGraphBuilder {
      * <p>
      * While disabled, no new graph updates are applied, but the graph
      * pruners continue to discard old data.
+     *
      * @throws IllegalStateException if the builder has been shut down
      */
     void disable();
@@ -106,9 +108,10 @@ public interface AffinityGraphBuilder {
 
     /**
      * Gets the graph vertex for the given {@code Identity}.
+     *
      * @param id an identity
      * @return the graph vertex for the identity, or {@code null} if
-     *          there is no such vertex
+     * there is no such vertex
      */
     LabelVertex getVertex(Identity id);
 

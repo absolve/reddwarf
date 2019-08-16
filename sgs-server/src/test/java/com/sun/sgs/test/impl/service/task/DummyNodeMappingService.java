@@ -22,28 +22,15 @@
 package com.sun.sgs.test.impl.service.task;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.kernel.ComponentRegistry;
+import com.sun.sgs.service.*;
 
-import com.sun.sgs.service.DataService;
-import com.sun.sgs.service.Node;
-import com.sun.sgs.service.NodeListener;
-import com.sun.sgs.service.NodeMappingListener;
-import com.sun.sgs.service.NodeMappingService;
-import com.sun.sgs.service.IdentityRelocationListener;
-import com.sun.sgs.service.TransactionProxy;
-import com.sun.sgs.service.UnknownIdentityException;
-import com.sun.sgs.service.UnknownNodeException;
-import com.sun.sgs.service.WatchdogService;
-
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.HashSet;
 import java.util.Properties;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -53,17 +40,17 @@ import java.util.concurrent.atomic.AtomicLong;
  * which require manipulation or observation of the mappings and votes.
  */
 public class DummyNodeMappingService implements NodeMappingService,
-                                                NodeListener {
+        NodeListener {
 
     // the map from identities to their current node
-    private static ConcurrentHashMap<Identity,Node> nodeMap;
+    private static ConcurrentHashMap<Identity, Node> nodeMap;
     // the map from identities to their total active votes
-    private static ConcurrentHashMap<Identity,AtomicLong> votes;
+    private static ConcurrentHashMap<Identity, AtomicLong> votes;
     // the map from node id to the local service instance
-    private static ConcurrentHashMap<Long,DummyNodeMappingService> serviceMap;
+    private static ConcurrentHashMap<Long, DummyNodeMappingService> serviceMap;
 
     // a node-local map from voting class to the identities it votes active
-    private final ConcurrentHashMap<Class<?>,HashSet<Identity>> activeIdentities;
+    private final ConcurrentHashMap<Class<?>, HashSet<Identity>> activeIdentities;
     // a node-local collection of listeners
     private final ConcurrentLinkedQueue<NodeMappingListener> listeners;
     // a node-local collection of known available nodes
@@ -73,15 +60,17 @@ public class DummyNodeMappingService implements NodeMappingService,
     // a node-local copy of the local node's identifier
     private final long localId;
 
-    /** Creates an instance of the service. */
+    /**
+     * Creates an instance of the service.
+     */
     public DummyNodeMappingService(Properties p, ComponentRegistry cr,
                                    TransactionProxy tp) {
         if (p.getProperty("DummyServer", "false").equals("true")) {
-            nodeMap = new ConcurrentHashMap<Identity,Node>();
-            votes = new ConcurrentHashMap<Identity,AtomicLong>();
-            serviceMap = new ConcurrentHashMap<Long,DummyNodeMappingService>();
+            nodeMap = new ConcurrentHashMap<Identity, Node>();
+            votes = new ConcurrentHashMap<Identity, AtomicLong>();
+            serviceMap = new ConcurrentHashMap<Long, DummyNodeMappingService>();
         }
-        activeIdentities = new ConcurrentHashMap<Class<?>,HashSet<Identity>>();
+        activeIdentities = new ConcurrentHashMap<Class<?>, HashSet<Identity>>();
         listeners = new ConcurrentLinkedQueue<NodeMappingListener>();
         availableNodes = new ConcurrentLinkedQueue<Node>();
         watchdogService = tp.getService(WatchdogService.class);
@@ -90,34 +79,44 @@ public class DummyNodeMappingService implements NodeMappingService,
         serviceMap.put(localId, this);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getName() {
         return getClass().getName();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void ready() {
-        
+
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
-        
+
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long assignNode(Class service, Identity identity) {
         return assignIdentity(service, identity, chooseNode(identity).getId());
     }
 
-    /** {@inheritDoc} */
-    public void setStatus(Class service, Identity identity, 
+    /**
+     * {@inheritDoc}
+     */
+    public void setStatus(Class service, Identity identity,
                           boolean active) throws UnknownIdentityException {
-        if (! nodeMap.containsKey(identity))
+        if (!nodeMap.containsKey(identity))
             throw new UnknownIdentityException("Identity not mapped: " +
-                                               identity.getName());
+                    identity.getName());
 
-        if (! activeIdentities.containsKey(service))
+        if (!activeIdentities.containsKey(service))
             activeIdentities.putIfAbsent(service, new HashSet<Identity>());
         HashSet<Identity> set = activeIdentities.get(service);
         boolean update = false;
@@ -135,33 +134,40 @@ public class DummyNodeMappingService implements NodeMappingService,
             updateVote(identity, active);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(Identity identity) throws UnknownIdentityException {
         Node node = nodeMap.get(identity);
         if (node == null)
             throw new UnknownIdentityException("Identity not mapped: " +
-                                               identity.getName());
+                    identity.getName());
         return node;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Iterator<Identity> getIdentities(long nodeId)
-        throws UnknownNodeException
-    {
+            throws UnknownNodeException {
         HashSet<Identity> set = new HashSet<Identity>();
-        for (Entry<Identity,Node> entry : nodeMap.entrySet()) {
+        for (Entry<Identity, Node> entry : nodeMap.entrySet()) {
             if (entry.getValue().getId() == nodeId)
                 set.add(entry.getKey());
         }
         return set.iterator();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addNodeMappingListener(NodeMappingListener listener) {
         listeners.add(listener);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void nodeHealthUpdate(Node node) {
         if (node.isAlive()) {
             availableNodes.add(node);
@@ -170,17 +176,23 @@ public class DummyNodeMappingService implements NodeMappingService,
         }
     }
 
-    /** {@inheritDoc} */
-    public void addIdentityRelocationListener(IdentityRelocationListener listener) { 
-        
+    /**
+     * {@inheritDoc}
+     */
+    public void addIdentityRelocationListener(IdentityRelocationListener listener) {
+
     }
-    
-    /** Private helper to choose a mapping node. */
+
+    /**
+     * Private helper to choose a mapping node.
+     */
     private Node chooseNode(Identity identity) {
         return availableNodes.peek();
     }
 
-    /** Private helper to update a status vote and react accordingly. */
+    /**
+     * Private helper to update a status vote and react accordingly.
+     */
     private void updateVote(Identity identity, boolean active) {
         long diff = active ? 1L : -1L;
         long result = votes.get(identity).addAndGet(diff);
@@ -194,12 +206,16 @@ public class DummyNodeMappingService implements NodeMappingService,
 
     /** Start Utility routines here. */
 
-    /** Checks if the given identity is currently mapped. */
+    /**
+     * Checks if the given identity is currently mapped.
+     */
     public boolean isMapped(Identity identity) {
         return nodeMap.containsKey(identity);
     }
 
-    /** Returns the current mapping for the given identity, or -1. */
+    /**
+     * Returns the current mapping for the given identity, or -1.
+     */
     public long getMapping(Identity identity) {
         Node node = nodeMap.get(identity);
         if (node == null)
@@ -208,7 +224,9 @@ public class DummyNodeMappingService implements NodeMappingService,
             return node.getId();
     }
 
-    /** Returns the total number of active votes for the given identity. */
+    /**
+     * Returns the total number of active votes for the given identity.
+     */
     public static long getActiveCount(Identity identity) {
         AtomicLong count = votes.get(identity);
         if (count == null)
@@ -216,7 +234,9 @@ public class DummyNodeMappingService implements NodeMappingService,
         return count.get();
     }
 
-    /** Assigns the given identity to the given node. */
+    /**
+     * Assigns the given identity to the given node.
+     */
     public static long assignIdentity(Class<?> service, Identity identity,
                                       long nodeId) {
         DummyNodeMappingService newService = serviceMap.get(nodeId);
@@ -229,7 +249,8 @@ public class DummyNodeMappingService implements NodeMappingService,
         }
         try {
             newService.setStatus(service, identity, true);
-        } catch (UnknownIdentityException uie) {}
+        } catch (UnknownIdentityException uie) {
+        }
         return nodeId;
     }
 
@@ -245,10 +266,10 @@ public class DummyNodeMappingService implements NodeMappingService,
         Node oldNode = nodeMap.get(identity);
         if (oldNode == null)
             throw new IllegalArgumentException("Unknown identity: " +
-                                               identity.getName());
+                    identity.getName());
         if (oldNode.getId() != localId)
             throw new IllegalArgumentException("Identity not mapped to this " +
-                                               "node: " + identity.getName());
+                    "node: " + identity.getName());
 
         DummyNodeMappingService newService = serviceMap.get(nodeId);
         Node newNode = watchdogService.getNode(nodeId);
@@ -256,15 +277,17 @@ public class DummyNodeMappingService implements NodeMappingService,
         if (service != null) {
             try {
                 newService.setStatus(service, identity, true);
-            } catch (UnknownIdentityException uie) {}
+            } catch (UnknownIdentityException uie) {
+            }
         }
 
-        for (Entry<Class<?>,HashSet<Identity>> entry :
-                 activeIdentities.entrySet()) {
+        for (Entry<Class<?>, HashSet<Identity>> entry :
+                activeIdentities.entrySet()) {
             if (entry.getValue().contains(identity)) {
                 try {
                     setStatus(entry.getKey(), identity, false);
-                } catch (UnknownIdentityException uie) {}
+                } catch (UnknownIdentityException uie) {
+                }
             }
         }
 

@@ -22,48 +22,29 @@
 package com.sun.sgs.impl.kernel;
 
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.auth.Identity;
-
-import com.sun.sgs.kernel.schedule.ScheduledTask;
-import com.sun.sgs.kernel.schedule.SchedulerQueue;
-import com.sun.sgs.kernel.schedule.SchedulerRetryPolicy;
-
 import com.sun.sgs.impl.profile.ProfileCollectorHandle;
 import com.sun.sgs.impl.service.transaction.TransactionCoordinator;
 import com.sun.sgs.impl.service.transaction.TransactionHandle;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.impl.util.NamedThreadFactory;
-
-import com.sun.sgs.kernel.KernelRunnable;
-import com.sun.sgs.kernel.Priority;
-import com.sun.sgs.kernel.PriorityScheduler;
-import com.sun.sgs.kernel.RecurringTaskHandle;
-import com.sun.sgs.kernel.TaskQueue;
-import com.sun.sgs.kernel.TaskReservation;
-import com.sun.sgs.kernel.TransactionScheduler;
-
+import com.sun.sgs.kernel.*;
+import com.sun.sgs.kernel.schedule.ScheduledTask;
+import com.sun.sgs.kernel.schedule.SchedulerQueue;
+import com.sun.sgs.kernel.schedule.SchedulerRetryPolicy;
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
-
 import com.sun.sgs.service.Transaction;
 
 import java.beans.PropertyChangeEvent;
-
 import java.lang.reflect.InvocationTargetException;
-
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
-
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
-
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,44 +56,43 @@ import java.util.logging.Logger;
  * <dl style="margin-left: 1em">
  *
  * <dt> <i>Property:</i> <code><b>{@value #CONSUMER_THREADS_PROPERTY}
- *	</b></code> <br>
- *	<i>Default:</i> <code>{@value #DEFAULT_CONSUMER_THREADS}</code>
+ * </b></code> <br>
+ * <i>Default:</i> <code>{@value #DEFAULT_CONSUMER_THREADS}</code>
  *
  * <dd style="padding-top: .5em">The number of initial threads used to process
- *      transactional tasks.<p>
- * 
+ * transactional tasks.<p>
+ *
  * <dt> <i>Property:</i> <code><b>{@value #SCHEDULER_QUEUE_PROPERTY}
- *	</b></code> <br>
- *	<i>Default:</i> <code>{@value #DEFAULT_SCHEDULER_QUEUE}</code>
- * 
+ * </b></code> <br>
+ * <i>Default:</i> <code>{@value #DEFAULT_SCHEDULER_QUEUE}</code>
+ *
  * <dd style="padding-top: .5em">The implementation class used to track
- *      access to define which queue implementation should back this scheduler.
- *      The value of this property should be the
- *      name of a public, non-abstract class that implements the
- *      {@link SchedulerQueue} interface, and that provides a public
- *      constructor with the parameters {@link Properties}<p>
+ * access to define which queue implementation should back this scheduler.
+ * The value of this property should be the
+ * name of a public, non-abstract class that implements the
+ * {@link SchedulerQueue} interface, and that provides a public
+ * constructor with the parameters {@link Properties}<p>
  *
  * <dt> <i>Property:</i> <code><b>{@value #SCHEDULER_RETRY_PROPERTY}
- *	</b></code> <br>
- *	<i>Default:</i> <code>{@value #DEFAULT_SCHEDULER_RETRY}</code>
+ * </b></code> <br>
+ * <i>Default:</i> <code>{@value #DEFAULT_SCHEDULER_RETRY}</code>
  *
  * <dd style="padding-top: .5em">The implementation class used to define
- *      which retry policy implementation to use when tasks fail or abort.
- *      The value of this property should be the
- *      name of a public, non-abstract class that implements the
- *      {@link SchedulerRetryPolicy} interface, and that provides a public
- *      constructor with the parameters {@link Properties}<p>
+ * which retry policy implementation to use when tasks fail or abort.
+ * The value of this property should be the
+ * name of a public, non-abstract class that implements the
+ * {@link SchedulerRetryPolicy} interface, and that provides a public
+ * constructor with the parameters {@link Properties}<p>
  *
  * </dl>
  */
 final class TransactionSchedulerImpl
-    implements TransactionScheduler, PriorityScheduler, ProfileListener 
-{
+        implements TransactionScheduler, PriorityScheduler, ProfileListener {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(TransactionSchedulerImpl.
-                                           class.getName()));
+            new LoggerWrapper(Logger.getLogger(TransactionSchedulerImpl.
+                    class.getName()));
 
     /**
      * The property used to define which queue implementation should back
@@ -145,7 +125,7 @@ final class TransactionSchedulerImpl
      * threads.
      */
     public static final String CONSUMER_THREADS_PROPERTY =
-        "com.sun.sgs.impl.kernel.transaction.threads";
+            "com.sun.sgs.impl.kernel.transaction.threads";
 
     /**
      * The default number of initial consumer threads.
@@ -154,7 +134,7 @@ final class TransactionSchedulerImpl
 
     // the default priority for tasks
     private static final Priority defaultPriority =
-        Priority.getDefaultPriority();
+            Priority.getDefaultPriority();
 
     // the coordinator used to create and coordinate transactions
     private final TransactionCoordinator transactionCoordinator;
@@ -193,24 +173,22 @@ final class TransactionSchedulerImpl
     /**
      * Creates an instance of {@code TransactionSchedulerImpl}.
      *
-     * @param properties the {@code Properties} for the system
+     * @param properties             the {@code Properties} for the system
      * @param transactionCoordinator the {@code TransactionCoordinator} used
      *                               by the system to manage transactions
      * @param profileCollectorHandle the {@code ProfileCollectorHandler} used to
-     *          manage collection of per-task profiling data
-     * @param accessCoordinator the {@code AccessCoordinator} used by
-     *                          the system to managed shared data
-     *
+     *                               manage collection of per-task profiling data
+     * @param accessCoordinator      the {@code AccessCoordinator} used by
+     *                               the system to managed shared data
      * @throws InvocationTargetException if there is a failure initializing
      *                                   the {@code SchedulerQueue}
-     * @throws Exception if there is any failure creating the scheduler
+     * @throws Exception                 if there is any failure creating the scheduler
      */
     TransactionSchedulerImpl(Properties properties,
                              TransactionCoordinator transactionCoordinator,
                              ProfileCollectorHandle profileCollectorHandle,
                              AccessCoordinatorHandle accessCoordinator)
-        throws Exception
-    {
+            throws Exception {
         logger.log(Level.CONFIG, "Creating TransactionSchedulerImpl");
         if (properties == null) {
             throw new NullPointerException("Properties cannot be null");
@@ -221,8 +199,8 @@ final class TransactionSchedulerImpl
         if (profileCollectorHandle == null) {
             throw new NullPointerException("Collector handle cannot be null");
         }
-	if (accessCoordinator == null) {
-	    throw new NullPointerException("AccessCoordinator cannot be null");
+        if (accessCoordinator == null) {
+            throw new NullPointerException("AccessCoordinator cannot be null");
         }
 
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
@@ -230,7 +208,7 @@ final class TransactionSchedulerImpl
         this.transactionCoordinator = transactionCoordinator;
         this.profileCollectorHandle = profileCollectorHandle;
         this.accessCoordinator = accessCoordinator;
-        
+
         this.backingQueue = wrappedProps.getClassInstanceProperty(
                 SCHEDULER_QUEUE_PROPERTY, DEFAULT_SCHEDULER_QUEUE,
                 SchedulerQueue.class, new Class[]{Properties.class},
@@ -245,8 +223,8 @@ final class TransactionSchedulerImpl
         // behvavior, with the assumption that it will change if the
         // scheduler starts trying to add or drop consumers adaptively
         this.requestedThreads =
-            Integer.parseInt(properties.getProperty(CONSUMER_THREADS_PROPERTY,
-                                                    DEFAULT_CONSUMER_THREADS));
+                Integer.parseInt(properties.getProperty(CONSUMER_THREADS_PROPERTY,
+                        DEFAULT_CONSUMER_THREADS));
         this.executor = Executors.newCachedThreadPool(
                 new NamedThreadFactory("TransactionScheduler"));
         for (int i = 0; i < requestedThreads; i++) {
@@ -258,12 +236,12 @@ final class TransactionSchedulerImpl
                 transactionCoordinator.getDefaultTimeout());
 
         logger.log(Level.CONFIG,
-                   "Created TransactionSchedulerImpl with properties:" +
-                   "\n  " + SCHEDULER_RETRY_PROPERTY + "=" +
-                   retryPolicy.getClass().getName() +
-                   "\n  " + SCHEDULER_QUEUE_PROPERTY + "=" +
-                   backingQueue.getClass().getName() +
-                   "\n  " + CONSUMER_THREADS_PROPERTY + "=" + requestedThreads);
+                "Created TransactionSchedulerImpl with properties:" +
+                        "\n  " + SCHEDULER_RETRY_PROPERTY + "=" +
+                        retryPolicy.getClass().getName() +
+                        "\n  " + SCHEDULER_QUEUE_PROPERTY + "=" +
+                        backingQueue.getClass().getName() +
+                        "\n  " + CONSUMER_THREADS_PROPERTY + "=" + requestedThreads);
     }
 
     /**
@@ -292,8 +270,7 @@ final class TransactionSchedulerImpl
      * {@inheritDoc}
      */
     public TaskReservation reserveTask(KernelRunnable task, Identity owner,
-                                       long startTime) 
-    {
+                                       long startTime) {
         ScheduledTaskImpl t = new ScheduledTaskImpl.Builder(
                 task, owner, defaultPriority).startTime(startTime).build();
         return backingQueue.reserveTask(t);
@@ -311,8 +288,7 @@ final class TransactionSchedulerImpl
      * {@inheritDoc}
      */
     public void scheduleTask(KernelRunnable task, Identity owner,
-                             long startTime) 
-    {
+                             long startTime) {
         backingQueue.addTask(new ScheduledTaskImpl.Builder(
                 task, owner, defaultPriority).startTime(startTime).build());
     }
@@ -323,15 +299,14 @@ final class TransactionSchedulerImpl
     public RecurringTaskHandle scheduleRecurringTask(KernelRunnable task,
                                                      Identity owner,
                                                      long startTime,
-                                                     long period) 
-    {
+                                                     long period) {
         ScheduledTaskImpl scheduledTask = new ScheduledTaskImpl.Builder(
                 task, owner, defaultPriority).
                 startTime(startTime).
                 period(period).
                 build();
         RecurringTaskHandle handle =
-            backingQueue.createRecurringTaskHandle(scheduledTask);
+                backingQueue.createRecurringTaskHandle(scheduledTask);
         scheduledTask.setRecurringTaskHandle(handle);
         return handle;
     }
@@ -372,8 +347,7 @@ final class TransactionSchedulerImpl
      * {@inheritDoc}
      */
     public TaskReservation reserveTask(KernelRunnable task, Identity owner,
-                                       Priority priority)
-    {
+                                       Priority priority) {
         ScheduledTaskImpl t = new ScheduledTaskImpl.Builder(
                 task, owner, priority).build();
         return backingQueue.reserveTask(t);
@@ -383,8 +357,7 @@ final class TransactionSchedulerImpl
      * {@inheritDoc}
      */
     public void scheduleTask(KernelRunnable task, Identity owner,
-                             Priority priority)
-    {
+                             Priority priority) {
         backingQueue.addTask(new ScheduledTaskImpl.Builder(
                 task, owner, priority).build());
     }
@@ -431,8 +404,7 @@ final class TransactionSchedulerImpl
      * any exception resulting from the task failing.
      */
     private void waitForTask(ScheduledTaskImpl task)
-        throws Exception
-    {
+            throws Exception {
         Throwable t = null;
 
         try {
@@ -476,23 +448,21 @@ final class TransactionSchedulerImpl
      * is not bound by any timeout value (i.e., is bound only by the
      * {@code com.sun.sgs.txn.timeout.unbounded} property value).
      *
-     * @param task the {@code KernelRunnable} to run transactionally
+     * @param task  the {@code KernelRunnable} to run transactionally
      * @param owner the {@code Identity} that owns the task
-     *
      * @throws IllegalStateException if this method is called from an
      *                               actively running transaction
-     * @throws Exception if there is any failure that does not result in
-     *                   re-trying the task
+     * @throws Exception             if there is any failure that does not result in
+     *                               re-trying the task
      */
     void runUnboundedTask(KernelRunnable task, Identity owner)
-        throws Exception
-    {
+            throws Exception {
         if (isShutdown) {
             throw new IllegalStateException("Scheduler is shutdown");
         }
         if (ContextResolver.isCurrentTransaction()) {
             throw new IllegalStateException("Cannot be called from within " +
-                                            "an active transaction");
+                    "an active transaction");
         }
 
         // NOTE: in the current system we only use this method once, and
@@ -539,7 +509,9 @@ final class TransactionSchedulerImpl
      * running until it catches an {@code InterruptedException}.
      */
     private class TaskConsumer implements Runnable {
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void run() {
             logger.log(Level.FINE, "Starting a consumer for transactions");
             notifyThreadJoining();
@@ -549,21 +521,21 @@ final class TransactionSchedulerImpl
                     // wait for the next task, at which point we may get
                     // interrupted and should therefore return
                     ScheduledTaskImpl task =
-                        (ScheduledTaskImpl) (backingQueue.getNextTask(true));
+                            (ScheduledTaskImpl) (backingQueue.getNextTask(true));
 
                     // run the task, checking if it completed
                     if (executeTask(task, true)) {
                         // if it's a recurring task, schedule the next run
                         if (task.isRecurring()) {
                             long nextStart =
-                                 task.getStartTime() + task.getPeriod();
+                                    task.getStartTime() + task.getPeriod();
                             task = new ScheduledTaskImpl.Builder(
                                     task).startTime(nextStart).build();
                             backingQueue.addTask(task);
                         }
                         // if it has dependent tasks, schedule the next one
                         TaskQueueImpl queue =
-                                      (TaskQueueImpl) (task.getTaskQueue());
+                                (TaskQueueImpl) (task.getTaskQueue());
                         if (queue != null) {
                             queue.scheduleNextTask();
                         }
@@ -600,8 +572,7 @@ final class TransactionSchedulerImpl
      */
     private boolean executeTask(ScheduledTaskImpl task,
                                 boolean retryOnInterruption)
-        throws InterruptedException
-    {
+            throws InterruptedException {
         logger.log(Level.FINEST, "starting a new transactional task");
 
         // store the current owner, and then push the new thread detail
@@ -620,32 +591,32 @@ final class TransactionSchedulerImpl
                 // NOTE: We could report the queue sizes separately,
                 // so we should figure out how we want to represent these
                 int waitSize =
-                    backingQueue.getReadyCount() +
-                    dependencyCount.get();
-                profileCollectorHandle.startTask(task.getTask(), 
-                                                 task.getOwner(),
-                                                 task.getStartTime(), 
-                                                 waitSize);
+                        backingQueue.getReadyCount() +
+                                dependencyCount.get();
+                profileCollectorHandle.startTask(task.getTask(),
+                        task.getOwner(),
+                        task.getStartTime(),
+                        waitSize);
                 task.incrementTryCount();
 
                 Transaction transaction = null;
 
                 try {
                     // setup the transaction state
-                    TransactionHandle handle = 
+                    TransactionHandle handle =
                             transactionCoordinator.createTransaction(
-                            task.getTimeout());
+                                    task.getTimeout());
                     transaction = handle.getTransaction();
                     ContextResolver.setCurrentTransaction(transaction);
-                    
+
                     try {
                         // notify the profiler and access coordinator
                         profileCollectorHandle.noteTransactional(
-                                                    transaction.getId());
+                                transaction.getId());
                         accessCoordinator.
-                            notifyNewTransaction(transaction,
-						 task.getStartTime(),
-                                                 task.getTryCount());
+                                notifyNewTransaction(transaction,
+                                        task.getStartTime(),
+                                        task.getTryCount());
 
                         // run the task in the new transactional context
                         task.getTask().run();
@@ -686,9 +657,9 @@ final class TransactionSchedulerImpl
                             task.setDone(ie);
                             if (logger.isLoggable(Level.WARNING)) {
                                 logger.logThrow(Level.WARNING, ie,
-                                                "dropping an " +
+                                        "dropping an " +
                                                 "interrupted task: {0}",
-                                                task);
+                                        task);
                             }
                         }
                     }
@@ -709,12 +680,12 @@ final class TransactionSchedulerImpl
                             if (logger.isLoggable(Level.WARNING)) {
                                 if (task.isRecurring()) {
                                     logger.logThrow(Level.WARNING, t,
-                                                    "skipping a recurrence " +
+                                            "skipping a recurrence " +
                                                     "of a task that failed: " +
                                                     "{0}", task);
                                 } else {
                                     logger.logThrow(Level.WARNING, t,
-                                                    "dropping a task that " +
+                                            "dropping a task that " +
                                                     "failed: {0}", task);
                                 }
                             }
@@ -754,12 +725,17 @@ final class TransactionSchedulerImpl
         }
     }
 
-    /** Private implementation of {@code TaskQueue}. */
+    /**
+     * Private implementation of {@code TaskQueue}.
+     */
     private final class TaskQueueImpl implements TaskQueue {
         private final Queue<ScheduledTaskImpl> queue =
-            new LinkedList<ScheduledTaskImpl>();
+                new LinkedList<ScheduledTaskImpl>();
         private boolean inScheduler = false;
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void addTask(KernelRunnable task, Identity owner) {
             ScheduledTaskImpl schedTask = new ScheduledTaskImpl.Builder(
                     task, owner, defaultPriority).build();
@@ -775,7 +751,10 @@ final class TransactionSchedulerImpl
                 }
             }
         }
-        /** Private method to schedule the next task, if any. */
+
+        /**
+         * Private method to schedule the next task, if any.
+         */
         void scheduleNextTask() {
             synchronized (this) {
                 if (queue.isEmpty()) {

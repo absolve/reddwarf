@@ -22,22 +22,13 @@
 package com.sun.sgs.impl.profile;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.kernel.KernelRunnable;
-
 import com.sun.sgs.profile.AccessedObjectsDetail;
 import com.sun.sgs.profile.ProfileParticipantDetail;
 import com.sun.sgs.profile.ProfileReport;
 import com.sun.sgs.profile.TransactionListenerDetail;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Package-private implementation of <code>ProfileReport</code>.
@@ -48,9 +39,9 @@ class ProfileReportImpl implements ProfileReport {
      * An empty map for returning when no profile counters have been
      * updated.
      */
-    private static final Map<String, Long> EMPTY_COUNTER_MAP = 
-	Collections.emptyMap();
-    
+    private static final Map<String, Long> EMPTY_COUNTER_MAP =
+            Collections.emptyMap();
+
     /**
      * An empty list for returning when no operations have been updated.
      */
@@ -59,9 +50,9 @@ class ProfileReportImpl implements ProfileReport {
      * An empty map for returning when no profile samples have been
      * updated.  We need this map as well because typing issues
      * prevent us from using {@link Collections#emptyMap()}.
-    */
-    private static final Map<String, List<Long>> EMPTY_SAMPLE_MAP = 
-	Collections.unmodifiableMap(new HashMap<String, List<Long>>());
+     */
+    private static final Map<String, List<Long>> EMPTY_SAMPLE_MAP =
+            Collections.unmodifiableMap(new HashMap<String, List<Long>>());
 
     // the final fields, set by the constructor
     final KernelRunnable task;
@@ -71,7 +62,7 @@ class ProfileReportImpl implements ProfileReport {
     final long actualStartTime;
 
     // the other fields, set directly by the ProfileCollectorImpl
-    byte [] transactionId = null;
+    byte[] transactionId = null;
     boolean succeeded = false;
     long runningTime = 0;
     int tryCount = 0;
@@ -95,27 +86,26 @@ class ProfileReportImpl implements ProfileReport {
      * Creates an instance of <code>ProfileReportImpl</code> with the
      * actual starting time being set to the current time.
      *
-     * @param task the <code>KernelRunnable</code> being reported on
-     * @param owner the <code>Identity</code> that owns the task
+     * @param task               the <code>KernelRunnable</code> being reported on
+     * @param owner              the <code>Identity</code> that owns the task
      * @param scheduledStartTime the time the task was scheduled to run
-     * @param readyCount the number of tasks in the scheduler, ready to run,
-     *                   that are associated with the same context as the task
+     * @param readyCount         the number of tasks in the scheduler, ready to run,
+     *                           that are associated with the same context as the task
      */
     ProfileReportImpl(KernelRunnable task, Identity owner,
-                      long scheduledStartTime, int readyCount)
-    {
+                      long scheduledStartTime, int readyCount) {
         this.task = task;
         this.owner = owner;
         this.scheduledStartTime = scheduledStartTime;
         this.readyCount = readyCount;
         this.actualStartTime = System.currentTimeMillis();
 
-	participants = new HashSet<ProfileParticipantDetail>();
+        participants = new HashSet<ProfileParticipantDetail>();
         txnListeners = new HashSet<TransactionListenerDetail>();
 
-	taskCounters = null;
+        taskCounters = null;
         ops = null;
-	taskSamples = null;
+        taskSamples = null;
     }
 
     /**
@@ -125,7 +115,7 @@ class ProfileReportImpl implements ProfileReport {
      * set as the current value for the counter.
      *
      * @param counter the name of the counter
-     * @param value the amount to increment the counter
+     * @param value   the amount to increment the counter
      */
     void incrementTaskCounter(String counter, long value) {
         long currentValue = 0;
@@ -145,33 +135,33 @@ class ProfileReportImpl implements ProfileReport {
      * a new list is made and the the provided value is added to it.
      *
      * @param sampleName the name of the sample
-     * @param value the latest value for the sample
+     * @param value      the latest value for the sample
      */
     void addTaskSample(String sampleName, long value) {
-	List<Long> samples;
+        List<Long> samples;
         if (taskSamples == null) {
             taskSamples = new HashMap<String, List<Long>>();
-	    samples = new LinkedList<Long>();
-	    taskSamples.put(sampleName, samples);
+            samples = new LinkedList<Long>();
+            taskSamples.put(sampleName, samples);
         } else {
             if (taskSamples.containsKey(sampleName)) {
-		samples = taskSamples.get(sampleName);
+                samples = taskSamples.get(sampleName);
             } else {
-		samples = new LinkedList<Long>();
-		taskSamples.put(sampleName, samples);		
-	    }
+                samples = new LinkedList<Long>();
+                taskSamples.put(sampleName, samples);
+            }
         }
-	samples.add(value);
+        samples.add(value);
     }
-    
+
     /**
      * Package-private method used to add an operation.
-     * 
+     *
      * @param operationName name of the operation
      */
     void addOperation(String operationName) {
         if (ops == null) {
-            ops = new ArrayList<String>(); 
+            ops = new ArrayList<String>();
         }
         ops.add(operationName);
     }
@@ -179,7 +169,7 @@ class ProfileReportImpl implements ProfileReport {
     void addParticipant(ProfileParticipantDetail participantDetail) {
         participants.add(participantDetail);
     }
-    
+
     void addListener(TransactionListenerDetail listenerDetail) {
         txnListeners.add(listenerDetail);
     }
@@ -187,7 +177,7 @@ class ProfileReportImpl implements ProfileReport {
     void setAccessedObjectsDetail(AccessedObjectsDetail detail) {
         accessedObjectsDetail = detail;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -212,7 +202,7 @@ class ProfileReportImpl implements ProfileReport {
     /**
      * {@inheritDoc}
      */
-    public byte [] getTransactionId() {
+    public byte[] getTransactionId() {
         return transactionId;
     }
 
@@ -283,7 +273,7 @@ class ProfileReportImpl implements ProfileReport {
      * {@inheritDoc}
      */
     public Map<String, List<Long>> getUpdatedTaskSamples() {
-	return (taskSamples == null) ? EMPTY_SAMPLE_MAP : taskSamples;
+        return (taskSamples == null) ? EMPTY_SAMPLE_MAP : taskSamples;
     }
 
     /**
@@ -304,7 +294,7 @@ class ProfileReportImpl implements ProfileReport {
      * {@inheritDoc}
      */
     public Throwable getFailureCause() {
-	return throwable;
+        return throwable;
     }
 
     /**
@@ -313,64 +303,61 @@ class ProfileReportImpl implements ProfileReport {
      * completes and needs to share its data with its parent.
      */
     void merge(ProfileReportImpl report) {
-	
-	// for each of the child task counters and samples, we first
-	// check whether the task recorded any data.  If so, then we
-	// copy the data to this report.      
 
-	if (report.taskCounters != null) {
-	    if (taskCounters == null) {
-		taskCounters = new HashMap<String, Long>(report.taskCounters);
-	    } else {
-		for (Map.Entry<String, Long> e : 
-                    report.taskCounters.entrySet()) 
-                {
-		    Long curCount = taskCounters.get(e.getKey());
-		    taskCounters.put(e.getKey(),
-				     (curCount == null) 
-				     ? e.getValue()
-				     : curCount + e.getValue());
-		}
-	    }
-	}
+        // for each of the child task counters and samples, we first
+        // check whether the task recorded any data.  If so, then we
+        // copy the data to this report.
 
-	if (report.taskSamples != null) {
-	    if (taskSamples == null) {
-		taskSamples = new HashMap<String, List<Long>>();
-		for (Map.Entry<String, List<Long>> e : 
-			 report.taskSamples.entrySet()) 
-                {
-		    // make a copy of the child task's samples
-		    List<Long> samples = new LinkedList<Long>(e.getValue());
-		    taskSamples.put(e.getKey(), samples);
-		}
-	    } else {
-		for (Map.Entry<String, List<Long>> e : 
-			 report.taskSamples.entrySet()) 
-                {
-		    List<Long> samples = taskSamples.get(e.getKey());
-		    if (samples == null) {
-			// make a copy of the child task's samples
-			taskSamples.put(e.getKey(),
-					 new LinkedList<Long>(e.getValue()));
+        if (report.taskCounters != null) {
+            if (taskCounters == null) {
+                taskCounters = new HashMap<String, Long>(report.taskCounters);
+            } else {
+                for (Map.Entry<String, Long> e :
+                        report.taskCounters.entrySet()) {
+                    Long curCount = taskCounters.get(e.getKey());
+                    taskCounters.put(e.getKey(),
+                            (curCount == null)
+                                    ? e.getValue()
+                                    : curCount + e.getValue());
+                }
+            }
+        }
+
+        if (report.taskSamples != null) {
+            if (taskSamples == null) {
+                taskSamples = new HashMap<String, List<Long>>();
+                for (Map.Entry<String, List<Long>> e :
+                        report.taskSamples.entrySet()) {
+                    // make a copy of the child task's samples
+                    List<Long> samples = new LinkedList<Long>(e.getValue());
+                    taskSamples.put(e.getKey(), samples);
+                }
+            } else {
+                for (Map.Entry<String, List<Long>> e :
+                        report.taskSamples.entrySet()) {
+                    List<Long> samples = taskSamples.get(e.getKey());
+                    if (samples == null) {
+                        // make a copy of the child task's samples
+                        taskSamples.put(e.getKey(),
+                                new LinkedList<Long>(e.getValue()));
                     } else {
-			samples.addAll(e.getValue());
+                        samples.addAll(e.getValue());
                     }
-		}
-	    }
-	}
+                }
+            }
+        }
 
-	if (report.ops != null) {
-	    if (ops == null) {
+        if (report.ops != null) {
+            if (ops == null) {
                 ops = new LinkedList<String>(report.ops);
-	    } else {
-		ops.addAll(report.ops);
-	    }
-	}
+            } else {
+                ops.addAll(report.ops);
+            }
+        }
 
-	// NOTE: we do not include the the participant or listener detail
-	//       since this is specific to a task and not to its
-	//       children.
+        // NOTE: we do not include the the participant or listener detail
+        //       since this is specific to a task and not to its
+        //       children.
     }
 
     /**
@@ -387,7 +374,7 @@ class ProfileReportImpl implements ProfileReport {
         if (taskSamples != null) {
             taskSamples = Collections.unmodifiableMap(taskSamples);
         }
-        
+
         participants = Collections.unmodifiableSet(participants);
         txnListeners = Collections.unmodifiableSet(txnListeners);
     }

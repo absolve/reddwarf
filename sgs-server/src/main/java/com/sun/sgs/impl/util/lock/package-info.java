@@ -19,5 +19,7 @@
  * --
  */
 
-/** Provides utility classes for managing locks. */
+/**
+ * Provides utility classes for managing locks.
+ */
 package com.sun.sgs.impl.util.lock;

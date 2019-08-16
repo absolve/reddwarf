@@ -36,7 +36,7 @@ package com.sun.sgs.app;
  * {@code removingObject} method to remove those referred-to objects.  The
  * {@code removingObject} method will not be called if this object has already
  * been removed or is not currently managed by the data manager. <p>
- *
+ * <p>
  * Note that the implementation of {@code removingObject} should make sure that
  * it only removes objects that are logically "owned" by the main object, and
  * that objects are not removed more than once.  In particular, the

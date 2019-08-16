@@ -21,23 +21,18 @@
 
 package com.sun.sgs.impl.kernel.schedule;
 
-import com.sun.sgs.kernel.schedule.ScheduledTask;
-import com.sun.sgs.kernel.schedule.SchedulerQueue;
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
-
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskReservation;
+import com.sun.sgs.kernel.schedule.ScheduledTask;
+import com.sun.sgs.kernel.schedule.SchedulerQueue;
 
 import java.util.Collection;
 import java.util.Properties;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,8 +51,8 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(WindowSchedulerQueue.
-                                           class.getName()));
+            new LoggerWrapper(Logger.getLogger(WindowSchedulerQueue.
+                    class.getName()));
 
     // the priority queue
     private PriorityBlockingQueue<QueueElement> queue;
@@ -96,8 +91,7 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
      * {@inheritDoc}
      */
     public ScheduledTask getNextTask(boolean wait)
-        throws InterruptedException
-    {
+            throws InterruptedException {
         // try to get the next element, and return the result if we're
         // not waiting, otherwise block
         QueueElement element = queue.poll();
@@ -130,7 +124,7 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
     public TaskReservation reserveTask(ScheduledTask task) {
         if (task.isRecurring()) {
             throw new TaskRejectedException("Recurring tasks cannot get " +
-                                            "reservations");
+                    "reservations");
         }
 
         return new SimpleTaskReservation(this, task);
@@ -200,7 +194,7 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
                 currentWindow = nextElement.getWindow();
             }
             scheduledWindow = (currentWindow > user.nextWindow) ?
-                currentWindow : user.nextWindow;
+                    currentWindow : user.nextWindow;
             user.nextWindow = scheduledWindow + 1;
             user.lastScheduled = task.getStartTime();
         }
@@ -209,7 +203,7 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
         boolean success;
         do {
             success = queue.offer(nextElement);
-        } while(!success);
+        } while (!success);
     }
 
     /**
@@ -224,18 +218,24 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
         private final long window;
         private final ScheduledTask task;
         private final long timestamp;
+
         QueueElement(long window, ScheduledTask task) {
             this.window = window;
             this.task = task;
             this.timestamp = task.getStartTime();
         }
+
         long getWindow() {
             return window;
         }
+
         ScheduledTask getTask() {
             return task;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public int compareTo(QueueElement other) {
             // if the other window is bigger, then their priority is lower
             if (window < other.window) {
@@ -258,7 +258,10 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
             // just say they've got the same priority
             return 0;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public boolean equals(Object o) {
             if ((o == null) || (!(o instanceof QueueElement))) {
                 return false;
@@ -269,8 +272,10 @@ public class WindowSchedulerQueue implements SchedulerQueue, TimedTaskListener {
             return ((window == other.window) &&
                     (timestamp == other.timestamp));
         }
-        
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public int hashCode() {
             // Recipe from Effective Java
             int result = 17;

@@ -74,56 +74,54 @@ public interface ClientSession extends ManagedObject {
     /**
      * Returns the login name used to authenticate this session.
      *
-     * @return	the name used to authenticate this session
-     *
-     * @throws	IllegalStateException if this session is disconnected
-     * @throws 	TransactionException if the operation failed because of
-     * 		a problem with the current transaction
+     * @throws TransactionException if the operation failed because of
+     *                              a problem with the current transaction
+     * @return the name used to authenticate this session
+     * @throws IllegalStateException if this session is disconnected
      */
     String getName();
-    
+
     /**
      * Returns a set containing the delivery guarantees supported by
      * this session.  The returned set is serializable.
      *
-     * @return	a set containing the supported delivery guarantees
+     * @return a set containing the supported delivery guarantees
      */
     Set<Delivery> supportedDeliveries();
-    
+
     /**
      * Return the maximum message length supported by this session.
+     *
      * @return the maximum message length.
      */
     int getMaxMessageLength();
-    
+
     /**
      * Sends a message contained in the specified {@link ByteBuffer} to
      * this session's client with the delivery guarantee of {@link
      * Delivery#RELIABLE}. The message starts at the buffer's current
      * position and ends at the buffer's limit.  The buffer's position is
-     * not modified by this operation. 
-     * 
+     * not modified by this operation.
+     *
      * <p>The {@code ByteBuffer} may be reused immediately after this method
      * returns.  Changes made to the buffer after this method returns will
      * have no effect on the message sent to the client by this invocation.
      *
      * <p>This method is equivalent to invoking {@link
-     * #send(ByteBuffer,Delivery) send} with the specified {@code message}
+     * #send(ByteBuffer, Delivery) send} with the specified {@code message}
      * and {@code Delivery.RELIABLE}.
      *
-     * @param	message a message
-     *
-     * @return	this client session
-     *
-     * @throws	IllegalStateException if this session is disconnected
-     * @throws  IllegalArgumentException if the specified message length
-     *          exceeds {@link #getMaxMessageLength}
-     * @throws	MessageRejectedException if there are not enough resources
-     *		to send the specified message
-     * @throws	DeliveryNotSupportedException if this client session does
-     *		not support {@link Delivery#RELIABLE reliable} delivery
-     * @throws	TransactionException if the operation failed because of
-     *		a problem with the current transaction
+     * @throws IllegalArgumentException if the specified message length
+     *                                  exceeds {@link #getMaxMessageLength}
+     * @param    message a message
+     * @return this client session
+     * @throws IllegalStateException if this session is disconnected
+     * @throws MessageRejectedException if there are not enough resources
+     * to send the specified message
+     * @throws DeliveryNotSupportedException if this client session does
+     * not support {@link Delivery#RELIABLE reliable} delivery
+     * @throws TransactionException if the operation failed because of
+     * a problem with the current transaction
      */
     ClientSession send(ByteBuffer message);
 
@@ -132,7 +130,7 @@ public interface ClientSession extends ManagedObject {
      * this session's client in a manner that satisfies the specified
      * {@code delivery} guarantee. The message starts at the buffer's
      * current position and ends at the buffer's limit.  The buffer's
-     * position is not modified by this operation. 
+     * position is not modified by this operation.
      *
      * <p>When possible, the message should be delivered using the most
      * efficient means to satisfy the delivery guarantee.  However, a
@@ -142,37 +140,34 @@ public interface ClientSession extends ManagedObject {
      * guarantee (e.g., only supports weaker delivery guarantees than the
      * one specified), then a {@link DeliveryNotSupportedException} will be
      * thrown.
-     * 
+     *
      * <p>The {@code ByteBuffer} may be reused immediately after this method
      * returns.  Changes made to the buffer after this method returns will
      * have no effect on the message sent to the client by this invocation.
      *
-     * @param	message a message
-     * @param	delivery a delivery guarantee
-     *
-     * @return	this client session
-     *
-     * @throws	IllegalStateException if this session is disconnected
-     * @throws  IllegalArgumentException if the specified message length
-     *          exceeds {@link #getMaxMessageLength}
-     * @throws	MessageRejectedException if there are not enough resources
-     *		to send the specified message
-     * @throws	DeliveryNotSupportedException if the specified {@code
-     *		delivery} guarantee cannot be satisfied
-     * @throws	TransactionException if the operation failed because of
-     *	a problem with the current transaction
+     * @throws IllegalArgumentException if the specified message length
+     *                                  exceeds {@link #getMaxMessageLength}
+     * @param    message a message
+     * @param    delivery a delivery guarantee
+     * @return this client session
+     * @throws IllegalStateException if this session is disconnected
+     * @throws MessageRejectedException if there are not enough resources
+     * to send the specified message
+     * @throws DeliveryNotSupportedException if the specified {@code
+     * delivery} guarantee cannot be satisfied
+     * @throws TransactionException if the operation failed because of
+     * a problem with the current transaction
      */
     ClientSession send(ByteBuffer message, Delivery delivery);
-    
+
     /**
      * Returns {@code true} if the client is connected,
      * otherwise returns {@code false}.
      *
      * @return {@code true} if the client is connected,
-     * 		otherwise returns {@code false}
-     *
-     * @throws	TransactionException if the operation failed because of
-     * 		a problem with the current transaction
+     * otherwise returns {@code false}
+     * @throws TransactionException if the operation failed because of
+     * a problem with the current transaction
      */
     boolean isConnected();
 }

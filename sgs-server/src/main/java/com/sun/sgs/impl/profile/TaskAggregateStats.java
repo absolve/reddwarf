@@ -29,10 +29,11 @@ import com.sun.sgs.profile.ProfileCollector;
 import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
 import com.sun.sgs.profile.ProfileConsumer;
 import com.sun.sgs.profile.ProfileConsumer.ProfileDataType;
-import java.util.concurrent.atomic.AtomicLong;
+
 import javax.management.MBeanNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The central location to aggregate information on tasks run through the
@@ -41,24 +42,23 @@ import javax.management.NotificationBroadcasterSupport;
  * are typically used for application startup tasks, and are not included.
  */
 public class TaskAggregateStats extends NotificationBroadcasterSupport
-        implements TaskAggregateMXBean
-{
+        implements TaskAggregateMXBean {
     private static final double DEFAULT_SMOOTHING_FACTOR = 0.01;
-    
+
     /* Task counts */
     private final AggregateProfileCounter numTasks;
     private final AggregateProfileCounter numTransactionalTasks;
     private final AggregateProfileCounter numFailedTasks;
-    
+
     /* Statistics for all tasks */
     private final AggregateProfileSample readyCount;
-    
+
     /* Statistics for successful tasks */
     private final AggregateProfileSample runtime;
     private final AggregateProfileSample lagtime;
     private final AggregateProfileSample latency;
-    
-    /** 
+
+    /**
      * Smoothing factor for exponential smoothing, between 0 and 1.
      * A value closer to one provides less smoothing of the data, and
      * more weight to recent data;  a value closer to zero provides more
@@ -80,44 +80,48 @@ public class TaskAggregateStats extends NotificationBroadcasterSupport
      * our statistics.
      */
     private volatile long standardTimeout;
-        
-    /** 
+
+    /**
      * Our profile collector, used to lazily set the standardTimeout.
      */
     private final ProfileCollector collector;
-    
+
     /**
      * A latch for the first task, so we can lazily retrieve the
      * standard transaction timeout.
      */
     private boolean firstTask = true;
-    
+
     // Notification information - we do not yet emit notifications for 
     // this MBean.  We do not yet document these notification types, as 
     // they aren't used yet.
-    
-    /** Description of the notifications. */
+
+    /**
+     * Description of the notifications.
+     */
     private static MBeanNotificationInfo[] notificationInfo =
-        new MBeanNotificationInfo[] {
-            new MBeanNotificationInfo(
-                    new String[] {"com.sun.sgs.task.queue.behind"},
-                    Notification.class.getName(),
-                    "Task queue is not keeping up") };
-    /** The sequence number for notifications */
+            new MBeanNotificationInfo[]{
+                    new MBeanNotificationInfo(
+                            new String[]{"com.sun.sgs.task.queue.behind"},
+                            Notification.class.getName(),
+                            "Task queue is not keeping up")};
+    /**
+     * The sequence number for notifications
+     */
     private AtomicLong seqNumber = new AtomicLong();
-    
+
     /**
      * Creates an MXBean object for gathering task data in the system.
-     * 
+     *
      * @param collector the system profile collector
-     * @param name the name of the profile consumer created to support this 
-     *              object
+     * @param name      the name of the profile consumer created to support this
+     *                  object
      */
     TaskAggregateStats(ProfileCollector collector, String name) {
         super(notificationInfo);
         this.collector = collector;
         ProfileConsumer consumer = collector.getConsumer(name);
-        
+
         // We could determine that some of these statistics need to be
         // on all the time (level MIN) so we can use them for load balancing
         // or because they are extremely useful.
@@ -125,14 +129,14 @@ public class TaskAggregateStats extends NotificationBroadcasterSupport
         // Note that if the counters are all on the time, we could just
         // as easily use AtomicLongs rather than AggregateProfileCounters.
         ProfileLevel level = ProfileLevel.MEDIUM;
-        
+
         // These statistics are reported to the profile reports
         // directly, with the ProfileCollector.
         // They should not be reported as TASK_AND_AGGREGATE because,
         // for nested tasks, we don't want to merge their values into
         // the parent's value.
         ProfileDataType type = ProfileDataType.AGGREGATE;
-        
+
         numTasks = (AggregateProfileCounter)
                 consumer.createCounter("numTasks", type, level);
         numTransactionalTasks = (AggregateProfileCounter)
@@ -149,12 +153,13 @@ public class TaskAggregateStats extends NotificationBroadcasterSupport
                 consumer.createSample("latency", type, level);
         setSmoothing(smoothingFactor);
     }
-    
-    
+
+
     // This is how we'd send a notification - this is not yet well defined.
     // Need to determine what notifications make sense here and figure out
     // how to decide when they should be sent.
     // Also, perhaps JMX monitors would work better here?
+
     /**
      * Send a notification that the task queue is falling behind.  This
      * method is not used yet.
@@ -162,71 +167,96 @@ public class TaskAggregateStats extends NotificationBroadcasterSupport
     void notifyTaskQueue() {
         sendNotification(
                 new Notification("com.sun.sgs.task.queue.behind",
-                                 MXBEAN_NAME,
-                                 seqNumber.incrementAndGet(),
-                                 System.currentTimeMillis(),
-                                 "Task queue is behind"));
+                        MXBEAN_NAME,
+                        seqNumber.incrementAndGet(),
+                        System.currentTimeMillis(),
+                        "Task queue is behind"));
     }
-    
+
     /*
      * Implement MBean.
      */
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getTaskCount() {
         return numTasks.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getTransactionalTaskCount() {
         return numTransactionalTasks.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getTaskFailureCount() {
         return numFailedTasks.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getSmoothingFactor() {
         return smoothingFactor;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setSmoothingFactor(double newFactor) {
         setSmoothing(newFactor);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getSuccessfulRuntimeMax() {
         return runtime.getMaxSample();
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public double getSuccessfulRuntimeAvg() {
         return runtime.getAverage();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getTaskFailurePercentage() {
         return (getTaskFailureCount() * 100) / (double) getTaskCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getReadyCountAvg() {
         return readyCount.getAverage();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getSuccessfulLagTimeAvg() {
         return lagtime.getAverage();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getSuccessfulLatencyAvg() {
         return latency.getAverage();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void clear() {
         lastClear = System.currentTimeMillis();
         numTasks.clearCount();
@@ -237,38 +267,40 @@ public class TaskAggregateStats extends NotificationBroadcasterSupport
         lagtime.clearSamples();
         latency.clearSamples();
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getLastClearTime() {
         return lastClear;
     }
-    
+
     // Methods used by ProfileCollector to update our values when
     // tasks complete
     void taskFinishedSuccess(boolean trans, long ready, long run, long lag) {
         // Don't include unbounded tasks in our statistics.
         if (firstTask) {
             firstTask = false;
-            ConfigManager config = (ConfigManager) 
-                collector.getRegisteredMBean(ConfigManager.MXBEAN_NAME);
+            ConfigManager config = (ConfigManager)
+                    collector.getRegisteredMBean(ConfigManager.MXBEAN_NAME);
             standardTimeout = config.getStandardTxnTimeout();
         }
         if (run > standardTimeout) {
             return;
         }
-        
+
         taskFinishedCommon(trans, ready);
-        
+
         runtime.addSample(run);
         lagtime.addSample(lag);
         latency.addSample(run + lag);
     }
-    
+
     void taskFinishedFail(boolean trans, long ready) {
         taskFinishedCommon(trans, ready);
         numFailedTasks.incrementCount();
     }
-    
+
     void taskFinishedCommon(boolean trans, long ready) {
         numTasks.incrementCount();
         if (trans) {
@@ -276,9 +308,10 @@ public class TaskAggregateStats extends NotificationBroadcasterSupport
         }
         readyCount.addSample(ready);
     }
-    
+
     /**
      * Set the smoothing factor for each sample.
+     *
      * @param smooth the new smoothing factor
      * @throws IllegalArgumentException if {@code smooth} is not between
      *                                  0.0 and 1.0, inclusive

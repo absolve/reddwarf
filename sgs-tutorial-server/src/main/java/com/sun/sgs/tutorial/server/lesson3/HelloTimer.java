@@ -21,17 +21,12 @@
 
 package com.sun.sgs.tutorial.server.lesson3;
 
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskManager;
 
 /**
  * A simple timed-task example for the Project Darkstar Server.
@@ -39,21 +34,29 @@ import com.sun.sgs.app.TaskManager;
  * that logs the current timestamp on each execution.
  */
 public class HelloTimer
-    implements AppListener,  // to get called during application startup.
-               Serializable, // since all AppListeners are ManagedObjects.
-               Task          // to schedule future calls to our run() method.
+        implements AppListener,  // to get called during application startup.
+        Serializable, // since all AppListeners are ManagedObjects.
+        Task          // to schedule future calls to our run() method.
 {
-    /** The version of the serialized form of this class. */
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(HelloTimer.class.getName());
+            Logger.getLogger(HelloTimer.class.getName());
 
-    /** The delay before the first run of the task. */
+    /**
+     * The delay before the first run of the task.
+     */
     public static final int DELAY_MS = 5000;
 
-    /** The time to wait before repeating the task. */
+    /**
+     * The time to wait before repeating the task.
+     */
     public static final int PERIOD_MS = 500;
 
     // implement AppListener
@@ -93,7 +96,7 @@ public class HelloTimer
      */
     public void run() throws Exception {
         logger.log(Level.INFO,
-            "HelloTimer task: running at timestamp {0,number,#}",
-            System.currentTimeMillis());
+                "HelloTimer task: running at timestamp {0,number,#}",
+                System.currentTimeMillis());
     }
 }

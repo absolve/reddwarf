@@ -22,23 +22,17 @@
 package com.sun.sgs.impl.profile.listener;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.profile.util.NetworkReporter;
-
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskScheduler;
-
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
 
 import java.beans.PropertyChangeEvent;
-
 import java.io.IOException;
-
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,7 +66,7 @@ public class SnapshotTaskListener implements ProfileListener {
 
     // the base name for properties
     private static final String PROP_BASE =
-        SnapshotTaskListener.class.getName();
+            SnapshotTaskListener.class.getName();
 
     // the supported properties and their default values
     private static final String PORT_PROPERTY = PROP_BASE + ".report.port";
@@ -86,18 +80,17 @@ public class SnapshotTaskListener implements ProfileListener {
      * Creates an instance of {@code RuntimeHistogramListener}.
      *
      * @param properties the {@code Properties} for this listener
-     * @param owner the {@code Identity} to use for all tasks run by
-     *        this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *        available system components
+     * @param owner      the {@code Identity} to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      * @throws IOException if the server socket cannot be created
-     * @throws IOException if the socket where data will be published 
+     * @throws IOException if the socket where data will be published
      *                     cannot be created
      */
     public SnapshotTaskListener(Properties properties, Identity owner,
                                 ComponentRegistry registry)
-        throws IOException
-    {
+            throws IOException {
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
 
         map = new HashMap<String, TaskDetail>();
@@ -106,11 +99,11 @@ public class SnapshotTaskListener implements ProfileListener {
         networkReporter = new NetworkReporter(port);
 
         long reportPeriod =
-            wrappedProps.getLongProperty(PERIOD_PROPERTY, DEFAULT_PERIOD);
+                wrappedProps.getLongProperty(PERIOD_PROPERTY, DEFAULT_PERIOD);
         handle = registry.getComponent(TaskScheduler.class).
-            scheduleRecurringTask(new TaskRunnable(), owner, 
-                                  System.currentTimeMillis() + reportPeriod,
-                                  reportPeriod);
+                scheduleRecurringTask(new TaskRunnable(), owner,
+                        System.currentTimeMillis() + reportPeriod,
+                        reportPeriod);
         handle.start();
     }
 
@@ -118,7 +111,7 @@ public class SnapshotTaskListener implements ProfileListener {
      * {@inheritDoc}
      */
     public void propertyChange(PropertyChangeEvent event) {
-	// unused
+        // unused
     }
 
     /**
@@ -139,15 +132,14 @@ public class SnapshotTaskListener implements ProfileListener {
                     detail.count++;
                     detail.time += profileReport.getRunningTime();
                     detail.opCount +=
-                        profileReport.getReportedOperations().size();
+                            profileReport.getReportedOperations().size();
                     detail.retries += profileReport.getRetryCount();
-		    for (String op :
-                              profileReport.getReportedOperations()) 
-                    {
-			 Long l = detail.ops.get(op);
-			 detail.ops.put(
-			     op, Long.valueOf(l == null ? 1 : l + 1));
-		    }		    
+                    for (String op :
+                            profileReport.getReportedOperations()) {
+                        Long l = detail.ops.get(op);
+                        detail.ops.put(
+                                op, Long.valueOf(l == null ? 1 : l + 1));
+                    }
                 }
             }
         }
@@ -157,7 +149,7 @@ public class SnapshotTaskListener implements ProfileListener {
      * {@inheritDoc}
      */
     public void shutdown() {
-	handle.cancel();
+        handle.cancel();
         networkReporter.shutdown();
     }
 
@@ -166,25 +158,25 @@ public class SnapshotTaskListener implements ProfileListener {
         long time = 0;
         long opCount = 0;
         long retries = 0;
-	Map<String, Long> ops = new HashMap<String, Long>();
+        Map<String, Long> ops = new HashMap<String, Long>();
 
         public String toString() {
             double avgTime = (double) time / (double) count;
             double avgOps = (double) opCount / (double) count;
-	    Formatter formatter = new Formatter();
-	    formatter.format(" avgTime=%2.2fms", avgTime);
-	    formatter.format(" avgOps=%2.2f", avgOps);
-	    formatter.format(" [%d/%d]", count, retries);
+            Formatter formatter = new Formatter();
+            formatter.format(" avgTime=%2.2fms", avgTime);
+            formatter.format(" avgOps=%2.2f", avgOps);
+            formatter.format(" [%d/%d]", count, retries);
             if (opCount > 0) {
-		formatter.format("%n  ");
+                formatter.format("%n  ");
             }
-	    for (String op : ops.keySet()) {
-		formatter.format(
-		    "%s=%2.2f%% ",
-		    op,
-		    100.0 * (double) (ops.get(op).longValue()) / 
-		    (double) opCount);
-	    }		 
+            for (String op : ops.keySet()) {
+                formatter.format(
+                        "%s=%2.2f%% ",
+                        op,
+                        100.0 * (double) (ops.get(op).longValue()) /
+                                (double) opCount);
+            }
             return formatter.toString();
         }
     }
@@ -196,12 +188,13 @@ public class SnapshotTaskListener implements ProfileListener {
         public String getBaseTaskType() {
             return TaskRunnable.class.getName();
         }
+
         public void run() throws Exception {
             Formatter reportStr = new Formatter();
             synchronized (map) {
                 for (Entry<String, TaskDetail> entry : map.entrySet()) {
-		    reportStr.format(
-			"%s%s%n", entry.getKey(), entry.getValue());
+                    reportStr.format(
+                            "%s%s%n", entry.getKey(), entry.getValue());
                 }
                 map.clear();
             }

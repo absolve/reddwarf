@@ -25,19 +25,15 @@ import com.sun.sgs.app.ChannelManager;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagerNotFoundException;
 import com.sun.sgs.app.TaskManager;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
-
 import com.sun.sgs.kernel.ComponentRegistry;
-
 import com.sun.sgs.service.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.MissingResourceException;
-
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -45,19 +41,19 @@ import java.util.logging.Level;
  * the kernel to manage the context of a single application. It knows
  * the name of an application, its available managers, and its backing
  * services.
- *
+ * <p>
  * FIXME:  the context should check that it isn't shutdown before
- *  handing out services and managers
+ * handing out services and managers
  */
 class KernelContext {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(KernelContext.class.getName()));
+            new LoggerWrapper(Logger.getLogger(KernelContext.class.getName()));
 
     // the application's name
     private final String applicationName;
-    
+
     // the managers available in this context
     protected final ComponentRegistry managerComponents;
 
@@ -79,7 +75,7 @@ class KernelContext {
      */
     KernelContext(KernelContext context) {
         this(context.applicationName, context.serviceComponents,
-             context.managerComponents);
+                context.managerComponents);
     }
 
     /**
@@ -88,8 +84,8 @@ class KernelContext {
      * that can be provided components as needed by adding to the provided
      * <code>ComponentRegistry</code> instances.
      *
-     * @param applicationName the name of the application represented by
-     *                        this context
+     * @param applicationName   the name of the application represented by
+     *                          this context
      * @param serviceComponents the services available in this context
      * @param managerComponents the managers available in this context
      */
@@ -119,7 +115,7 @@ class KernelContext {
             dm = null;
         }
         dataManager = dm;
-        
+
         TaskManager tm;
         try {
             tm = managerComponents.getComponent(TaskManager.class);
@@ -137,7 +133,7 @@ class KernelContext {
     ChannelManager getChannelManager() {
         if (channelManager == null) {
             throw new ManagerNotFoundException("this application is running " +
-                                               "without a ChannelManager");
+                    "without a ChannelManager");
         }
         return channelManager;
     }
@@ -150,7 +146,7 @@ class KernelContext {
     DataManager getDataManager() {
         if (dataManager == null) {
             throw new ManagerNotFoundException("this application is running " +
-                                               "without a DataManager");
+                    "without a DataManager");
         }
         return dataManager;
     }
@@ -163,7 +159,7 @@ class KernelContext {
     TaskManager getTaskManager() {
         if (taskManager == null) {
             throw new ManagerNotFoundException("this application is running " +
-                                               "without a TaskManager");
+                    "without a TaskManager");
         }
         return taskManager;
     }
@@ -176,9 +172,7 @@ class KernelContext {
      * managers.
      *
      * @param type the <code>Class</code> of the requested manager
-     *
      * @return the requested manager
-     *
      * @throws ManagerNotFoundException if there wasn't exactly one match to
      *                                  the requested type
      */
@@ -187,7 +181,7 @@ class KernelContext {
             return managerComponents.getComponent(type);
         } catch (MissingResourceException mre) {
             throw new ManagerNotFoundException("couldn't find manager: " +
-                                               type.getName());
+                    type.getName());
         }
     }
 
@@ -200,9 +194,7 @@ class KernelContext {
      * invoked directly outside of a transactional context.
      *
      * @param type the <code>Class</code> of the requested <code>Service</code>
-     *
      * @return the requested <code>Service</code>
-     *
      * @throws MissingResourceException if there wasn't exactly one match to
      *                                  the requested type
      */
@@ -241,7 +233,7 @@ class KernelContext {
             ((Service) service).shutdown();
         }
     }
-    
+
     /**
      * Returns a unique representation of this context, in this case the
      * name of the application.

@@ -30,7 +30,7 @@ import com.sun.sgs.impl.auth.IdentityImpl;
 public class SystemIdentity extends IdentityImpl {
 
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * Creates an instance of {@code SystemIdentity} associated with the
      * given name.

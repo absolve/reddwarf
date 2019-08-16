@@ -30,9 +30,10 @@ package com.sun.sgs.nio.channels;
  * a network oriented channel that is already bound.
  */
 public class AlreadyBoundException
-    extends IllegalStateException
-{
-    /** The version of the serialized representation of this class. */
+        extends IllegalStateException {
+    /**
+     * The version of the serialized representation of this class.
+     */
     private static final long serialVersionUID = 1L;
 
     /**

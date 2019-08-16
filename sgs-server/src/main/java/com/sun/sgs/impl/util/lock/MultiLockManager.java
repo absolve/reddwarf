@@ -22,8 +22,9 @@
 package com.sun.sgs.impl.util.lock;
 
 import java.util.logging.Level;
-import static java.util.logging.Level.FINER;
 import java.util.logging.Logger;
+
+import static java.util.logging.Level.FINER;
 
 /**
  * A class for managing lock conflicts where locks are not held by transactions
@@ -31,20 +32,20 @@ import java.util.logging.Logger;
  * class does not detect deadlocks, but provides support for {@linkplain
  * #downgradeLock downgrading locks}.  All {@link Locker} objects supplied to
  * this class should be instances of {@link MultiLocker}. <p>
- *
+ * <p>
  * This class and its {@linkplain LockManager superclass} use the {@link
  * Logger} named {@code com.sun.sgs.impl.util.lock} to log information at the
  * following logging levels: <p>
  *
  * <ul>
  * <li> {@link Level#FINER FINER} - Releasing locks; requesting, waiting for,
- *	and returning from lock requests
+ * and returning from lock requests
  * <li> {@link Level#FINEST FINEST} - Notifying new lock owners, results of
- *	requesting locks before waiting, releasing locks, results of attempting
- *	to assign locks to waiters
+ * requesting locks before waiting, releasing locks, results of attempting
+ * to assign locks to waiters
  * </ul>
  *
- * @param	<K> the type of key
+ * @param    <K> the type of key
  */
 public final class MultiLockManager<K> extends LockManager<K> {
 
@@ -53,21 +54,21 @@ public final class MultiLockManager<K> extends LockManager<K> {
      * current thread is waiting for, or {@code null} if it is not waiting.
      */
     private final ThreadLocal<LockAttemptResult<K>> waitingFor =
-	new ThreadLocal<LockAttemptResult<K>>();
+            new ThreadLocal<LockAttemptResult<K>>();
 
     /* -- Public constructor -- */
 
     /**
      * Creates an instance of this class.
      *
-     * @param	lockTimeout the maximum number of milliseconds to acquire a
-     *		lock
-     * @param	numKeyMaps the number of separate maps to use for storing keys
-     * @throws	IllegalArgumentException if {@code lockTimeout} or {@code
-     *		numKeyMaps} is less than {@code 1}
+     * @param    lockTimeout the maximum number of milliseconds to acquire a
+     * lock
+     * @param    numKeyMaps the number of separate maps to use for storing keys
+     * @throws IllegalArgumentException if {@code lockTimeout} or {@code
+     * numKeyMaps} is less than {@code 1}
      */
     public MultiLockManager(long lockTimeout, int numKeyMaps) {
-	super(lockTimeout, numKeyMaps);
+        super(lockTimeout, numKeyMaps);
     }
 
     /* -- Public methods -- */
@@ -75,56 +76,55 @@ public final class MultiLockManager<K> extends LockManager<K> {
     /**
      * {@inheritDoc}
      *
-     * @throws	IllegalArgumentException {@inheritDoc}, or if {@code locker} is
-     *		not an instance of {@link MultiLocker}
+     * @throws IllegalArgumentException {@inheritDoc}, or if {@code locker} is
+     * not an instance of {@link MultiLocker}
      */
     @Override
     public LockConflict<K> lock(Locker<K> locker, K key, boolean forWrite) {
-	checkMultiLocker(locker);
-	return super.lock(locker, key, forWrite);
+        checkMultiLocker(locker);
+        return super.lock(locker, key, forWrite);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @throws	IllegalArgumentException {@inheritDoc}, or if {@code locker} is
-     *		not an instance of {@link MultiLocker}
+     * @throws IllegalArgumentException {@inheritDoc}, or if {@code locker} is
+     * not an instance of {@link MultiLocker}
      */
     @Override
     public LockConflict<K> lockNoWait(
-	Locker<K> locker, K key, boolean forWrite)
-    {
-	checkMultiLocker(locker);
-	return super.lockNoWait(locker, key, forWrite);
+            Locker<K> locker, K key, boolean forWrite) {
+        checkMultiLocker(locker);
+        return super.lockNoWait(locker, key, forWrite);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @throws	IllegalArgumentException {@inheritDoc}, or if {@code locker} is
-     *		not an instance of {@link MultiLocker}
+     * @throws IllegalArgumentException {@inheritDoc}, or if {@code locker} is
+     * not an instance of {@link MultiLocker}
      */
     public LockConflict<K> waitForLock(Locker<K> locker) {
-	checkMultiLocker(locker);
-	return super.waitForLock(locker);
+        checkMultiLocker(locker);
+        return super.waitForLock(locker);
     }
 
     /**
      * Downgrades a lock held by a locker from write to read access.  This
      * method does nothing if the lock is not held for write.
      *
-     * @param	locker the locker holding the lock
-     * @param	key the key identifying the lock
-     * @throws	IllegalArgumentException if {@code locker} has a different lock
-     *		manager, or if {@code locker} is not an instance of {@link
-     *		MultiLocker}
+     * @param    locker the locker holding the lock
+     * @param    key the key identifying the lock
+     * @throws IllegalArgumentException if {@code locker} has a different lock
+     * manager, or if {@code locker} is not an instance of {@link
+     * MultiLocker}
      */
     public void downgradeLock(Locker<K> locker, K key) {
-	if (logger.isLoggable(FINER)) {
-	    logger.log(FINER, "downgrade {0} {1}", locker, key);
-	}
-	checkMultiLocker(locker);
-	releaseLockInternal(locker, key, true);
+        if (logger.isLoggable(FINER)) {
+            logger.log(FINER, "downgrade {0} {1}", locker, key);
+        }
+        checkMultiLocker(locker);
+        releaseLockInternal(locker, key, true);
     }
 
     /* -- Other methods -- */
@@ -132,29 +132,29 @@ public final class MultiLockManager<K> extends LockManager<K> {
     /**
      * Checks if this thread is waiting for a lock.
      *
-     * @return	the result of the lock request this thread is waiting
-     *		for or {@code null} if it is not waiting
+     * @return the result of the lock request this thread is waiting
+     * for or {@code null} if it is not waiting
      */
     LockAttemptResult<K> getWaitingFor() {
-	return waitingFor.get();
+        return waitingFor.get();
     }
 
     /**
      * Records the lock that this thread is waiting for, or marks that it is
      * not waiting if the argument is {@code null}.
      *
-     * @param	waitingFor the lock or {@code null}
+     * @param    waitingFor the lock or {@code null}
      */
     void setWaitingFor(LockAttemptResult<K> waitingFor) {
-	this.waitingFor.set(waitingFor);
+        this.waitingFor.set(waitingFor);
     }
 
     /**
      * Throws IllegalArgumentException if the argument is not a MultiLocker.
      */
     private static void checkMultiLocker(Locker<?> locker) {
-	if (locker != null && !(locker instanceof MultiLocker<?>)) {
-	    throw new IllegalArgumentException("Locker is not a MultiLocker");
-	}
+        if (locker != null && !(locker instanceof MultiLocker<?>)) {
+            throw new IllegalArgumentException("Locker is not a MultiLocker");
+        }
     }
 }

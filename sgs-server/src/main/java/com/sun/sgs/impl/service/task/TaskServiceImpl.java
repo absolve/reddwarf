@@ -21,65 +21,31 @@
 
 package com.sun.sgs.impl.service.task;
 
-import com.sun.sgs.app.ExceptionRetryStatus;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.NameNotBoundException;
-import com.sun.sgs.app.ObjectNotFoundException;
-import com.sun.sgs.app.PeriodicTaskHandle;
-import com.sun.sgs.app.RunWithNewIdentity;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskRejectedException;
-
+import com.sun.sgs.app.*;
 import com.sun.sgs.app.util.ScalableHashSet;
-
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.impl.util.TransactionContext;
 import com.sun.sgs.impl.util.TransactionContextFactory;
-
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskReservation;
-
 import com.sun.sgs.profile.ProfileCollector;
-
-import com.sun.sgs.service.Node;
-import com.sun.sgs.service.NodeMappingListener;
-import com.sun.sgs.service.NodeMappingService;
-import com.sun.sgs.service.RecoveryListener;
-import com.sun.sgs.service.SimpleCompletionHandler;
-import com.sun.sgs.service.TaskService;
-import com.sun.sgs.service.Transaction;
-import com.sun.sgs.service.TransactionProxy;
-import com.sun.sgs.service.UnknownIdentityException;
-import com.sun.sgs.service.WatchdogService;
+import com.sun.sgs.service.*;
 import com.sun.sgs.service.task.ContinuePolicy;
 
+import javax.management.JMException;
 import java.io.Serializable;
-
 import java.math.BigInteger;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.concurrent.atomic.AtomicLong;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.JMException;
 
 
 /**
@@ -128,62 +94,61 @@ import javax.management.JMException;
  * <dl style="margin-left: 1em">
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #HANDOFF_PERIOD_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #HANDOFF_PERIOD_DEFAULT}
+ * {@value #HANDOFF_PERIOD_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #HANDOFF_PERIOD_DEFAULT}
  *
  * <dd style="padding-top: .5em">Specifies the periodic time in milliseconds
- *      that the {@code TaskServiceImpl} will regularly query its handoff
- *      queue for tasks that have been handed off by other nodes.<p>
+ * that the {@code TaskServiceImpl} will regularly query its handoff
+ * queue for tasks that have been handed off by other nodes.<p>
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #HANDOFF_START_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #HANDOFF_START_DEFAULT}
+ * {@value #HANDOFF_START_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #HANDOFF_START_DEFAULT}
  *
  * <dd style="padding-top: .5em">Specifies the time in milliseconds that the
- *      {@code TaskServiceImpl} will wait at startup before querying its
- *      handoff queue for the first time.<p>
+ * {@code TaskServiceImpl} will wait at startup before querying its
+ * handoff queue for the first time.<p>
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #VOTE_DELAY_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #VOTE_DELAY_DEFAULT}
+ * {@value #VOTE_DELAY_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #VOTE_DELAY_DEFAULT}
  *
  * <dd style="padding-top: .5em">Specifies the time in milliseconds to wait
- *      before reporting a status change for an identity.  The status change
- *      is not reported if the identity's status changes back to its original
- *      state during this delay period.<p>
+ * before reporting a status change for an identity.  The status change
+ * is not reported if the identity's status changes back to its original
+ * state during this delay period.<p>
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #CONTINUE_POLICY_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #CONTINUE_POLICY_DEFAULT}
+ * {@value #CONTINUE_POLICY_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #CONTINUE_POLICY_DEFAULT}
  *
  * <dd style="padding-top: .5em">Specifies the fully qualified class name of
- *      the class which will be used as the {@link ContinuePolicy} for the task
- *      service.  The given class should be a non-abstract class that implements
- *      the {@code ContinuePolicy} interface, and that provides a
- *      constructor with the parameters ({@link Properties},
- *      {@link ComponentRegistry}, {@link TransactionProxy})<p>
+ * the class which will be used as the {@link ContinuePolicy} for the task
+ * service.  The given class should be a non-abstract class that implements
+ * the {@code ContinuePolicy} interface, and that provides a
+ * constructor with the parameters ({@link Properties},
+ * {@link ComponentRegistry}, {@link TransactionProxy})<p>
  *
  *
  * </dl> <p>
  */
-public class TaskServiceImpl 
+public class TaskServiceImpl
         extends AbstractService
-        implements TaskService, NodeMappingListener, RecoveryListener 
-{
+        implements TaskService, NodeMappingListener, RecoveryListener {
 
     /**
      * The identifier used for this {@code Service}.
      */
-    public static final String NAME = 
-        "com.sun.sgs.impl.service.task.TaskServiceImpl";
+    public static final String NAME =
+            "com.sun.sgs.impl.service.task.TaskServiceImpl";
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(NAME));
+            new LoggerWrapper(Logger.getLogger(NAME));
 
     /**
      * The name prefix used to bind all service-level objects associated
@@ -195,15 +160,21 @@ public class TaskServiceImpl
     // followed by the pending task's identity)
     private static final String DS_PENDING_SPACE = DS_PREFIX + "Pending.";
 
-    /** The name of the version key. */
+    /**
+     * The name of the version key.
+     */
     private static final String VERSION_KEY = NAME + ".service.version";
 
-    /** The major version. */
+    /**
+     * The major version.
+     */
     private static final int MAJOR_VERSION = 1;
-    
-    /** The minor version. */
+
+    /**
+     * The minor version.
+     */
     private static final int MINOR_VERSION = 0;
-    
+
     // the transient set of identities known to be active on the current node,
     // and how many tasks are pending for that identity
     private HashMap<Identity, Integer> activeIdentityMap;
@@ -214,11 +185,15 @@ public class TaskServiceImpl
     // a timer used to delay status votes
     private final Timer statusUpdateTimer;
 
-    /** The property key to set the delay in milliseconds for status votes. */
+    /**
+     * The property key to set the delay in milliseconds for status votes.
+     */
     public static final String VOTE_DELAY_PROPERTY =
-        NAME + ".vote.delay";
+            NAME + ".vote.delay";
 
-    /** The default delay in milliseconds for status votes. */
+    /**
+     * The default delay in milliseconds for status votes.
+     */
     public static final long VOTE_DELAY_DEFAULT = 5000L;
 
     // the length of time to delay status votes
@@ -234,22 +209,30 @@ public class TaskServiceImpl
     // the local node's hand-off namespace
     private final String localHandoffSpace;
 
-    /** The property key to set the delay before hand-off checking starts. */
+    /**
+     * The property key to set the delay before hand-off checking starts.
+     */
     public static final String HANDOFF_START_PROPERTY =
-        NAME + ".handoff.start";
+            NAME + ".handoff.start";
 
-    /** The default delay in milliseconds before hand-off checking starts. */
+    /**
+     * The default delay in milliseconds before hand-off checking starts.
+     */
     public static final long HANDOFF_START_DEFAULT = 2500L;
 
     // the actual amount of time to wait before hand-off checking starts
     private final long handoffStart;
 
-    /** The property key to set how long to wait between hand-off checks. */
+    /**
+     * The property key to set how long to wait between hand-off checks.
+     */
     public static final String HANDOFF_PERIOD_PROPERTY =
-        NAME + ".handoff.period";
+            NAME + ".handoff.period";
 
-    /** The default length of time in milliseconds to wait between hand-off
-        checks. */
+    /**
+     * The default length of time in milliseconds to wait between hand-off
+     * checks.
+     */
     public static final long HANDOFF_PERIOD_DEFAULT = 500L;
 
     // the actual amount of time to wait between hand-off checks
@@ -264,7 +247,9 @@ public class TaskServiceImpl
     public static final String CONTINUE_POLICY_PROPERTY =
             NAME + ".continue.policy";
 
-    /** The default continue policy. */
+    /**
+     * The default continue policy.
+     */
     public static final String CONTINUE_POLICY_DEFAULT =
             "com.sun.sgs.impl.service.task.FixedTimeContinuePolicy";
 
@@ -303,26 +288,24 @@ public class TaskServiceImpl
     // while this map is concurrent, the individual sets need to have
     // all access synchronized
     private final ConcurrentHashMap<Identity, Set<BigInteger>>
-        availablePendingMap;
+            availablePendingMap;
 
     // the profiled operations
     private final TaskServiceStats serviceStats;
-    
+
     /**
      * Creates an instance of {@code TaskServiceImpl}. See the class javadoc
      * for applicable properties.
      *
-     * @param properties application properties
-     * @param systemRegistry the registry of system components
+     * @param properties       application properties
+     * @param systemRegistry   the registry of system components
      * @param transactionProxy the system's {@code TransactionProxy}
-     *
      * @throws Exception if the service cannot be created
      */
     public TaskServiceImpl(Properties properties,
                            ComponentRegistry systemRegistry,
                            TransactionProxy transactionProxy)
-        throws Exception
-    {
+            throws Exception {
         super(properties, systemRegistry, transactionProxy, logger);
         logger.log(Level.CONFIG, "Creating TaskServiceImpl");
 
@@ -341,7 +324,7 @@ public class TaskServiceImpl
 
         // keep a reference to the other Services that are needed
         nodeMappingService = txnProxy.getService(NodeMappingService.class);
-        
+
         // note that the application is always active locally, so there's
         // no chance of voting the application as inactive
         activeIdentityMap.put(taskOwner, 1);
@@ -356,11 +339,13 @@ public class TaskServiceImpl
             public String getBaseTaskType() {
                 return NAME + ".VersionCheckRunner";
             }
+
             public void run() {
                 checkServiceVersion(
                         VERSION_KEY, MAJOR_VERSION, MINOR_VERSION);
-            } }, taskOwner);
-                
+            }
+        }, taskOwner);
+
         // get the current node id for the hand-off namespace, and register
         // for recovery notices to manage cleanup of hand-off bindings
         watchdogService = txnProxy.getService(WatchdogService.class);
@@ -371,16 +356,16 @@ public class TaskServiceImpl
         // get the start delay and the length of time between hand-off checks
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
         handoffStart = wrappedProps.getLongProperty(HANDOFF_START_PROPERTY,
-                                                    HANDOFF_START_DEFAULT);
+                HANDOFF_START_DEFAULT);
         if (handoffStart < 0) {
             throw new IllegalStateException("Handoff Start property must " +
-                                            "be non-negative");
+                    "be non-negative");
         }
         handoffPeriod = wrappedProps.getLongProperty(HANDOFF_PERIOD_PROPERTY,
-                                                     HANDOFF_PERIOD_DEFAULT);
+                HANDOFF_PERIOD_DEFAULT);
         if (handoffPeriod < 0) {
             throw new IllegalStateException("Handoff Period property must " +
-                                            "be non-negative");
+                    "be non-negative");
         }
 
         // get the continue policy
@@ -388,13 +373,13 @@ public class TaskServiceImpl
                 CONTINUE_POLICY_PROPERTY,
                 CONTINUE_POLICY_DEFAULT,
                 ContinuePolicy.class, new Class[]{Properties.class,
-                                                  ComponentRegistry.class,
-                                                  TransactionProxy.class},
+                        ComponentRegistry.class,
+                        TransactionProxy.class},
                 properties, systemRegistry, txnProxy);
 
         // create our profiling info and register our MBean
-        ProfileCollector collector = 
-            systemRegistry.getComponent(ProfileCollector.class);
+        ProfileCollector collector =
+                systemRegistry.getComponent(ProfileCollector.class);
         serviceStats = new TaskServiceStats(collector);
         try {
             collector.registerMBean(serviceStats, TaskServiceStats.MXBEAN_NAME);
@@ -406,19 +391,19 @@ public class TaskServiceImpl
         // the delay used in submitting status votes
         statusUpdateTimer = new Timer("TaskServiceImpl Status Vote Timer");
         voteDelay = wrappedProps.getLongProperty(VOTE_DELAY_PROPERTY,
-                                                 VOTE_DELAY_DEFAULT);
+                VOTE_DELAY_DEFAULT);
         if (voteDelay < 0) {
             throw new IllegalStateException("Vote Delay property must " +
-                                            "be non-negative");
+                    "be non-negative");
         }
 
         logger.log(Level.CONFIG,
-                   "Created TaskServiceImpl with properties:" +
-                   "\n  " + CONTINUE_POLICY_PROPERTY + "=" +
-                   continuePolicy.getClass().getName() +
-                   "\n  " + HANDOFF_PERIOD_PROPERTY + "=" + handoffPeriod +
-                   "\n  " + HANDOFF_START_PROPERTY + "=" + handoffStart +
-                   "\n  " + VOTE_DELAY_PROPERTY + "=" + voteDelay);
+                "Created TaskServiceImpl with properties:" +
+                        "\n  " + CONTINUE_POLICY_PROPERTY + "=" +
+                        continuePolicy.getClass().getName() +
+                        "\n  " + HANDOFF_PERIOD_PROPERTY + "=" + handoffPeriod +
+                        "\n  " + HANDOFF_START_PROPERTY + "=" + handoffStart +
+                        "\n  " + VOTE_DELAY_PROPERTY + "=" + voteDelay);
     }
 
     /**
@@ -430,15 +415,16 @@ public class TaskServiceImpl
 
     /* -- Implement AbstractService -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected void handleServiceVersionMismatch(
-	Version oldVersion, Version currentVersion)
-    {
-	throw new IllegalStateException(
-	    "unable to convert version:" + oldVersion +
-	    " to current version:" + currentVersion);
+            Version oldVersion, Version currentVersion) {
+        throw new IllegalStateException(
+                "unable to convert version:" + oldVersion +
+                        " to current version:" + currentVersion);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -450,18 +436,19 @@ public class TaskServiceImpl
         // to us, in which case the set will already exist
         try {
             transactionScheduler.runTask(new KernelRunnable() {
-                    public String getBaseTaskType() {
-                        return NAME + ".HandoffBindingRunner";
+                public String getBaseTaskType() {
+                    return NAME + ".HandoffBindingRunner";
+                }
+
+                public void run() throws Exception {
+                    try {
+                        dataService.getServiceBinding(localHandoffSpace);
+                    } catch (NameNotBoundException nnbe) {
+                        dataService.setServiceBinding(localHandoffSpace,
+                                new StringHashSet());
                     }
-                    public void run() throws Exception {
-                        try {
-                            dataService.getServiceBinding(localHandoffSpace);
-                        } catch (NameNotBoundException nnbe) {
-                            dataService.setServiceBinding(localHandoffSpace,
-                                                          new StringHashSet());
-                        }
-                    }
-                }, taskOwner);
+                }
+            }, taskOwner);
         } catch (Exception e) {
             throw new AssertionError("Failed to setup node-local sets");
         }
@@ -477,9 +464,9 @@ public class TaskServiceImpl
         // kick-off a periodic hand-off task, but delay a little while so
         // that the system has a chance to finish setup
         handoffTaskHandle = transactionScheduler.
-            scheduleRecurringTask(new HandoffRunner(), taskOwner,
-                                  System.currentTimeMillis() + handoffStart,
-                                  handoffPeriod);
+                scheduleRecurringTask(new HandoffRunner(), taskOwner,
+                        System.currentTimeMillis() + handoffStart,
+                        handoffPeriod);
         handoffTaskHandle.start();
 
         logger.log(Level.CONFIG, "TaskService is ready");
@@ -501,39 +488,40 @@ public class TaskServiceImpl
      * {@inheritDoc}
      */
     public void recover(Node node, SimpleCompletionHandler handler) {
-        final long failedNodeId =  node.getId();
+        final long failedNodeId = node.getId();
         final String handoffSpace = DS_HANDOFF_SPACE + failedNodeId;
 
         // remove the handoff set and binding for the failed node
         try {
             transactionScheduler.runTask(new KernelRunnable() {
-                    public String getBaseTaskType() {
-                        return NAME + ".HandoffCleanupRunner";
+                public String getBaseTaskType() {
+                    return NAME + ".HandoffCleanupRunner";
+                }
+
+                public void run() throws Exception {
+                    StringHashSet set = null;
+                    try {
+                        set = (StringHashSet)
+                                dataService.getServiceBinding(handoffSpace);
+                    } catch (NameNotBoundException nnbe) {
+                        // this only happens when this recover method
+                        // is called more than once, and just means that
+                        // this cleanup has already happened, so we can
+                        // quietly ignore this case
+                        return;
                     }
-                    public void run() throws Exception {
-                        StringHashSet set = null;
-                        try {    
-                            set = (StringHashSet)
-				dataService.getServiceBinding(handoffSpace);
-                        } catch (NameNotBoundException nnbe) {
-                            // this only happens when this recover method
-                            // is called more than once, and just means that
-                            // this cleanup has already happened, so we can
-                            // quietly ignore this case
-                            return;
-                        }
-                        dataService.removeObject(set);
-                        dataService.removeServiceBinding(handoffSpace);
-                        if (logger.isLoggable(Level.INFO)) {
-                            logger.log(Level.INFO, "Cleaned up handoff set " +
-                                       "for failed node: " + failedNodeId);
-                        }
-                   }
-                }, taskOwner);
+                    dataService.removeObject(set);
+                    dataService.removeServiceBinding(handoffSpace);
+                    if (logger.isLoggable(Level.INFO)) {
+                        logger.log(Level.INFO, "Cleaned up handoff set " +
+                                "for failed node: " + failedNodeId);
+                    }
+                }
+            }, taskOwner);
         } catch (Exception e) {
             if (logger.isLoggable(Level.WARNING)) {
                 logger.logThrow(Level.WARNING, e, "Failed to cleanup handoff " +
-                                "set for failed node: " + failedNodeId);
+                        "set for failed node: " + failedNodeId);
             }
         }
 
@@ -562,7 +550,9 @@ public class TaskServiceImpl
         scheduleSingleTask(task, appStartTime);
     }
 
-    /** Private helper for common scheduling code. */
+    /**
+     * Private helper for common scheduling code.
+     */
     private void scheduleSingleTask(Task task, long appStartTime) {
         if (task == null) {
             throw new NullPointerException("Task must not be null");
@@ -589,8 +579,7 @@ public class TaskServiceImpl
      * {@inheritDoc}
      */
     public PeriodicTaskHandle schedulePeriodicTask(Task task, long delay,
-                                                   long period)
-    {
+                                                   long period) {
         serviceStats.scheduleTaskPeriodicOp.report();
         // note the start time
         long appStartTime = watchdogService.currentAppTimeMillis() + delay;
@@ -607,7 +596,7 @@ public class TaskServiceImpl
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "scheduling a periodic task starting " +
-                       "at {0}", appStartTime);
+                    "at {0}", appStartTime);
         }
 
         // persist the task regardless of where it will ultimately run
@@ -623,15 +612,15 @@ public class TaskServiceImpl
             }
             runner.markIgnoreIsLocal();
         }
-        PendingTask ptask = 
+        PendingTask ptask =
                 (PendingTask) (dataService.createReferenceForId(objId).
-                getForUpdate());
+                        getForUpdate());
         ptask.setRunningNode(nodeId);
 
         RecurringTaskHandle handle =
-            transactionScheduler.scheduleRecurringTask(
-                runner, owner,
-                watchdogService.getSystemTimeMillis(appStartTime), period);
+                transactionScheduler.scheduleRecurringTask(
+                        runner, owner,
+                        watchdogService.getSystemTimeMillis(appStartTime), period);
         ctxFactory.joinTransaction().addRecurringTask(objId, handle, owner);
         return new PeriodicTaskHandleImpl(generateObjName(owner, objId));
     }
@@ -647,8 +636,7 @@ public class TaskServiceImpl
      * {@inheritDoc}
      */
     public void scheduleNonDurableTask(KernelRunnable task,
-                                       boolean transactional)
-    {
+                                       boolean transactional) {
         if (task == null) {
             throw new NullPointerException("Task must not be null");
         }
@@ -659,15 +647,14 @@ public class TaskServiceImpl
 
         Identity owner = getTaskOwner(task);
         scheduleTask(new NonDurableTask(task, owner, transactional), owner,
-                     START_NOW, false);
+                START_NOW, false);
     }
 
     /**
      * {@inheritDoc}
      */
     public void scheduleNonDurableTask(KernelRunnable task, long delay,
-                                       boolean transactional)
-    {
+                                       boolean transactional) {
         if (task == null) {
             throw new NullPointerException("Task must not be null");
         }
@@ -681,7 +668,7 @@ public class TaskServiceImpl
 
         Identity owner = getTaskOwner(task);
         scheduleTask(new NonDurableTask(task, owner, transactional), owner,
-                     watchdogService.currentAppTimeMillis() + delay, false);
+                watchdogService.currentAppTimeMillis() + delay, false);
     }
 
     /**
@@ -689,37 +676,41 @@ public class TaskServiceImpl
      * also generating a unique name for this task and persisting the
      * associated {@code PendingTask}.
      */
-    private TaskRunner getRunner(Task task, Identity identity, 
-                                 long appStartTime, long period)
-    {
+    private TaskRunner getRunner(Task task, Identity identity,
+                                 long appStartTime, long period) {
         logger.log(Level.FINEST, "setting up a pending task");
 
         // create a new pending task that will be used when the runner runs
         BigInteger objId =
-            allocatePendingTask(task, identity, appStartTime, period);
+                allocatePendingTask(task, identity, appStartTime, period);
 
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "created pending task {0} for {1}",
-                       objId, identity);
+                    objId, identity);
         }
 
         return new TaskRunner(objId, task.getClass().getName(), identity);
     }
 
-    /** Helper that generates the name for a pending object. */
+    /**
+     * Helper that generates the name for a pending object.
+     */
     private static String generateObjName(Identity owner, BigInteger objId) {
         return DS_PENDING_SPACE + owner.getName() + "." + objId;
     }
 
-    /** Helper that gets the id from a name. */
+    /**
+     * Helper that gets the id from a name.
+     */
     private static BigInteger getIdFromName(String objName) {
         return new BigInteger(objName.substring(objName.lastIndexOf('.') + 1));
     }
 
-    /** Helper that allocates a pending task, re-using one if possible. */
+    /**
+     * Helper that allocates a pending task, re-using one if possible.
+     */
     private BigInteger allocatePendingTask(Task task, Identity identity,
-                                           long appStartTime, long period)
-    {
+                                           long appStartTime, long period) {
         PendingTask ptask = null;
         BigInteger objId = null;
         Set<BigInteger> set = availablePendingMap.get(identity);
@@ -734,7 +725,7 @@ public class TaskServiceImpl
                     objId = set.iterator().next();
                     set.remove(objId);
                     ctxFactory.joinTransaction().
-                        notePendingIdAllocated(identity, objId);
+                            notePendingIdAllocated(identity, objId);
                 }
             }
         }
@@ -758,14 +749,14 @@ public class TaskServiceImpl
             // there was no available pending task, so create one now
             ptask = new PendingTask(identity);
             ManagedReference<PendingTask> taskRef =
-                dataService.createReference(ptask);
+                    dataService.createReference(ptask);
             objId = taskRef.getId();
             dataService.
-                setServiceBinding(generateObjName(identity, objId), ptask);
+                    setServiceBinding(generateObjName(identity, objId), ptask);
         }
 
         ptask.resetValues(task, appStartTime, period);
-        
+
         return objId;
     }
 
@@ -775,12 +766,11 @@ public class TaskServiceImpl
      * tasks, but not for periodic tasks.
      */
     private void scheduleTask(KernelRunnable task, Identity owner,
-                              long appStartTime, boolean transactional)
-    {
+                              long appStartTime, boolean transactional) {
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "reserving a task starting " +
-                                     (appStartTime == START_NOW
-                                      ? "now" : "at " + appStartTime));
+                    (appStartTime == START_NOW
+                            ? "now" : "at " + appStartTime));
         }
 
         // reserve a space for this task
@@ -810,7 +800,7 @@ public class TaskServiceImpl
         } catch (TaskRejectedException tre) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.logThrow(Level.FINE, tre,
-                                "could not get a reservation");
+                        "could not get a reservation");
             }
             throw tre;
         }
@@ -837,10 +827,10 @@ public class TaskServiceImpl
             // currently running)
             if (recurringMap.containsKey(objId)) {
                 ctxFactory.joinTransaction().
-                    cancelRecurringTask(objId, txnProxy.getCurrentOwner());
+                        cancelRecurringTask(objId, txnProxy.getCurrentOwner());
             } else {
                 ctxFactory.joinTransaction().
-                    decrementStatusCount(txnProxy.getCurrentOwner());
+                        decrementStatusCount(txnProxy.getCurrentOwner());
             }
             return null;
         }
@@ -878,13 +868,13 @@ public class TaskServiceImpl
         }
 
         ctxFactory.joinTransaction().
-            cancelRecurringTask(objId, ptask.getIdentity());
+                cancelRecurringTask(objId, ptask.getIdentity());
 
         // remove the object rather than allowing it to be re-used to make
         // sure that any outstanding handles don't get confused later
         dataService.
-            removeServiceBinding(generateObjName(ptask.getIdentity(),
-                                                 objId));
+                removeServiceBinding(generateObjName(ptask.getIdentity(),
+                        objId));
         dataService.removeObject(ptask);
     }
 
@@ -902,7 +892,7 @@ public class TaskServiceImpl
     private void notifyNonRetry(final BigInteger objId) {
         if (logger.isLoggable(Level.INFO)) {
             logger.log(Level.INFO, "trying to remove non-retried task {0}",
-                       objId);
+                    objId);
         }
 
         // check if the task is in the recurring map, in which case we don't
@@ -917,19 +907,19 @@ public class TaskServiceImpl
         if (recurringMap.containsKey(objId)) {
             return;
         }
-        
+
         try {
             transactionScheduler.
-                scheduleTask(new NonRetryCleanupRunnable(objId),
-                             txnProxy.getCurrentOwner());
+                    scheduleTask(new NonRetryCleanupRunnable(objId),
+                            txnProxy.getCurrentOwner());
         } catch (TaskRejectedException tre) {
             // Note that this should (essentially) never happen, but if it
             // does then the pending task will always remain, and this node
             // will never consider this identity as inactive
             if (logger.isLoggable(Level.WARNING)) {
                 logger.logThrow(Level.WARNING, tre, "could not schedule " +
-                                "task to remove non-retried task {0}: " +
-                                "giving up", objId);
+                        "task to remove non-retried task {0}: " +
+                        "giving up", objId);
             }
             throw tre;
         }
@@ -941,20 +931,27 @@ public class TaskServiceImpl
      */
     private class NonRetryCleanupRunnable implements KernelRunnable {
         private final BigInteger objId;
+
         NonRetryCleanupRunnable(BigInteger objId) {
             this.objId = objId;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public String getBaseTaskType() {
             return NonRetryCleanupRunnable.class.getName();
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void run() throws Exception {
             if (shuttingDown()) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.log(Level.WARNING, "Service is shutdown, so a " +
-                               "non-retried task {0} will not be removed",
-                               objId);
+                                    "non-retried task {0} will not be removed",
+                            objId);
                 }
                 throw new IllegalStateException("Service is shutdown");
             }
@@ -978,11 +975,17 @@ public class TaskServiceImpl
                 new HashMap<Identity, Integer>();
         private BigInteger currentTaskId = null;
         private Identity currentTaskOwner = null;
-        /** Creates context tied to the given transaction. */
+
+        /**
+         * Creates context tied to the given transaction.
+         */
         TxnState(Transaction txn) {
             super(txn);
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void commit() {
             // cancel the cancelled periodic tasks...
             if (cancelledRecurringSet != null) {
@@ -1011,8 +1014,7 @@ public class TaskServiceImpl
             // ... and start the periodic tasks
             if (addedRecurringMap != null) {
                 for (Entry<BigInteger, RecurringDetail> entry :
-                         addedRecurringMap.entrySet())
-                {
+                        addedRecurringMap.entrySet()) {
                     RecurringDetail detail = entry.getValue();
                     recurringMap.put(entry.getKey(), detail);
                     addHandleForIdentity(detail.handle, detail.identity);
@@ -1029,7 +1031,10 @@ public class TaskServiceImpl
                 }
             }
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void abort(boolean retryable) {
             // cancel all the reservations for tasks and recurring tasks that
             // were made during the transaction
@@ -1046,10 +1051,9 @@ public class TaskServiceImpl
             // return any taken pending tasks
             if (allocatedTaskIds != null) {
                 for (Entry<Identity, HashSet<BigInteger>> entry :
-                         allocatedTaskIds.entrySet())
-                {
+                        allocatedTaskIds.entrySet()) {
                     Set<BigInteger> localSet =
-                        availablePendingMap.get(entry.getKey());
+                            availablePendingMap.get(entry.getKey());
                     if (localSet != null) {
                         synchronized (localSet) {
                             localSet.addAll(entry.getValue());
@@ -1058,7 +1062,10 @@ public class TaskServiceImpl
                 }
             }
         }
-        /** Adds a reservation to use at commit-time. */
+
+        /**
+         * Adds a reservation to use at commit-time.
+         */
         void addReservation(TaskReservation reservation, Identity identity) {
             if (reservationSet == null) {
                 reservationSet = new HashSet<TaskReservation>();
@@ -1066,24 +1073,27 @@ public class TaskServiceImpl
             reservationSet.add(reservation);
             incrementStatusCount(identity);
         }
-        /** Adds a handle to start at commit-time. */
+
+        /**
+         * Adds a handle to start at commit-time.
+         */
         void addRecurringTask(BigInteger objId, RecurringTaskHandle handle,
-                              Identity identity)
-        {
+                              Identity identity) {
             if (addedRecurringMap == null) {
                 addedRecurringMap = new HashMap<BigInteger, RecurringDetail>();
             }
             addedRecurringMap.put(objId, new RecurringDetail(handle, identity));
             incrementStatusCount(identity);
         }
+
         /**
          * Tries to cancel the associated recurring task, recognizing whether
          * the task was scheduled within this transaction or previously.
          */
         void cancelRecurringTask(BigInteger objId, Identity identity) {
             RecurringDetail detail = (addedRecurringMap != null) ?
-                addedRecurringMap.remove(objId) : null;
-            
+                    addedRecurringMap.remove(objId) : null;
+
             if ((addedRecurringMap == null) || (detail == null)) {
                 // the task wasn't created in this transaction, so make
                 // sure that it gets cancelled at commit
@@ -1098,7 +1108,10 @@ public class TaskServiceImpl
                 decrementStatusCount(identity);
             }
         }
-        /** Notes that a task has been added for the given identity. */
+
+        /**
+         * Notes that a task has been added for the given identity.
+         */
         void incrementStatusCount(Identity identity) {
             if (statusMap.containsKey(identity)) {
                 statusMap.put(identity, statusMap.get(identity) + 1);
@@ -1106,7 +1119,10 @@ public class TaskServiceImpl
                 statusMap.put(identity, 1);
             }
         }
-        /** Notes that a task has been removed for the given identity. */
+
+        /**
+         * Notes that a task has been removed for the given identity.
+         */
         void decrementStatusCount(Identity identity) {
             if (statusMap.containsKey(identity)) {
                 statusMap.put(identity, statusMap.get(identity) - 1);
@@ -1114,7 +1130,10 @@ public class TaskServiceImpl
                 statusMap.put(identity, -1);
             }
         }
-        /** Notes that the given id has been allocated to a task. */
+
+        /**
+         * Notes that the given id has been allocated to a task.
+         */
         void notePendingIdAllocated(Identity identity, BigInteger objId) {
             if (allocatedTaskIds == null) {
                 allocatedTaskIds = new HashMap<Identity, HashSet<BigInteger>>();
@@ -1126,24 +1145,33 @@ public class TaskServiceImpl
             }
             set.add(objId);
         }
-        /** Notes the current tasks's id to be freed. */
+
+        /**
+         * Notes the current tasks's id to be freed.
+         */
         void noteCurrentIdFreed(BigInteger objId) {
             assert currentTaskId == null : "The id of the current task " +
-                "has already been assigned to be freed on commit";
+                    "has already been assigned to be freed on commit";
             currentTaskId = objId;
             currentTaskOwner = txnProxy.getCurrentOwner();
         }
     }
 
-    /** Private implementation of {@code TransactionContextFactory}. */
+    /**
+     * Private implementation of {@code TransactionContextFactory}.
+     */
     private class TransactionContextFactoryImpl
-        extends TransactionContextFactory<TxnState>
-    {
-        /** Creates an instance with the given proxy. */
+            extends TransactionContextFactory<TxnState> {
+        /**
+         * Creates an instance with the given proxy.
+         */
         TransactionContextFactoryImpl(TransactionProxy proxy) {
             super(proxy, NAME);
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         protected TxnState createContext(Transaction txn) {
             return new TxnState(txn);
         }
@@ -1158,16 +1186,18 @@ public class TaskServiceImpl
         private final String objTaskType;
         private final Identity taskIdentity;
         private boolean doLocalCheck = true;
+
         TaskRunner(BigInteger objId, String objTaskType,
-                   Identity taskIdentity)
-        {
+                   Identity taskIdentity) {
             this.objId = objId;
             this.objTaskType = objTaskType;
             this.taskIdentity = taskIdentity;
         }
+
         BigInteger getObjId() {
             return objId;
         }
+
         /**
          * This method is used in the case where the associated identity is
          * not mapped to the local node, but no assignment exists yet. In
@@ -1177,11 +1207,17 @@ public class TaskServiceImpl
         void markIgnoreIsLocal() {
             doLocalCheck = false;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public String getBaseTaskType() {
             return objTaskType;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void run() throws Exception {
             if (shuttingDown()) {
                 return;
@@ -1204,8 +1240,8 @@ public class TaskServiceImpl
                 PendingTask ptask = fetchPendingTask(objId);
                 if (ptask == null) {
                     logger.log(Level.FINER, "tried to run a task that was " +
-                               "removed previously from the data service; " +
-                               "giving up");
+                            "removed previously from the data service; " +
+                            "giving up");
                     return;
                 }
                 // check that the task isn't perdiodic and now on another node
@@ -1214,13 +1250,13 @@ public class TaskServiceImpl
                     if (node != nodeId) {
                         // someone else picked it up, so just cancel it locally
                         ctxFactory.joinTransaction().
-                            cancelRecurringTask(objId, taskIdentity);
+                                cancelRecurringTask(objId, taskIdentity);
                         return;
                     }
                 }
                 if (logger.isLoggable(Level.FINEST)) {
                     logger.log(Level.FINEST, "running task {0} scheduled to " +
-                               "run at {1}", objId, ptask.getStartTime());
+                            "run at {1}", objId, ptask.getStartTime());
                 }
                 // finally, run the task itself, and set for re-use as needed
                 if (ptask.isPeriodic()) {
@@ -1246,8 +1282,7 @@ public class TaskServiceImpl
                 // to see if the task will be re-tried...if not, then we need
                 // to notify the service
                 if ((!(e instanceof ExceptionRetryStatus)) ||
-                        (!((ExceptionRetryStatus) e).shouldRetry()))
-                {
+                        (!((ExceptionRetryStatus) e).shouldRetry())) {
                     notifyNonRetry(objId);
                 }
                 throw e;
@@ -1265,16 +1300,18 @@ public class TaskServiceImpl
         private final KernelRunnable runnable;
         private final Identity identity;
         private final boolean transactional;
+
         NonDurableTask(KernelRunnable runnable, Identity identity,
-                       boolean transactional)
-        {
+                       boolean transactional) {
             this.runnable = runnable;
             this.identity = identity;
             this.transactional = transactional;
         }
+
         public String getBaseTaskType() {
             return runnable.getBaseTaskType();
         }
+
         public void run() throws Exception {
             if (shuttingDown()) {
                 return;
@@ -1311,7 +1348,7 @@ public class TaskServiceImpl
 
         if (logger.isLoggable(Level.CONFIG)) {
             logger.log(Level.CONFIG, "re-scheduled {0} tasks for identity {1}",
-                       taskCount, identityName);
+                    taskCount, identityName);
         }
     }
 
@@ -1355,7 +1392,7 @@ public class TaskServiceImpl
         }
 
         TaskRunner runner = new TaskRunner(objId, ptask.getBaseTaskType(),
-                                           identity);
+                identity);
         runner.markIgnoreIsLocal();
 
         if (ptask.getPeriod() == PERIOD_NONE) {
@@ -1397,49 +1434,60 @@ public class TaskServiceImpl
             dataService.markForUpdate(ptask);
             ptask.setRunningNode(nodeId);
 
-            RecurringTaskHandle handle = 
-                transactionScheduler.scheduleRecurringTask(
-                    runner, identity,
-                    watchdogService.getSystemTimeMillis(restartTime),
-                    ptask.getPeriod());
+            RecurringTaskHandle handle =
+                    transactionScheduler.scheduleRecurringTask(
+                            runner, identity,
+                            watchdogService.getSystemTimeMillis(restartTime),
+                            ptask.getPeriod());
             ctxFactory.joinTransaction().
-                addRecurringTask(objId, handle, identity);
+                    addRecurringTask(objId, handle, identity);
         }
     }
 
-    /** A private runnable used to re-start a single task. */
+    /**
+     * A private runnable used to re-start a single task.
+     */
     private class TaskRestartRunner implements KernelRunnable {
         private final String objName;
+
         TaskRestartRunner(String objName) {
             this.objName = objName;
         }
+
         public String getBaseTaskType() {
             return getClass().getName();
         }
+
         public void run() throws Exception {
             restartTask(objName);
         }
     }
 
-    /** A private extension of HashSet to provide type info. */
+    /**
+     * A private extension of HashSet to provide type info.
+     */
     private static class StringHashSet extends ScalableHashSet<String> {
         private static final long serialVersionUID = 1;
     }
 
-    /** A private class to track details of recurring tasks. */
+    /**
+     * A private class to track details of recurring tasks.
+     */
     private static class RecurringDetail {
         final RecurringTaskHandle handle;
         final Identity identity;
+
         RecurringDetail(RecurringTaskHandle handle, Identity identity) {
             this.handle = handle;
             this.identity = identity;
         }
     }
 
-    /** Private helper to add a recurring handle to the set for an identity. */
+    /**
+     * Private helper to add a recurring handle to the set for an identity.
+     */
     private void addHandleForIdentity(RecurringTaskHandle handle,
-                                      Identity identity)
-    {
+                                      Identity identity) {
         synchronized (identityRecurringMap) {
             Set<RecurringTaskHandle> set = identityRecurringMap.get(identity);
             if (set == null) {
@@ -1455,8 +1503,7 @@ public class TaskServiceImpl
      * identity.
      */
     private void removeHandleForIdentity(RecurringTaskHandle handle,
-                                         Identity identity)
-    {
+                                         Identity identity) {
         synchronized (identityRecurringMap) {
             Set<RecurringTaskHandle> set = identityRecurringMap.get(identity);
             if (set != null) {
@@ -1468,11 +1515,13 @@ public class TaskServiceImpl
         }
     }
 
-    /** Private helper that cancels all recurring tasks for an identity. */
+    /**
+     * Private helper that cancels all recurring tasks for an identity.
+     */
     private void cancelHandlesForIdentity(Identity identity) {
         synchronized (identityRecurringMap) {
             Set<RecurringTaskHandle> set =
-                identityRecurringMap.remove(identity);
+                    identityRecurringMap.remove(identity);
             if (set != null) {
                 for (RecurringTaskHandle handle : set) {
                     handle.cancel();
@@ -1503,7 +1552,7 @@ public class TaskServiceImpl
             if (logger.isLoggable(Level.FINE)) {
                 logger.logThrow(Level.FINE, uie, "No mapping exists for " +
                                 "identity {0} so task {1} will run locally",
-                                identity.getName(), objName);
+                        identity.getName(), objName);
             }
             assignNode(identity);
             return false;
@@ -1515,9 +1564,9 @@ public class TaskServiceImpl
             // since the mapped node is down, run the task locally
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "Mapping for identity {0} was to " +
-                           "node {1} which has failed so task {2} will " +
-                           "run locally", identity.getName(),
-                           handoffNode.getId(), objName);
+                                "node {1} which has failed so task {2} will " +
+                                "run locally", identity.getName(),
+                        handoffNode.getId(), objName);
             }
             return false;
         }
@@ -1532,11 +1581,11 @@ public class TaskServiceImpl
         String handoffName = DS_HANDOFF_SPACE + String.valueOf(newNodeId);
         if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Handing-off task {0} to node {1}",
-                       objName, newNodeId);
+                    objName, newNodeId);
         }
         try {
             StringHashSet set =
-		(StringHashSet) dataService.getServiceBinding(handoffName);
+                    (StringHashSet) dataService.getServiceBinding(handoffName);
             set.add(objName);
         } catch (NameNotBoundException nnbe) {
             // this will only happen in the unlikely event that the identity
@@ -1548,14 +1597,16 @@ public class TaskServiceImpl
         return true;
     }
 
-    /** Private helper that kicks off a thread to do node assignment. */
+    /**
+     * Private helper that kicks off a thread to do node assignment.
+     */
     private void assignNode(final Identity identity) {
         (new Thread(new Runnable() {
-                public void run() {
-                    nodeMappingService.assignNode(TaskServiceImpl.class,
-                                                  identity);
-                }
-            })).start();
+            public void run() {
+                nodeMappingService.assignNode(TaskServiceImpl.class,
+                        identity);
+            }
+        })).start();
     }
 
     /**
@@ -1563,19 +1614,24 @@ public class TaskServiceImpl
      * been handed-off from another node.
      */
     private class HandoffRunner implements KernelRunnable {
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public String getBaseTaskType() {
             return HandoffRunner.class.getName();
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void run() throws Exception {
             StringHashSet set = (StringHashSet) dataService.getServiceBinding(
-		localHandoffSpace);
+                    localHandoffSpace);
             if (!set.isEmpty()) {
                 Iterator<String> it = set.iterator();
                 while (it.hasNext()) {
                     scheduleNonDurableTask(new TaskRestartRunner(it.next()),
-                                           true);
+                            true);
                     it.remove();
                 }
             }
@@ -1623,7 +1679,7 @@ public class TaskServiceImpl
                 // affect the change has
                 int current = activeIdentityMap.get(identity) + change;
                 assert current >= 0 : "task count went negative for " +
-                    "identity: " + identity.getName();
+                        "identity: " + identity.getName();
                 if (current == 0) {
                     activeIdentityMap.remove(identity);
                     active = false;
@@ -1634,7 +1690,7 @@ public class TaskServiceImpl
             } else {
                 // unless the count is negative, we're going active
                 assert change >= 0 : "task count went negative for identity: " +
-                    identity.getName();
+                        identity.getName();
                 activeIdentityMap.put(identity, change);
                 active = true;
             }
@@ -1655,14 +1711,18 @@ public class TaskServiceImpl
         }
     }
 
-    /** Private TimerTask implementation for delaying status votes. */
+    /**
+     * Private TimerTask implementation for delaying status votes.
+     */
     private class StatusChangeTask extends TimerTask {
         private final Identity identity;
         private final boolean active;
+
         StatusChangeTask(Identity identity, boolean active) {
             this.identity = identity;
             this.active = active;
         }
+
         public void run() {
             // remove this handle from the pending map, and if this is
             // successful, then no one has tried to cancel this task, so
@@ -1670,18 +1730,20 @@ public class TaskServiceImpl
             if (statusTaskMap.remove(identity) != null) {
                 try {
                     nodeMappingService.setStatus(TaskServiceImpl.class,
-                                                 identity, active);
+                            identity, active);
                 } catch (UnknownIdentityException uie) {
                     if (active) {
                         nodeMappingService.assignNode(TaskServiceImpl.class,
-                                                      identity);
+                                identity);
                     }
                 }
             }
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void mappingAdded(Identity id, Node oldNode) {
         if (shuttingDown()) {
             return;
@@ -1702,22 +1764,25 @@ public class TaskServiceImpl
         final String identityName = id.getName();
         try {
             transactionScheduler.runTask(new KernelRunnable() {
-                    public String getBaseTaskType() {
-                        return NAME + ".TaskRestartRunner";
-                    }
-                    public void run() throws Exception {
-                        restartTasks(identityName);
-                    }
-                }, taskOwner);
+                public String getBaseTaskType() {
+                    return NAME + ".TaskRestartRunner";
+                }
+
+                public void run() throws Exception {
+                    restartTasks(identityName);
+                }
+            }, taskOwner);
         } catch (Exception e) {
             // this should only happen if the restart task fails, which
             // would indicate some kind of corrupted state
             throw new AssertionError("Failed to restart tasks for " +
-                                     id.getName() + ": " + e.getMessage());
+                    id.getName() + ": " + e.getMessage());
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void mappingRemoved(final Identity id, Node newNode) {
         if (shuttingDown()) {
             return;
@@ -1730,7 +1795,7 @@ public class TaskServiceImpl
             nodeMappingService.assignNode(TaskServiceImpl.class, id);
             return;
         }
-        
+
         // note that the identity is no longer on this node
         synchronized (mappedIdentitySet) {
             mappedIdentitySet.remove(id);
@@ -1744,32 +1809,32 @@ public class TaskServiceImpl
         if (newNode == null) {
             try {
                 transactionScheduler.runTask(new KernelRunnable() {
-                        public String getBaseTaskType() {
-                            return NAME + ".PendingTaskCleanupRunner";
-                        }
-                        public void run() throws Exception {
-                            String prefix =
+                    public String getBaseTaskType() {
+                        return NAME + ".PendingTaskCleanupRunner";
+                    }
+
+                    public void run() throws Exception {
+                        String prefix =
                                 DS_PENDING_SPACE + id.getName() + ".";
-                            String objName =
+                        String objName =
                                 dataService.nextServiceBoundName(prefix);
-                            while ((objName != null) &&
-                                   (objName.startsWith(prefix)))
-                            {
-                                Object obj =
+                        while ((objName != null) &&
+                                (objName.startsWith(prefix))) {
+                            Object obj =
                                     dataService.getServiceBinding(objName);
-                                dataService.removeServiceBinding(objName);
-                                dataService.removeObject(obj);
-                                objName = dataService.
+                            dataService.removeServiceBinding(objName);
+                            dataService.removeObject(obj);
+                            objName = dataService.
                                     nextServiceBoundName(objName);
-                            }
                         }
-                    }, id);
+                    }
+                }, id);
             } catch (Exception e) {
                 logger.logThrow(Level.WARNING, e, "Failed to remove reusable" +
-                                " pending tasks for {0}", id);
+                        " pending tasks for {0}", id);
             }
         }
-        
+
         // immediately vote that the identity is active iif there are
         // still tasks running locally
         if (isActiveLocally(id)) {
@@ -1789,17 +1854,20 @@ public class TaskServiceImpl
      * reference to find its service.
      */
     private static class PeriodicTaskHandleImpl
-        implements PeriodicTaskHandle, Serializable
-    {
+            implements PeriodicTaskHandle, Serializable {
         private static final long serialVersionUID = 1;
         private final String objName;
+
         PeriodicTaskHandleImpl(String objName) {
             this.objName = objName;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void cancel() {
             TaskServiceImpl service = TaskServiceImpl.txnProxy.
-                getService(TaskServiceImpl.class);
+                    getService(TaskServiceImpl.class);
             if (service.shuttingDown()) {
                 throw new IllegalStateException("Service is shutdown");
             }
@@ -1807,16 +1875,18 @@ public class TaskServiceImpl
             try {
                 PendingTask ptask =
                         (PendingTask) (service.dataService.
-                        getServiceBinding(objName));
+                                getServiceBinding(objName));
                 service.cancelPeriodicTask(ptask, TaskServiceImpl.
-                                                  getIdFromName(objName));
+                        getIdFromName(objName));
             } catch (NameNotBoundException nnbe) {
                 throw new ObjectNotFoundException("task was already cancelled");
             }
         }
     }
 
-    /** Private method to get or create an owner for a task. */
+    /**
+     * Private method to get or create an owner for a task.
+     */
     private Identity getTaskOwner(Object task) {
         if (task.getClass().getAnnotation(RunWithNewIdentity.class) != null) {
             return new DynamicIdentity(nodeId);
@@ -1825,35 +1895,55 @@ public class TaskServiceImpl
         }
     }
 
-    /** Private implementation of {@code Identity} for new task owners. */
+    /**
+     * Private implementation of {@code Identity} for new task owners.
+     */
     private static class DynamicIdentity implements Identity, Serializable {
         private static final long serialVersionUID = 1L;
         // a counter just to make all identity names unique
         private static final AtomicLong counter = new AtomicLong(0);
         // the name of this new identity
         private final String name;
-        /** Create an instance of {@code DynamicIdentity}. */
+
+        /**
+         * Create an instance of {@code DynamicIdentity}.
+         */
         DynamicIdentity(long nodeId) {
             this.name = "id:" + nodeId + "." + counter.getAndIncrement();
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public String getName() {
             return name;
         }
-        /** This identity may never log in. */
+
+        /**
+         * This identity may never log in.
+         */
         public void notifyLoggedIn() {
             throw new AssertionError("Logged in should not be called");
         }
-        /** This identity may never log out. */
+
+        /**
+         * This identity may never log out.
+         */
         public void notifyLoggedOut() {
             throw new AssertionError("Logged out should not be called");
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public boolean equals(Object o) {
             return (o instanceof DynamicIdentity) &&
-                this.name.equals(((DynamicIdentity) o).name);
+                    this.name.equals(((DynamicIdentity) o).name);
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public int hashCode() {
             return name.hashCode();
         }

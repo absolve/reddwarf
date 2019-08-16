@@ -21,15 +21,15 @@
 
 package com.sun.sgs.tutorial.server.lesson5;
 
-import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.ManagedReference;
+
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Simple example {@link ClientSessionListener} for the Project Darkstar
@@ -38,19 +38,26 @@ import com.sun.sgs.app.ManagedReference;
  * Logs each time a session receives data or logs out.
  */
 class HelloUserSessionListener
-    implements Serializable, ClientSessionListener
-{
-    /** The version of the serialized form of this class. */
+        implements Serializable, ClientSessionListener {
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(HelloUserSessionListener.class.getName());
+            Logger.getLogger(HelloUserSessionListener.class.getName());
 
-    /** The session this {@code ClientSessionListener} is listening to. */
+    /**
+     * The session this {@code ClientSessionListener} is listening to.
+     */
     private final ManagedReference<ClientSession> sessionRef;
-    
-    /** The name of the {@code ClientSession} for this listener. */
+
+    /**
+     * The name of the {@code ClientSession} for this listener.
+     */
     private final String sessionName;
 
     /**
@@ -69,7 +76,7 @@ class HelloUserSessionListener
 
     /**
      * Returns the session for this listener.
-     * 
+     *
      * @return the session for this listener
      */
     protected ClientSession getSession() {
@@ -94,8 +101,8 @@ class HelloUserSessionListener
     public void disconnected(boolean graceful) {
         String grace = graceful ? "graceful" : "forced";
         logger.log(Level.INFO,
-                   "User {0} has logged out {1}",
-                   new Object[] { sessionName, grace }
+                "User {0} has logged out {1}",
+                new Object[]{sessionName, grace}
         );
     }
 }

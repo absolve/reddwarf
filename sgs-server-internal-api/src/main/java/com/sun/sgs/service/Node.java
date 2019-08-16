@@ -65,7 +65,6 @@ public interface Node {
          * health.
          *
          * @param health a health object to compare
-         *
          * @return {@code true} if this health is worse than the specified
          * health
          */
@@ -90,27 +89,27 @@ public interface Node {
      */
     long getId();
 
-    /** 
+    /**
      * Returns this node's host name.
      *
-     * @return	this node's host name
+     * @return this node's host name
      */
     String getHostName();
-    
+
     /**
      * Returns {@code true} if the node is known to be alive, and
      * {@code false} if the node is thought to have failed or is
      * unknown.
      *
-     * @return	{@code true} if the node is alive, and {@code false}
-     * 		otherwise
+     * @return    {@code true} if the node is alive, and {@code false}
+     * otherwise
      */
     boolean isAlive();
 
     /**
      * Returns the health of the node.
      *
-     * @return	the node's health
+     * @return the node's health
      */
     Health getHealth();
 }

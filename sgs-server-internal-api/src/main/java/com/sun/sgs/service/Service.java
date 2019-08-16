@@ -28,7 +28,7 @@ package com.sun.sgs.service;
 
 /**
  * This is the base interface used for all services. Services support
- * specific funcationality and work in a transactional context. 
+ * specific funcationality and work in a transactional context.
  * See {@code TransactionParticipant} for details on when interaction
  * between {@code Service}s is allowed.
  * <p>
@@ -82,14 +82,14 @@ public interface Service {
      * Shuts down this service. Any call to this method will block
      * until the shutdown has completed. If a shutdown has been completed
      * already, this method will return immediately.<p>
-     *
+     * <p>
      * This method does not require a transaction, and should not be called
      * from one because this method will typically not succeed if there are
      * outstanding transactions. <p>
-     *
-     * When this method returns, it is assumed that the service has been 
+     * <p>
+     * When this method returns, it is assumed that the service has been
      * shutdown.<p>
-     *
+     * <p>
      * Callers should assume that, in a worst case, this method may block
      * indefinitely, and so should arrange to take other action (for example,
      * calling {@link System#exit System.exit}) if the call fails to complete

@@ -14,13 +14,13 @@
 
 <FindBugsFilter>
 
-  <!-- Package com.sun.sgs.protocol -->
+    <!-- Package com.sun.sgs.protocol -->
 
-  <!-- OK to declare serializable field as non-serializable interface. -->
-  <Match>
-    <Class name="com.sun.sgs.protocol.LoginRedirectException"/>
-    <Field name="node"/>
-    <Bug pattern="SE_BAD_FIELD"/>
-  </Match>
-  
+    <!-- OK to declare serializable field as non-serializable interface. -->
+    <Match>
+        <Class name="com.sun.sgs.protocol.LoginRedirectException"/>
+        <Field name="node"/>
+        <Bug pattern="SE_BAD_FIELD"/>
+    </Match>
+
 </FindBugsFilter>

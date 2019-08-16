@@ -31,12 +31,13 @@ import com.sun.sgs.app.TransactionAbortedException;
 import com.sun.sgs.app.TransactionNotActiveException;
 import com.sun.sgs.kernel.AccessReporter;
 import com.sun.sgs.service.Transaction;
+
 import java.io.ObjectStreamClass;
 
 /**
- * Defines the interface to the underlying persistence mechanism to 
+ * Defines the interface to the underlying persistence mechanism to
  * store byte data. <p>
- *
+ * <p>
  * Objects are identified by object IDs, which are positive
  * <code>long</code>s.  Names are mapped to object IDs.
  */
@@ -54,7 +55,7 @@ public interface DataStore {
     /**
      * Returns the node ID for the local node.
      *
-     * @return	the node ID for the local node
+     * @return the node ID for the local node
      */
     long getLocalNodeId();
 
@@ -65,13 +66,13 @@ public interface DataStore {
      * called.  Aborting a transaction is also not required to unassign the ID
      * so long as other operations treat it as a non-existent object.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @return	the new object ID
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @return the new object ID
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     long createObject(Transaction txn);
 
@@ -82,14 +83,14 @@ public interface DataStore {
      * object is modified.  This method does nothing if the object does not
      * exist.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	oid the object ID
-     * @throws	IllegalArgumentException if <code>oid</code> is negative
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    oid the object ID
+     * @throws IllegalArgumentException if <code>oid</code> is negative
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     void markForUpdate(Transaction txn, long oid);
 
@@ -100,49 +101,49 @@ public interface DataStore {
      * that information to obtain an exclusive lock on the object in order
      * avoid contention when the object is modified.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	oid the object ID
-     * @param	forUpdate whether the caller intends to modify the object
-     * @return	the data associated with the object ID
-     * @throws	IllegalArgumentException if <code>oid</code> is negative
-     * @throws	ObjectNotFoundException if the object is not found
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    oid the object ID
+     * @param    forUpdate whether the caller intends to modify the object
+     * @return the data associated with the object ID
+     * @throws IllegalArgumentException if <code>oid</code> is negative
+     * @throws ObjectNotFoundException if the object is not found
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     byte[] getObject(Transaction txn, long oid, boolean forUpdate);
 
     /**
      * Specifies data to associate with an object ID.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	oid the object ID
-     * @param	data the data
-     * @throws	IllegalArgumentException if <code>oid</code> is negative
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    oid the object ID
+     * @param    data the data
+     * @throws IllegalArgumentException if <code>oid</code> is negative
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     void setObject(Transaction txn, long oid, byte[] data);
 
-    /** 
+    /**
      * Specifies data to associate with a series of object IDs.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	oids the object IDs
-     * @param	dataArray the associated data values
-     * @throws	IllegalArgumentException if <code>oids</code> and
-     *		<code>data</code> are not the same length, or if
-     *		<code>oids</code> contains a value that is negative
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    oids the object IDs
+     * @param    dataArray the associated data values
+     * @throws IllegalArgumentException if <code>oids</code> and
+     * <code>data</code> are not the same length, or if
+     * <code>oids</code> contains a value that is negative
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     void setObjects(Transaction txn, long[] oids, byte[][] dataArray);
 
@@ -154,59 +155,59 @@ public interface DataStore {
      * object is an externally visible object rather than one used internally
      * by the implementation.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	oid the object ID
-     * @throws	IllegalArgumentException if <code>oid</code> is negative
-     * @throws	ObjectNotFoundException if the object is not found
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    oid the object ID
+     * @throws IllegalArgumentException if <code>oid</code> is negative
+     * @throws ObjectNotFoundException if the object is not found
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     void removeObject(Transaction txn, long oid);
 
     /**
      * Obtains the object ID bound to a name.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	name the name
-     * @return	the object ID
-     * @throws	NameNotBoundException if no object ID is bound to the name
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    name the name
+     * @return the object ID
+     * @throws NameNotBoundException if no object ID is bound to the name
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     long getBinding(Transaction txn, String name);
 
     /**
      * Binds an object ID to a name.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	name the name
-     * @param	oid the object ID
-     * @throws	IllegalArgumentException if <code>oid</code> is negative
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    name the name
+     * @param    oid the object ID
+     * @throws IllegalArgumentException if <code>oid</code> is negative
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     void setBinding(Transaction txn, String name, long oid);
 
     /**
      * Removes the binding for a name.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	name the name
-     * @throws	NameNotBoundException if the name is not bound
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    name the name
+     * @throws NameNotBoundException if the name is not bound
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     void removeBinding(Transaction txn, String name);
 
@@ -216,20 +217,20 @@ public interface DataStore {
      * <code>name</code> is <code>null</code>, then the search starts at the
      * beginning.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	name the name to search after, or <code>null</code> to start
-     *		at the beginning
-     * @return	the next name with a binding following <code>name</code>, or
-     *		<code>null</code> if there are no more bound names
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    name the name to search after, or <code>null</code> to start
+     * at the beginning
+     * @return the next name with a binding following <code>name</code>, or
+     * <code>null</code> if there are no more bound names
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     String nextBoundName(Transaction txn, String name);
 
-    /** 
+    /**
      * Shuts down this data store. This method will block until the shutdown
      * is complete.<p>
      */
@@ -244,14 +245,14 @@ public interface DataStore {
      * ObjectStreamClass} instance that serialization uses to represent the
      * class.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	classInfo the class information
-     * @return	the associated class ID
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	TransactionNotActiveException if the transaction is not active
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    classInfo the class information
+     * @return the associated class ID
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws TransactionNotActiveException if the transaction is not active
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     int getClassId(Transaction txn, byte[] classInfo);
 
@@ -261,19 +262,19 @@ public interface DataStore {
      * ObjectStreamClass} instance that serialization uses to represent the
      * class.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	classId the class ID
-     * @return	the associated class information
-     * @throws	IllegalArgumentException if {@code classId} is not greater than
-     *		{@code 0}
-     * @throws	ClassInfoNotFoundException if the ID is not found
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    classId the class ID
+     * @return the associated class information
+     * @throws IllegalArgumentException if {@code classId} is not greater than
+     * {@code 0}
+     * @throws ClassInfoNotFoundException if the ID is not found
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the transaction
      */
     byte[] getClassInfo(Transaction txn, int classId)
-	throws ClassInfoNotFoundException;
+            throws ClassInfoNotFoundException;
 
     /**
      * Returns the object ID for the next object after the object with the
@@ -284,23 +285,23 @@ public interface DataStore {
      * created after an iteration has begun.  It is not an error for the object
      * associated with the specified identifier to have already been
      * removed. <p>
-     *
+     * <p>
      * Applications should not assume that objects associated with the IDs
      * returned by this method, but which cannot be reached by traversing
      * object field references starting with an object associated with a name
      * binding, will continue to be retained by the data store.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	oid the identifier of the object to search after, or
-     *		{@code -1} to request the first object
-     * @return	the identifier of the next object following the object with
-     *		identifier {@code oid}, or {@code -1} if there are no more
-     *		objects
-     * @throws	IllegalArgumentException if the argument is less than {@code -1}
-     * @throws	TransactionAbortedException if the transaction was aborted due
-     *		to a lock conflict or timeout
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    txn the transaction under which the operation should take place
+     * @param    oid the identifier of the object to search after, or
+     * {@code -1} to request the first object
+     * @return the identifier of the next object following the object with
+     * identifier {@code oid}, or {@code -1} if there are no more
+     * objects
+     * @throws IllegalArgumentException if the argument is less than {@code -1}
+     * @throws TransactionAbortedException if the transaction was aborted due
+     * to a lock conflict or timeout
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
      */
     long nextObjectId(Transaction txn, long oid);
 
@@ -309,14 +310,13 @@ public interface DataStore {
      * accesses.  The {@code description} should provide a meaningful {@code
      * toString} method.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	oid the object ID
-     * @param	description the description
-     * @throws	IllegalArgumentException if <code>oid</code> is negative
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
-     * @see	AccessReporter#setObjectDescription
-     *		AccessReporter.setObjectDescription
+     * @param    txn the transaction under which the operation should take place
+     * @param    oid the object ID
+     * @param    description the description
+     * @throws IllegalArgumentException if <code>oid</code> is negative
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
+     * @see    AccessReporter#setObjectDescription AccessReporter.setObjectDescription
      */
     void setObjectDescription(Transaction txn, long oid, Object description);
 
@@ -325,14 +325,13 @@ public interface DataStore {
      * accesses.  The {@code description} should provide a meaningful {@code
      * toString} method.
      *
-     * @param	txn the transaction under which the operation should take place
-     * @param	name the name
-     * @param	description the description
-     * @throws	IllegalStateException if the operation failed because of a
-     *		problem with the current transaction
-     * @see	AccessReporter#setObjectDescription
-     *		AccessReporter.setObjectDescription
+     * @param    txn the transaction under which the operation should take place
+     * @param    name the name
+     * @param    description the description
+     * @throws IllegalStateException if the operation failed because of a
+     * problem with the current transaction
+     * @see    AccessReporter#setObjectDescription AccessReporter.setObjectDescription
      */
     void setBindingDescription(
-	Transaction txn, String name, Object description);
+            Transaction txn, String name, Object description);
 }

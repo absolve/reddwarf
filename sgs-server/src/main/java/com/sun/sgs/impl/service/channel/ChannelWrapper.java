@@ -21,12 +21,8 @@
 
 package com.sun.sgs.impl.service.channel;
 
-import com.sun.sgs.app.Channel;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.Delivery;
-import com.sun.sgs.app.ManagedObjectRemoval;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.ObjectNotFoundException;
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -45,104 +41,130 @@ import java.util.Set;
  * service, the underlying channel is closed.
  */
 class ChannelWrapper
-    implements Channel, Serializable, ManagedObjectRemoval
-{
-    /** The serialVersionUID for this class. */
+        implements Channel, Serializable, ManagedObjectRemoval {
+    /**
+     * The serialVersionUID for this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The reference to the channel that this instance wraps. */
+    /**
+     * The reference to the channel that this instance wraps.
+     */
     private ManagedReference<ChannelImpl> channelRef;
 
     /**
      * Constructs an instance with the specified {@code channelRef}.
      *
-     * @param	channelRef a reference to a channel to wrap
+     * @param    channelRef a reference to a channel to wrap
      */
     ChannelWrapper(ManagedReference<ChannelImpl> channelRef) {
-	this.channelRef = channelRef;
+        this.channelRef = channelRef;
     }
 
     /* -- Implement Channel -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getName() {
-	return getChannel().getName();
+        return getChannel().getName();
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public Delivery getDelivery() {
-	return getChannel().getDelivery();
+        return getChannel().getDelivery();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasSessions() {
-	return getChannel().hasSessions();
+        return getChannel().hasSessions();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Iterator<ClientSession> getSessions() {
-	return getChannel().getSessions();
+        return getChannel().getSessions();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Channel join(final ClientSession session) {
-	getChannel().join(session);
-	return this;
+        getChannel().join(session);
+        return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Channel join(final Set<? extends ClientSession> sessions) {
-	getChannel().join(sessions);
-	return this;
+        getChannel().join(sessions);
+        return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Channel leave(final ClientSession session) {
-	getChannel().leave(session);
-	return this;
+        getChannel().leave(session);
+        return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Channel leave(final Set<? extends ClientSession> sessions) {
-	getChannel().leave(sessions);
-	return this;
+        getChannel().leave(sessions);
+        return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Channel leaveAll() {
-	getChannel().leaveAll();
-	return this;
+        getChannel().leaveAll();
+        return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Channel send(ByteBuffer message) {
-	getChannel().send(null, message);
-	return this;
+        getChannel().send(null, message);
+        return this;
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public Channel send(ClientSession sender, ByteBuffer message) {
-	getChannel().send(sender, message);
-	return this;
+        getChannel().send(sender, message);
+        return this;
     }
 
     /* -- Implement ManagedObjectRemoval -- */
 
-    /** {@inheritDoc}
-     * 
+    /**
+     * {@inheritDoc}
+     * <p>
      * The application removed the wrapper, so close the channel,
      * indicating that the the channel name mapping should be removed as
      * well.
      */
     public void removingObject() {
-	if (channelRef != null) {
-	    try {
-		channelRef.get().close(true);
-	    } catch (ObjectNotFoundException e) {
-		// already closed.
-	    }
-	    channelRef = null;
-	}
+        if (channelRef != null) {
+            try {
+                channelRef.get().close(true);
+            } catch (ObjectNotFoundException e) {
+                // already closed.
+            }
+            channelRef = null;
+        }
     }
 
     /* -- Public methods -- */
@@ -150,47 +172,53 @@ class ChannelWrapper
     /**
      * Returns this channel's ID as a {@code BigInteger}.
      *
-     * @return	this channel's ID as a {@code BigInteger}
+     * @return this channel's ID as a {@code BigInteger}
      */
     public BigInteger getChannelId() {
-	return channelRef.getId();
+        return channelRef.getId();
     }
 
     /* -- Implement Object -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object object) {
-	if (object == this) {
-	    return true;
-	} else if (object instanceof ChannelWrapper) {
-	    return channelRef.equals(((ChannelWrapper) object).channelRef);
-	} else {
-	    return false;
-	}
+        if (object == this) {
+            return true;
+        } else if (object instanceof ChannelWrapper) {
+            return channelRef.equals(((ChannelWrapper) object).channelRef);
+        } else {
+            return false;
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
-	return channelRef.hashCode();
+        return channelRef.hashCode();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
-	ChannelImpl channelImpl = null;
-	try {
-	    channelImpl = channelRef.get();
-	} catch (Exception e) {
-	}
-	return getClass().getName() + "[" +
-	    (channelImpl == null ?
-	     channelRef.toString() :
-	     channelImpl.toString()) +
-	    "]";
+        ChannelImpl channelImpl = null;
+        try {
+            channelImpl = channelRef.get();
+        } catch (Exception e) {
+        }
+        return getClass().getName() + "[" +
+                (channelImpl == null ?
+                        channelRef.toString() :
+                        channelImpl.toString()) +
+                "]";
     }
-    
+
     /* -- Other methods -- */
 
     /**
@@ -202,11 +230,11 @@ class ChannelWrapper
      * reference with a reference to the "next generation" channel of the
      * same name.
      *
-     * @param	channelRef the new channel reference
+     * @param    channelRef the new channel reference
      */
     void setChannelRef(ManagedReference<ChannelImpl> channelRef) {
-	ChannelServiceImpl.getInstance().getDataService().markForUpdate(this);
-	this.channelRef = channelRef;
+        ChannelServiceImpl.getInstance().getDataService().markForUpdate(this);
+        this.channelRef = channelRef;
     }
 
     /**
@@ -215,12 +243,12 @@ class ChannelWrapper
      * channel has been closed, so {@code IllegalStateException} is thrown.
      */
     private ChannelImpl getChannel() {
-	if (channelRef != null) {
-	    try {
-		return channelRef.get();
-	    } catch (ObjectNotFoundException e) {
-	    }
-	}
-	throw new IllegalStateException("channel is closed");
+        if (channelRef != null) {
+            try {
+                return channelRef.get();
+            } catch (ObjectNotFoundException e) {
+            }
+        }
+        throw new IllegalStateException("channel is closed");
     }
 }

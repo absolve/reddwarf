@@ -20,47 +20,27 @@
  */
 package com.sun.sgs.impl.nio;
 
-import static java.nio.channels.SelectionKey.OP_ACCEPT;
-import static java.nio.channels.SelectionKey.OP_CONNECT;
-import static java.nio.channels.SelectionKey.OP_READ;
-import static java.nio.channels.SelectionKey.OP_WRITE;
+import com.sun.sgs.nio.channels.AcceptPendingException;
+import com.sun.sgs.nio.channels.AsynchronousChannelGroup;
+import com.sun.sgs.nio.channels.CompletionHandler;
+import com.sun.sgs.nio.channels.ReadPendingException;
+import com.sun.sgs.nio.channels.ShutdownChannelGroupException;
+import com.sun.sgs.nio.channels.WritePendingException;
+import com.sun.sgs.nio.channels.*;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.channels.AlreadyConnectedException;
-import java.nio.channels.AsynchronousCloseException;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ConnectionPendingException;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.sgs.nio.channels.AbortedByTimeoutException;
-import com.sun.sgs.nio.channels.AcceptPendingException;
-import com.sun.sgs.nio.channels.AsynchronousChannelGroup;
-import com.sun.sgs.nio.channels.ClosedAsynchronousChannelException;
-import com.sun.sgs.nio.channels.CompletionHandler;
-import com.sun.sgs.nio.channels.IoFuture;
-import com.sun.sgs.nio.channels.ReadPendingException;
-import com.sun.sgs.nio.channels.ShutdownChannelGroupException;
-import com.sun.sgs.nio.channels.WritePendingException;
-import java.nio.channels.ClosedSelectorException;
+import static java.nio.channels.SelectionKey.*;
 
 /**
  * Reactive implementation of the Reactor pattern; an asynchronous IO
@@ -76,7 +56,9 @@ import java.nio.channels.ClosedSelectorException;
  */
 class Reactor {
 
-    /** The logger for this class. */
+    /**
+     * The logger for this class.
+     */
     static final Logger log = Logger.getLogger(Reactor.class.getName());
 
     /**
@@ -99,14 +81,22 @@ class Reactor {
      * It may only be accessed with selectorLock held.
      */
     protected int lifecycleState = RUNNING;
-    /** State: open and running */
-    protected static final int RUNNING      = 0;
-    /** State: graceful shutdown in progress */
-    protected static final int SHUTDOWN     = 1;
-    /** State: forced shutdown in progress */
+    /**
+     * State: open and running
+     */
+    protected static final int RUNNING = 0;
+    /**
+     * State: graceful shutdown in progress
+     */
+    protected static final int SHUTDOWN = 1;
+    /**
+     * State: forced shutdown in progress
+     */
     protected static final int SHUTDOWN_NOW = 2;
-    /** State: terminated */
-    protected static final int DONE         = 3;
+    /**
+     * State: terminated
+     */
+    protected static final int DONE = 3;
 
     /**
      * The channel group for this reactor, used to obtain completion
@@ -127,19 +117,20 @@ class Reactor {
      */
     final Executor executor;
 
-    /** Operations that having pending timeouts. */
+    /**
+     * Operations that having pending timeouts.
+     */
     final DelayQueue<TimeoutHandler> timeouts =
-        new DelayQueue<TimeoutHandler>();
+            new DelayQueue<TimeoutHandler>();
 
     /**
      * Creates a new reactor instance with the given channel group and
      * executor.
-     * 
-     * @param group the channel group for this reactor
+     *
+     * @param group    the channel group for this reactor
      * @param executor the executor for tasks in this reactor
-     * 
      * @throws IOException if an I/O error occurs, e.g. while opening
-     *         the {@code Selector} for this reactor
+     *                     the {@code Selector} for this reactor
      */
     Reactor(ReactiveChannelGroup group, Executor executor) throws IOException {
         this.group = group;
@@ -151,14 +142,14 @@ class Reactor {
      * Notifies this reactor that it should shutdown when it has no registered
      * channels.  If this reactor is already marked for shutdown, this
      * method has no effect.
-     * 
+     *
      * @see AsynchronousChannelGroup#shutdown()
      */
     void shutdown() {
         synchronized (selectorLock) {
             if (lifecycleState < SHUTDOWN) {
                 lifecycleState = SHUTDOWN;
-                
+
                 selector.wakeup();
             }
         }
@@ -168,9 +159,8 @@ class Reactor {
      * Notifies this reactor that it should shutdown immediately, closing
      * any open channels registered with it.  If this reactor is already
      * marked for immediate shutdown, this method has no effect.
-     * 
+     *
      * @throws IOException if an I/O error occurs
-     * 
      * @see AsynchronousChannelGroup#shutdownNow()
      */
     void shutdownNow() throws IOException {
@@ -190,9 +180,10 @@ class Reactor {
                     try {
                         Closeable asyncKey = (Closeable) key.attachment();
                         if (asyncKey != null) {
-			    asyncKey.close();
+                            asyncKey.close();
                         }
-                    } catch (IOException ignore) { }
+                    } catch (IOException ignore) {
+                    }
                 }
             } catch (ConcurrentModificationException e) {
                 continue;
@@ -213,9 +204,9 @@ class Reactor {
      * Performs a single iteration of the reactor's event loop, and returns
      * a flag indicating whether the reactor is still running.  Only one
      * call may be active on a Reactor instance at a time.
-     * 
+     *
      * @return {@code false} if this reactor is stopped,
-     *         otherwise {@code true}
+     * otherwise {@code true}
      * @throws IOException if an I/O error occurs
      */
     boolean performWork() throws IOException {
@@ -232,22 +223,22 @@ class Reactor {
             if (log.isLoggable(Level.FINER)) {
                 int numKeys = selector.keys().size();
                 log.log(Level.FINER, "{0} select on {1} keys",
-                    new Object[] { this, numKeys });
+                        new Object[]{this, numKeys});
                 if (numKeys <= 5) {
                     for (SelectionKey key : selector.keys()) {
                         try {
                             log.log(Level.FINER,
-                                " - {0} select interestOps {1} on {2}",
-                                new Object[] {
-                                this,
-                                Util.formatOps(key.interestOps()),
-                                key.attachment() });
+                                    " - {0} select interestOps {1} on {2}",
+                                    new Object[]{
+                                            this,
+                                            Util.formatOps(key.interestOps()),
+                                            key.attachment()});
                         } catch (CancelledKeyException e) {
                             log.log(Level.FINER,
-                                " - {0} select cancelled key {1}",
-                                new Object[] {
-                                this,
-                                key.attachment() });
+                                    " - {0} select cancelled key {1}",
+                                    new Object[]{
+                                            this,
+                                            key.attachment()});
                         }
                     }
                 }
@@ -263,7 +254,7 @@ class Reactor {
             readyCount = selector.select();
         } else {
             long nextTimeoutMillis =
-                nextExpiringTask.getDelay(TimeUnit.MILLISECONDS);
+                    nextExpiringTask.getDelay(TimeUnit.MILLISECONDS);
             if (nextTimeoutMillis <= 0) {
                 readyCount = selector.selectNow();
             } else {
@@ -273,15 +264,15 @@ class Reactor {
 
         if (log.isLoggable(Level.FINER)) {
             log.log(Level.FINER, "{0} selected {1} / {2}",
-                new Object[] { this, readyCount, selector.keys().size() });
+                    new Object[]{this, readyCount, selector.keys().size()});
         }
 
         if (log.isLoggable(Level.FINE)) {
             synchronized (selectorLock) {
                 if (lifecycleState != RUNNING) {
                     log.log(Level.FINE,
-                        "{0} wants shutdown, {1} keys",
-                        new Object[] { this, selector.keys().size() });
+                            "{0} wants shutdown, {1} keys",
+                            new Object[]{this, selector.keys().size()});
                 }
             }
         }
@@ -299,7 +290,7 @@ class Reactor {
         }
 
         final Iterator<SelectionKey> keys =
-            selector.selectedKeys().iterator();
+                selector.selectedKeys().iterator();
 
         // Dispatch the ready keys to their handlers
         while (keys.hasNext()) {
@@ -307,7 +298,7 @@ class Reactor {
             keys.remove();
 
             ReactiveAsyncKey asyncKey =
-                (ReactiveAsyncKey) key.attachment();
+                    (ReactiveAsyncKey) key.attachment();
 
             int readyOps;
             synchronized (asyncKey) {
@@ -327,7 +318,7 @@ class Reactor {
 
         // Expire timed-out operations
         final List<TimeoutHandler> expiredHandlers =
-            new ArrayList<TimeoutHandler>();
+                new ArrayList<TimeoutHandler>();
         timeouts.drainTo(expiredHandlers);
 
         for (TimeoutHandler expired : expiredHandlers) {
@@ -343,12 +334,11 @@ class Reactor {
      * Registers the given {@link SelectableChannel} with this reactor,
      * returning an {@link AsyncKey} that can be used to initiate asynchronous
      * operations on that channel.
-     * 
+     *
      * @param ch the {@code SelectableChannel} to register
      * @return an {@link AsyncKey} for the given channel
-     * 
      * @throws ShutdownChannelGroupException if the reactor is shutdown
-     * @throws IOException if an IO error occurs
+     * @throws IOException                   if an IO error occurs
      */
     ReactiveAsyncKey
     register(SelectableChannel ch) throws IOException {
@@ -396,21 +386,19 @@ class Reactor {
      * If the requested operation is {@code OP_CONNECT} and the channel is
      * already connected, {@link AlreadyConnectedException} is thrown.
      * </ul>
-     * 
-     * @param <R> the result type
+     *
+     * @param <R>      the result type
      * @param asyncKey the key for async operations on the channel
-     * @param op the {@link SelectionKey} operation requested
-     * @param task the task to invoke when the operation becomes ready
-     * 
+     * @param op       the {@link SelectionKey} operation requested
+     * @param task     the task to invoke when the operation becomes ready
      * @throws ClosedAsynchronousChannelException if the channel is closed
-     * @throws NotYetConnectedException if a read or write operation is
-     *         requested on an unconnected {@code SocketChannel}
-     * @throws AlreadyConnectedException if a connect operation is requested
-     *         on a connected {@code SocketChannel}
+     * @throws NotYetConnectedException           if a read or write operation is
+     *                                            requested on an unconnected {@code SocketChannel}
+     * @throws AlreadyConnectedException          if a connect operation is requested
+     *                                            on a connected {@code SocketChannel}
      */
     <R> void
-    awaitReady(ReactiveAsyncKey asyncKey, int op, AsyncOp<R> task)
-    {
+    awaitReady(ReactiveAsyncKey asyncKey, int op, AsyncOp<R> task) {
         synchronized (selectorLock) {
             selector.wakeup();
             int interestOps;
@@ -420,14 +408,14 @@ class Reactor {
                     throw new ClosedAsynchronousChannelException();
                 }
 
-		try {
-		    interestOps = key.interestOps();
-		} catch (CancelledKeyException e) {
-		    throw new ClosedAsynchronousChannelException();
-		}
+                try {
+                    interestOps = key.interestOps();
+                } catch (CancelledKeyException e) {
+                    throw new ClosedAsynchronousChannelException();
+                }
 
                 SelectableChannel channel = asyncKey.channel();
-                
+
                 // These precondition checks don't belong here; they
                 // should be refactored to AsyncSocketChannelImpl.
                 // However, they need to occur inside the asyncKey
@@ -436,19 +424,19 @@ class Reactor {
                 // Only SocketChannel has any extra checks to do.
                 if (channel instanceof SocketChannel) {
                     switch (op) {
-                    case OP_READ:
-                    case OP_WRITE:
-                        if (!((SocketChannel) channel).isConnected()) {
-                            throw new NotYetConnectedException();
-                        }
-                        break;
-                    case OP_CONNECT:
-                        if (((SocketChannel) channel).isConnected()) {
-                            throw new AlreadyConnectedException();
-                        }
-                        break;
-                    default:
-                        break;
+                        case OP_READ:
+                        case OP_WRITE:
+                            if (!((SocketChannel) channel).isConnected()) {
+                                throw new NotYetConnectedException();
+                            }
+                            break;
+                        case OP_CONNECT:
+                            if (((SocketChannel) channel).isConnected()) {
+                                throw new AlreadyConnectedException();
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
 
@@ -456,34 +444,34 @@ class Reactor {
                 assert (interestOps & op) == 0;
 
                 interestOps |= op;
-		try {
-		    key.interestOps(interestOps);
-		} catch (CancelledKeyException e) {
-		    throw new ClosedAsynchronousChannelException();
-		}
+                try {
+                    key.interestOps(interestOps);
+                } catch (CancelledKeyException e) {
+                    throw new ClosedAsynchronousChannelException();
+                }
             }
 
             if (log.isLoggable(Level.FINEST)) {
                 log.log(Level.FINEST,
-                    "{0} awaitReady {1} : new {2} : added {3}",
-                    new Object[] { this,
-                                   task,
-                                   Util.formatOps(interestOps),
-                                   Util.formatOps(op) });
+                        "{0} awaitReady {1} : new {2} : added {3}",
+                        new Object[]{this,
+                                task,
+                                Util.formatOps(interestOps),
+                                Util.formatOps(op)});
             }
         }
     }
 
     /**
      * A FutureTask that can be canceled by a timeout exception.
-     * 
+     *
      * @param <R> the result type
      */
     static class AsyncOp<R> extends FutureTask<R> {
 
         /**
          * Creates a new instance.
-         * 
+         *
          * @param callable the work to perform when this task is run
          */
         AsyncOp(Callable<R> callable) {
@@ -513,7 +501,7 @@ class Reactor {
          * or a reference to {@code null} if an operation is not pending.
          */
         protected final AtomicReference<AsyncOp<?>> task =
-            new AtomicReference<AsyncOp<?>>();
+                new AtomicReference<AsyncOp<?>>();
 
         /**
          * The timeout action for the pending task, or {@code null} if
@@ -521,18 +509,22 @@ class Reactor {
          */
         private volatile TimeoutHandler timeoutHandler = null;
 
-        /** The async key. */
+        /**
+         * The async key.
+         */
         private final ReactiveAsyncKey asyncKey;
 
-        /**  The selectable IO operation managed by this instance. */
+        /**
+         * The selectable IO operation managed by this instance.
+         */
         private final int op;
 
         /**
          * Creates a new instance to manage the given operation for the
          * given key.
-         * 
+         *
          * @param asyncKey the async key
-         * @param op the operation to manage
+         * @param op       the operation to manage
          */
         PendingOperation(ReactiveAsyncKey asyncKey, int op) {
             this.asyncKey = asyncKey;
@@ -551,14 +543,14 @@ class Reactor {
 
         /**
          * Runs the pending operation, if any.
-         * 
+         *
          * @see AsyncKey#selected(int)
          */
         void selected() {
             Runnable selectedTask = task.getAndSet(null);
             if (selectedTask == null) {
                 log.log(Level.FINEST,
-                    "selected but nothing to do {0}", this);
+                        "selected but nothing to do {0}", this);
                 return;
             } else {
                 log.log(Level.FINER, "selected {0}", this);
@@ -569,10 +561,9 @@ class Reactor {
         /**
          * Returns {@code true} if this operation is pending, otherwise
          * {@code false}.
-         * 
+         *
          * @return {@code true} if this operation is pending, otherwise
-         *         {@code false}
-         * 
+         * {@code false}
          * @see AsyncKey#isOpPending(int)
          */
         boolean isPending() {
@@ -597,28 +588,26 @@ class Reactor {
          * is already pending, an appropriate exception is thrown by a
          * subclass via its
          * {@link PendingOperation#pendingPolicy() pendingPolicy()}.
-         * 
-         * @param <R> the result type
-         * @param <A> the attachment type
+         *
+         * @param <R>        the result type
+         * @param <A>        the attachment type
          * @param attachment the attachment for the completion handler; may
-         *        be {@code null}
-         * @param handler the completion handler; may be {@code null}
-         * @param timeout the timeout, or {@code 0} indicating no timeout
-         * @param unit the unit of the timeout
-         * @param callable the IO action to perform when this operation is
-         *        ready
+         *                   be {@code null}
+         * @param handler    the completion handler; may be {@code null}
+         * @param timeout    the timeout, or {@code 0} indicating no timeout
+         * @param unit       the unit of the timeout
+         * @param callable   the IO action to perform when this operation is
+         *                   ready
          * @return an {@code IoFuture} representing the pending operation
-         * 
          * @see AsyncKey#execute(int, Object, CompletionHandler, long,
-         *      TimeUnit, Callable)
+         * TimeUnit, Callable)
          */
         <R, A> IoFuture<R, A>
         execute(final A attachment,
                 final CompletionHandler<R, ? super A> handler,
                 long timeout,
                 TimeUnit unit,
-                Callable<R> callable)
-        {
+                Callable<R> callable) {
             if (timeout < 0) {
                 throw new IllegalArgumentException("Negative timeout");
             }
@@ -630,7 +619,8 @@ class Reactor {
                     cleanupTask();
                     // Invoke the completion handler, if any
                     asyncKey.runCompletion(handler, attachment, this);
-                } };
+                }
+            };
 
             // Indicate that a task is pending
             if (!task.compareAndSet(null, opTask)) {
@@ -662,14 +652,14 @@ class Reactor {
         @Override
         public String toString() {
             return String.format("PendingOp[key=%s,op=%s]",
-                asyncKey, Util.opName(op));
+                    asyncKey, Util.opName(op));
         }
     }
 
     /**
      * Provides support for initiating asynchronous IO operations on
      * an underlying reactive channel registered with this {@link Reactor}.
-     * 
+     *
      * @see AsyncKey
      */
     class ReactiveAsyncKey implements AsyncKey {
@@ -680,39 +670,51 @@ class Reactor {
          */
         final SelectionKey key;
 
-        /** The handler for an asynchronous {@code accept} operation. */
+        /**
+         * The handler for an asynchronous {@code accept} operation.
+         */
         private final PendingOperation pendingAccept =
-            new PendingOperation(this, OP_ACCEPT) {
-                protected void pendingPolicy() {
-                    throw new AcceptPendingException();
-                } };
+                new PendingOperation(this, OP_ACCEPT) {
+                    protected void pendingPolicy() {
+                        throw new AcceptPendingException();
+                    }
+                };
 
-        /** The handler for an asynchronous {@code connect} operation. */
+        /**
+         * The handler for an asynchronous {@code connect} operation.
+         */
         private final PendingOperation pendingConnect =
-            new PendingOperation(this, OP_CONNECT) {
-                protected void pendingPolicy() {
-                    throw new ConnectionPendingException();
-                } };
+                new PendingOperation(this, OP_CONNECT) {
+                    protected void pendingPolicy() {
+                        throw new ConnectionPendingException();
+                    }
+                };
 
-        /** The handler for an asynchronous {@code read} operation. */
+        /**
+         * The handler for an asynchronous {@code read} operation.
+         */
         private final PendingOperation pendingRead =
-            new PendingOperation(this, OP_READ) {
-                protected void pendingPolicy() {
-                    throw new ReadPendingException();
-                } };
+                new PendingOperation(this, OP_READ) {
+                    protected void pendingPolicy() {
+                        throw new ReadPendingException();
+                    }
+                };
 
-        /** The handler for an asynchronous {@code write} operation. */
-        private final PendingOperation pendingWrite = 
-            new PendingOperation(this, OP_WRITE) {
-                protected void pendingPolicy() {
-                    throw new WritePendingException();
-                } };
+        /**
+         * The handler for an asynchronous {@code write} operation.
+         */
+        private final PendingOperation pendingWrite =
+                new PendingOperation(this, OP_WRITE) {
+                    protected void pendingPolicy() {
+                        throw new WritePendingException();
+                    }
+                };
 
         /**
          * Creates a new instance that wraps the given selector key.
-         * 
+         *
          * @param key the selection key that represents the underlying
-         *        channel's registration with this reactor's selector
+         *            channel's registration with this reactor's selector
          */
         ReactiveAsyncKey(SelectionKey key) {
             this.key = key;
@@ -737,16 +739,16 @@ class Reactor {
             log.log(Level.FINER, "closing {0}", this);
 
             try {
-		synchronized (this) {
-		    if (!key.isValid()) {
-			log.log(Level.FINE, "key is already invalid {0}", this);
-		    }
-		    // Closing a channel does not require the selectorLock,
-		    // because it does not touch the selector key set directly.
-		    // (It does so indirectly via the cancelled key set, which
-		    // is guaranteed to block only briefly at most).
-		    key.channel().close();
-		}
+                synchronized (this) {
+                    if (!key.isValid()) {
+                        log.log(Level.FINE, "key is already invalid {0}", this);
+                    }
+                    // Closing a channel does not require the selectorLock,
+                    // because it does not touch the selector key set directly.
+                    // (It does so indirectly via the cancelled key set, which
+                    // is guaranteed to block only briefly at most).
+                    key.channel().close();
+                }
             } finally {
                 // Wake up the selector to give it a chance to process our
                 // removal, if it's waiting for shutdown.  We don't obtain
@@ -755,9 +757,9 @@ class Reactor {
                 selector.wakeup();
 
                 // Awaken any and all pending operations
-		// NOTE: Neither the 'selectorLock' nor this instance's
-		// lock should be held when invoking the 'selected'  method
-		// below or deadlock can occur.  -- ann (3/17/09)
+                // NOTE: Neither the 'selectorLock' nor this instance's
+                // lock should be held when invoking the 'selected'  method
+                // below or deadlock can occur.  -- ann (3/17/09)
                 selected(OP_ACCEPT | OP_CONNECT | OP_READ | OP_WRITE);
             }
         }
@@ -767,16 +769,16 @@ class Reactor {
          */
         public boolean isOpPending(int op) {
             switch (op) {
-            case OP_ACCEPT:
-                return pendingAccept.isPending();
-            case OP_CONNECT:
-                return pendingConnect.isPending();
-            case OP_READ:
-                return pendingRead.isPending();
-            case OP_WRITE:
-                return pendingWrite.isPending();
-            default:
-                throw new IllegalArgumentException("bad op " + op);
+                case OP_ACCEPT:
+                    return pendingAccept.isPending();
+                case OP_CONNECT:
+                    return pendingConnect.isPending();
+                case OP_READ:
+                    return pendingRead.isPending();
+                case OP_WRITE:
+                    return pendingWrite.isPending();
+                default:
+                    throw new IllegalArgumentException("bad op " + op);
             }
         }
 
@@ -811,23 +813,22 @@ class Reactor {
          */
         public <R, A> IoFuture<R, A>
         execute(int op, A attachment, CompletionHandler<R, ? super A> handler,
-                long timeout, TimeUnit unit, Callable<R> callable)
-        {
+                long timeout, TimeUnit unit, Callable<R> callable) {
             switch (op) {
-            case OP_WRITE:
-                return pendingWrite.execute(
-                    attachment, handler, timeout, unit, callable);
-            case OP_READ:
-                return pendingRead.execute(
-                    attachment, handler, timeout, unit, callable);
-            case OP_CONNECT:
-                return pendingConnect.execute(
-                    attachment, handler, timeout, unit, callable);
-            case OP_ACCEPT:
-                return pendingAccept.execute(
-                    attachment, handler, timeout, unit, callable);
-            default:
-                throw new IllegalArgumentException("bad op " + op);
+                case OP_WRITE:
+                    return pendingWrite.execute(
+                            attachment, handler, timeout, unit, callable);
+                case OP_READ:
+                    return pendingRead.execute(
+                            attachment, handler, timeout, unit, callable);
+                case OP_CONNECT:
+                    return pendingConnect.execute(
+                            attachment, handler, timeout, unit, callable);
+                case OP_ACCEPT:
+                    return pendingAccept.execute(
+                            attachment, handler, timeout, unit, callable);
+                default:
+                    throw new IllegalArgumentException("bad op " + op);
             }
         }
 
@@ -844,8 +845,7 @@ class Reactor {
         public <R, A> void
         runCompletion(CompletionHandler<R, A> handler,
                       A attachment,
-                      Future<R> future)
-        {
+                      Future<R> future) {
             if (handler == null) {
                 return;
             }
@@ -866,8 +866,8 @@ class Reactor {
         @Override
         public String toString() {
             return String.format(
-                "ReactiveAsyncKey[reactor=%s,channel=%s,valid=%b]",
-                Reactor.this, key.channel(), key.isValid());
+                    "ReactiveAsyncKey[reactor=%s,channel=%s,valid=%b]",
+                    Reactor.this, key.channel(), key.isValid());
         }
     }
 
@@ -883,12 +883,14 @@ class Reactor {
      */
     private static final class TimeoutHandler implements Delayed, Runnable {
 
-        /** The task to notify upon timeout. */
+        /**
+         * The task to notify upon timeout.
+         */
         private final AsyncOp<?> task;
 
         /**
          * The absolute deadline, in milliseconds, since the epoch.
-         * 
+         *
          * @see System#currentTimeMillis()
          */
         private final long deadlineMillis;
@@ -896,15 +898,15 @@ class Reactor {
         /**
          * Creates a new instance that will notify the given operation when
          * the (relative) timeout expires.
-         * 
-         * @param task the task to notify
+         *
+         * @param task    the task to notify
          * @param timeout the timeout
-         * @param unit the unit of the timeout
+         * @param unit    the unit of the timeout
          */
         TimeoutHandler(AsyncOp<?> task, long timeout, TimeUnit unit) {
             this.task = task;
             this.deadlineMillis =
-                unit.toMillis(timeout) + System.currentTimeMillis();
+                    unit.toMillis(timeout) + System.currentTimeMillis();
         }
 
         /**
@@ -916,28 +918,34 @@ class Reactor {
             task.timeoutExpired();
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public long getDelay(TimeUnit unit) {
             return unit.convert(
-                deadlineMillis - System.currentTimeMillis(),
-                TimeUnit.MILLISECONDS);
+                    deadlineMillis - System.currentTimeMillis(),
+                    TimeUnit.MILLISECONDS);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public int compareTo(Delayed o) {
             if (o == this) {
                 return 0;
             }
             if (o instanceof TimeoutHandler) {
                 return Long.signum(
-                    deadlineMillis - ((TimeoutHandler) o).deadlineMillis);
+                        deadlineMillis - ((TimeoutHandler) o).deadlineMillis);
             } else {
                 return Long.signum(getDelay(TimeUnit.MILLISECONDS) -
-                                   o.getDelay(TimeUnit.MILLISECONDS));
+                        o.getDelay(TimeUnit.MILLISECONDS));
             }
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean equals(Object obj) {
             if (obj == this) {
@@ -948,10 +956,12 @@ class Reactor {
             }
             TimeoutHandler other = (TimeoutHandler) obj;
             return (deadlineMillis == other.deadlineMillis) &&
-                   task.equals(other.task);
+                    task.equals(other.task);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int hashCode() {
             // high-order bits of deadlineMillis aren't useful for hashing

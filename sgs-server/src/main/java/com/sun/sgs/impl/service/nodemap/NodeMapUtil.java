@@ -29,44 +29,55 @@ import com.sun.sgs.auth.Identity;
  */
 final class NodeMapUtil {
     private static final String PREFIX = "nodemap";
-    
-    /** The major and minor version numbers for the layout of
-     *  keys and data persisted by the node mapping service.
+
+    /**
+     * The major and minor version numbers for the layout of
+     * keys and data persisted by the node mapping service.
      */
     static final int MAJOR_VERSION = 1;
     static final int MINOR_VERSION = 0;
-    
-    /** The version key. */
+
+    /**
+     * The version key.
+     */
     static final String VERSION_KEY = PREFIX + ".version";
-    
-    /** The prefix of a identity key which maps to its assigned node. */
+
+    /**
+     * The prefix of a identity key which maps to its assigned node.
+     */
     private static final String IDENTITY_KEY_PREFIX = PREFIX + ".identity.";
-    
-    /** The prefix of a node key which maps to its mapped Identities. */
-    private static final String NODE_KEY_PREFIX = PREFIX + ".node."; 
-    
-    /** The prefix of the status markers. */
+
+    /**
+     * The prefix of a node key which maps to its mapped Identities.
+     */
+    private static final String NODE_KEY_PREFIX = PREFIX + ".node.";
+
+    /**
+     * The prefix of the status markers.
+     */
     private static final String STATUS_KEY_PREFIX = PREFIX + ".status.";
-    
-    /** Never to be instantiated */
+
+    /**
+     * Never to be instantiated
+     */
     private NodeMapUtil() {
         throw new AssertionError("Should not instantiate");
     }
-    
+
     /* -- Various keys used to persist data -- */
-    
+
     /* -- The identity key, for identity->node mapping -- */
-    
+
     /**
-     * Returns a identity key for the given {@code id}. 
+     * Returns a identity key for the given {@code id}.
      */
-    static String getIdentityKey(Identity id) {    
+    static String getIdentityKey(Identity id) {
         return IDENTITY_KEY_PREFIX + id.getName();
     }
-    
+
 
     /* -- The node key, for node->identity mapping -- */
-    
+
     /**
      * Returns a node key for the given {@code nodeId} and {@code id}.
      */
@@ -75,15 +86,15 @@ final class NodeMapUtil {
         sb.append(id.getName());
         return sb.toString();
     }
-    
+
     /**
-     * Returns a node key for the given {@code nodeId};  used for 
+     * Returns a node key for the given {@code nodeId};  used for
      * iterating through a node for all identities assigned to it.
      */
     static String getPartialNodeKey(long nodeId) {
-	return buildNodeKey(nodeId).toString();
-    }   
-    
+        return buildNodeKey(nodeId).toString();
+    }
+
     /**
      * Private helper method; returns a {@code StringBuilder} for
      * a partial node key.
@@ -94,21 +105,21 @@ final class NodeMapUtil {
         sb.append(".");
         return sb;
     }
-  
+
     /* -- The status key, for tracking which identities are in use -- */
-    
+
     /**
      * Returns a status key for the given {@code id}, {@code nodeId},
-     * and {@code serviceName}.  The status mappings are held per 
+     * and {@code serviceName}.  The status mappings are held per
      * identity per node.
      */
     static String getStatusKey(Identity id, long nodeId, String serviceName) {
         StringBuilder sb = buildStatusKey(id, nodeId);
         sb.append(serviceName);
-        return sb.toString();	
+        return sb.toString();
     }
-    
-    /** 
+
+    /**
      * Returns a status key for the given {@code id} and {@code nodeId}.
      * Used for finding all status entries for an identity on a particular
      * node.
@@ -116,7 +127,7 @@ final class NodeMapUtil {
     static String getPartialStatusKey(Identity id, long nodeId) {
         return buildStatusKey(id, nodeId).toString();
     }
-    
+
     /**
      * Returns a status key for a given {@code id}. Used for finding all
      * status entries for an identity (on all nodes).
@@ -126,7 +137,7 @@ final class NodeMapUtil {
     }
 
     /**
-     * Private helper method; returns a {@code StringBuilder} for a 
+     * Private helper method; returns a {@code StringBuilder} for a
      * partial status key.
      */
     private static StringBuilder buildStatusKey(Identity id, long nodeId) {
@@ -137,7 +148,7 @@ final class NodeMapUtil {
     }
 
     /**
-     * Private helper method; returns a {@code StringBuilder} for a 
+     * Private helper method; returns a {@code StringBuilder} for a
      * partial status key.
      */
     private static StringBuilder buildStatusKey(Identity id) {

@@ -35,6 +35,7 @@ class ZachBuilder extends AbstractTestGraphBuilder {
     public ZachBuilder() {
         super(createGraph());
     }
+
     static private UndirectedGraph<LabelVertex, WeightedEdge> createGraph() {
         UndirectedGraph<LabelVertex, WeightedEdge> graph =
                 new UndirectedSparseGraph<LabelVertex, WeightedEdge>();

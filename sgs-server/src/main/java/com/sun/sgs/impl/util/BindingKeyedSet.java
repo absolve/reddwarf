@@ -24,6 +24,7 @@ package com.sun.sgs.impl.util;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ObjectNotFoundException;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
@@ -36,15 +37,14 @@ import java.util.Set;
  * the {@link Object#toString toString} method), which is used as the
  * element's key in the backing map.
  *
- * @param	<E> the element type
+ * @param    <E> the element type
  */
 public interface BindingKeyedSet<E>
-    extends Set<E>
-{
+        extends Set<E> {
     /**
      * Returns the key prefix for this set.
      *
-     * @return	the key prefix for this set
+     * @return the key prefix for this set
      */
     String getKeyPrefix();
 
@@ -52,28 +52,25 @@ public interface BindingKeyedSet<E>
      * Adds the specified element to this set if it was not already present.
      *
      * @param e the element to be added
-     *
      * @return {@code true} if the set did not already contain the specified
-     *         element
-     *
-     * @throws	IllegalArgumentException if the argument does not
-     *		implement {@code Serializable}
-     * @throws	ObjectNotFoundException if {@code value} is a managed
-     *		object that has been removed from the {@code DataManager}
+     * element
+     * @throws IllegalArgumentException if the argument does not
+     * implement {@code Serializable}
+     * @throws ObjectNotFoundException if {@code value} is a managed
+     * object that has been removed from the {@code DataManager}
      */
     boolean add(E e);
-    
+
     /**
      * Returns {@code true} if this set contains the specified element.
      *
      * @param o the element whose presence in the set is to be tested
-     *
-     * @return	{@code true} if this set contains the specified element, and
-     *		{@code false} otherwise
-     * @throws	ObjectNotFoundException if the specified object is a
-     *		managed object that has been removed from the
-     *		{@link DataManager}, or is equal to an element in the
-     *		collection that has been removed from the {@link DataManager}
+     * @return    {@code true} if this set contains the specified element, and
+     * {@code false} otherwise
+     * @throws ObjectNotFoundException if the specified object is a
+     * managed object that has been removed from the
+     * {@link DataManager}, or is equal to an element in the
+     * collection that has been removed from the {@link DataManager}
      */
     boolean contains(Object o);
 
@@ -87,17 +84,16 @@ public interface BindingKeyedSet<E>
      * @return an iterator over the elements in this set
      */
     Iterator<E> iterator();
-    
+
     /**
      * Removes the specified element from this set if it was present.
      *
      * @param o the element that should be removed from the set, if present
-     *
      * @return {@code true} if the element was initially present in this set
-     * @throws	ObjectNotFoundException if the specified object is a
-     *		managed object that has been removed from the
-     *		{@link DataManager}, or is equal to an element in the
-     *		collection that has been removed from the {@link DataManager}
+     * @throws ObjectNotFoundException if the specified object is a
+     * managed object that has been removed from the
+     * {@link DataManager}, or is equal to an element in the
+     * collection that has been removed from the {@link DataManager}
      */
     boolean remove(Object o);
 }

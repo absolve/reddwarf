@@ -31,7 +31,7 @@ import java.math.BigInteger;
  * A listener that services may register with the {@link ClientSessionService}
  * to receive notification of local client session status changes such as
  * disconnection or relocation.
- * 
+ *
  * @see ClientSessionService#addSessionStatusListener
  */
 public interface ClientSessionStatusListener {
@@ -41,10 +41,10 @@ public interface ClientSessionStatusListener {
      * sessionRefId} has disconnected so that any relevant cached or
      * persistent data associated with the client session can be cleaned
      * up.
-     * 
-     * @param	sessionRefId the client session ID
-     * @param	isRelocating if {@code true}, the disconnection is due to
-     *	        the client session relocating to another node
+     *
+     * @param    sessionRefId the client session ID
+     * @param    isRelocating if {@code true}, the disconnection is due to
+     * the client session relocating to another node
      */
     void disconnected(BigInteger sessionRefId, boolean isRelocating);
 
@@ -57,13 +57,13 @@ public interface ClientSessionStatusListener {
      * invoke the {@link SimpleCompletionHandler#completed
      * completed} method of the specified {@code handler} when it
      * has completed preparing for the relocation.
-     * 
+     *
      * @param sessionRefId the client session ID
-     * @param newNodeId the ID of the new node
-     * @param handler a handler to notify when preparation is complete
+     * @param newNodeId    the ID of the new node
+     * @param handler      a handler to notify when preparation is complete
      */
     void prepareToRelocate(BigInteger sessionRefId, long newNodeId,
-			   SimpleCompletionHandler handler);
+                           SimpleCompletionHandler handler);
 
 
     /**

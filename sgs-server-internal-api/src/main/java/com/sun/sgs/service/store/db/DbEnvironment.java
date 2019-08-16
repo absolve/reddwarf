@@ -38,25 +38,25 @@ public interface DbEnvironment {
      * Begins a new transaction with the specified timeout and the
      * implementation-specific default isolation level.
      *
-     * @param	timeout the number of milliseconds the transaction should be
-     *		allowed to run
-     * @return	the transaction
-     * @throws	IllegalArgumentException if timeout is less than {@code 1}
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @param    timeout the number of milliseconds the transaction should be
+     * allowed to run
+     * @return the transaction
+     * @throws IllegalArgumentException if timeout is less than {@code 1}
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     DbTransaction beginTransaction(long timeout);
 
     /**
      * Begins a transaction with the specified timeout and isolation level.
      *
-     * @param	timeout the number of milliseconds the transaction should be
-     *		allowed to run
-     * @param	fullIsolation if {@code true}, requires the transaction to
-     *		support full serializable isolation, otherwise uses the default
-     *		transaction isolation level
-     * @return	the transaction
-     * @throws	IllegalArgumentException if timeout is less than {@code 1}
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @param    timeout the number of milliseconds the transaction should be
+     * allowed to run
+     * @param    fullIsolation if {@code true}, requires the transaction to
+     * support full serializable isolation, otherwise uses the default
+     * transaction isolation level
+     * @return the transaction
+     * @throws IllegalArgumentException if timeout is less than {@code 1}
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     DbTransaction beginTransaction(long timeout, boolean fullIsolation);
 
@@ -66,18 +66,18 @@ public interface DbEnvironment {
      * was created, typically the {@code directory} argument passed to {@code
      * DbEnvironmentFactory.getEnvironment}.
      *
-     * @param	txn the transaction under which the database should be opened
-     * @param	fileName the name of the file containing the database
-     * @param	create whether to create the database if it does not exist
-     * @return	the database
-     * @throws	IllegalArgumentException if {@code txn} was not created by this
-     *		environment
-     * @throws	FileNotFoundException if {@code create} is {@code false} and
-     *		the database is not found
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @param    txn the transaction under which the database should be opened
+     * @param    fileName the name of the file containing the database
+     * @param    create whether to create the database if it does not exist
+     * @return the database
+     * @throws IllegalArgumentException if {@code txn} was not created by this
+     * environment
+     * @throws FileNotFoundException if {@code create} is {@code false} and
+     * the database is not found
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     DbDatabase openDatabase(DbTransaction txn, String fileName, boolean create)
-        throws FileNotFoundException;
+            throws FileNotFoundException;
 
     /**
      * Closes the environment, releasing any associated resources.  This
@@ -85,7 +85,7 @@ public interface DbEnvironment {
      * should not be called if any of the  transactions or databases associated
      * with this environment are still open.
      *
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     void close();
 
@@ -94,8 +94,8 @@ public interface DbEnvironment {
      * placeholder at the end of each allocation block to avoid allocation
      * concurrency conflicts.
      *
-     * @return	whether object allocations should use an end-of-block
-     *		placeholder
+     * @return whether object allocations should use an end-of-block
+     * placeholder
      */
     boolean useAllocationBlockPlaceholders();
 }

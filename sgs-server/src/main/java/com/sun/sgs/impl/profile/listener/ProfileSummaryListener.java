@@ -39,7 +39,7 @@ import java.util.Properties;
  * properties.  The default number of tasks is {@code 5000}.
  *
  * <p>
- * 
+ * <p>
  * Each report is structured like the following example:
  * <p><pre>
  * past 5000 tasks:
@@ -54,10 +54,9 @@ import java.util.Properties;
  * </pre>
  *
  * <p>
- *
+ * <p>
  * Note that the mean runtime, max, mean lag time, mean throughput, and mean
  * latency reports only apply to successful tasks.
- *
  */
 public class ProfileSummaryListener implements ProfileListener {
 
@@ -72,7 +71,7 @@ public class ProfileSummaryListener implements ProfileListener {
      * printing averages.
      */
     private static final String AVERAGE_PROPERTY =
-	"com.sun.sgs.impl.profile.listener.ProfileSummaryListener.average";
+            "com.sun.sgs.impl.profile.listener.ProfileSummaryListener.average";
 
     /**
      * The default number of windows to combine for printing averages.
@@ -100,7 +99,7 @@ public class ProfileSummaryListener implements ProfileListener {
     private long maxRunTime = 0;
     private long runTime = 0;
     private long lagTimeSum = 0;
-    private long readyCountSum = 0;   
+    private long readyCountSum = 0;
 
     // Moving averages
     private final MovingAverage maRunTime;
@@ -114,192 +113,204 @@ public class ProfileSummaryListener implements ProfileListener {
      * Creates an instance of {@code ProfileSummaryListener}.
      *
      * @param properties the {@code Properties} for this listener
-     * @param owner the {@code Identity} to use for all tasks run by
-     *        this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *        available system components
-     *
+     * @param owner      the {@code Identity} to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      */
     public ProfileSummaryListener(Properties properties, Identity owner,
-                                  ComponentRegistry registry) 
-    {
+                                  ComponentRegistry registry) {
 
-	lastWindowStart = System.currentTimeMillis();
+        lastWindowStart = System.currentTimeMillis();
 
-	PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
-	windowSize = wrappedProps.getIntProperty(
-	    ProfileListener.WINDOW_SIZE_PROPERTY, DEFAULT_WINDOW_SIZE);
-	average = wrappedProps.getIntProperty(
-	    AVERAGE_PROPERTY, DEFAULT_AVERAGE);
+        PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
+        windowSize = wrappedProps.getIntProperty(
+                ProfileListener.WINDOW_SIZE_PROPERTY, DEFAULT_WINDOW_SIZE);
+        average = wrappedProps.getIntProperty(
+                AVERAGE_PROPERTY, DEFAULT_AVERAGE);
 
-	maRunTime = new MovingAverage(average);
-	maFailed = new MovingAverage(average);
-	maReadyCount = new MovingAverage(average);
-	maLagTime = new MovingAverage(average);
-	maThroughput = new MovingAverage(average);
-	maLatency = new MovingAverage(average);
+        maRunTime = new MovingAverage(average);
+        maFailed = new MovingAverage(average);
+        maReadyCount = new MovingAverage(average);
+        maLagTime = new MovingAverage(average);
+        maThroughput = new MovingAverage(average);
+        maLatency = new MovingAverage(average);
     }
 
     /**
      * {@inheritDoc}
      */
     public void propertyChange(PropertyChangeEvent event) {
-	// unused
+        // unused
     }
 
     /**
      * {@inheritDoc}
      */
     public void report(ProfileReport profileReport) {
-	
-
-	taskCount++;
-	readyCountSum += profileReport.getReadyCount();
 
 
-	// calculate the run-time and lag-time only if it was successful
-	if (profileReport.wasTaskSuccessful()) {
+        taskCount++;
+        readyCountSum += profileReport.getReadyCount();
 
-	    long r = profileReport.getRunningTime();
 
-	    runTime += r;
+        // calculate the run-time and lag-time only if it was successful
+        if (profileReport.wasTaskSuccessful()) {
 
-	    if (r > maxRunTime) {
-		maxRunTime = r;
+            long r = profileReport.getRunningTime();
+
+            runTime += r;
+
+            if (r > maxRunTime) {
+                maxRunTime = r;
             }
 
-	    lagTimeSum += (profileReport.getActualStartTime() -
-			   profileReport.getScheduledStartTime());
-	} else {
-	    failedCount++;
-	}
-	
-	if (taskCount % windowSize == 0) {
+            lagTimeSum += (profileReport.getActualStartTime() -
+                    profileReport.getScheduledStartTime());
+        } else {
+            failedCount++;
+        }
 
-	    long windowEndTime = System.currentTimeMillis();	    
+        if (taskCount % windowSize == 0) {
 
-	    double successful = taskCount - failedCount;
+            long windowEndTime = System.currentTimeMillis();
 
-	    double meanRunTime = runTime / successful;
-	    double meanFailed = (failedCount * 100) / (double) taskCount;
-	    double meanReadyCount = readyCountSum / (double) taskCount;
-	    double meanLagTime = lagTimeSum / successful;
-	    double meanThroughput = (successful * 1000) / 
-                                    (double) (windowEndTime - lastWindowStart);
-	    double meanLatency = (runTime + lagTimeSum) / successful;
+            double successful = taskCount - failedCount;
 
-	    maRunTime.add(meanRunTime);
-	    maFailed.add(meanFailed);
-	    maReadyCount.add(meanReadyCount);
-	    maLagTime.add(meanLagTime);
-	    maThroughput.add(meanThroughput);
-	    maLatency.add(meanLatency);
+            double meanRunTime = runTime / successful;
+            double meanFailed = (failedCount * 100) / (double) taskCount;
+            double meanReadyCount = readyCountSum / (double) taskCount;
+            double meanLagTime = lagTimeSum / successful;
+            double meanThroughput = (successful * 1000) /
+                    (double) (windowEndTime - lastWindowStart);
+            double meanLatency = (runTime + lagTimeSum) / successful;
 
-	    System.out.printf("past %d tasks:%n" +
-			      "  mean runtime: %4.2fms," +
-			      "  max: %6dms," +
-			      "  failed: %d (%2.2f%%)" +
-			      "%n  mean ready count: %.2f," +
-			      "  mean lag time: %.2fms" +
-			      "%n  mean tasks running concurrently: %.2f" +
-			      "%n  mean throughput: %.2f txn/sec," +
-			      "  mean latency: %.2f ms/txn%n",
-			      taskCount, 
-			      meanRunTime,
-			      maxRunTime, 
-			      failedCount, 
-			      meanFailed,
-			      meanReadyCount,
-			      meanLagTime,
-			      ((double) runTime / 
-			       (double) (windowEndTime - lastWindowStart)),	
-			      meanThroughput,
-			      meanLatency
-		);
-	    System.out.printf("past %d tasks:%n" +
-			      "  mean runtime: %4.2fms," +
-			      "  failed: %2.2f%%" +
-			      "%n  mean ready count: %.2f," +
-			      "  mean lag time: %.2fms" +
-			      "%n  mean throughput: %.2f txn/sec," +
-			      "  mean latency: %.2f ms/txn%n",
-			      maRunTime.count() * taskCount, 
-			      maRunTime.average(),
-			      maFailed.average(),
-			      maReadyCount.average(),
-			      maLagTime.average(),
-			      maThroughput.average(),
-			      maLatency.average()
-		);
+            maRunTime.add(meanRunTime);
+            maFailed.add(meanFailed);
+            maReadyCount.add(meanReadyCount);
+            maLagTime.add(meanLagTime);
+            maThroughput.add(meanThroughput);
+            maLatency.add(meanLatency);
 
- 	    maxRunTime = 0;
- 	    failedCount = 0;
- 	    runTime = 0;	   
- 	    lagTimeSum = 0;	
- 	    taskCount = 0;
- 	    readyCountSum = 0;	
-	    lastWindowStart = System.currentTimeMillis();
-	}       
+            System.out.printf("past %d tasks:%n" +
+                            "  mean runtime: %4.2fms," +
+                            "  max: %6dms," +
+                            "  failed: %d (%2.2f%%)" +
+                            "%n  mean ready count: %.2f," +
+                            "  mean lag time: %.2fms" +
+                            "%n  mean tasks running concurrently: %.2f" +
+                            "%n  mean throughput: %.2f txn/sec," +
+                            "  mean latency: %.2f ms/txn%n",
+                    taskCount,
+                    meanRunTime,
+                    maxRunTime,
+                    failedCount,
+                    meanFailed,
+                    meanReadyCount,
+                    meanLagTime,
+                    ((double) runTime /
+                            (double) (windowEndTime - lastWindowStart)),
+                    meanThroughput,
+                    meanLatency
+            );
+            System.out.printf("past %d tasks:%n" +
+                            "  mean runtime: %4.2fms," +
+                            "  failed: %2.2f%%" +
+                            "%n  mean ready count: %.2f," +
+                            "  mean lag time: %.2fms" +
+                            "%n  mean throughput: %.2f txn/sec," +
+                            "  mean latency: %.2f ms/txn%n",
+                    maRunTime.count() * taskCount,
+                    maRunTime.average(),
+                    maFailed.average(),
+                    maReadyCount.average(),
+                    maLagTime.average(),
+                    maThroughput.average(),
+                    maLatency.average()
+            );
+
+            maxRunTime = 0;
+            failedCount = 0;
+            runTime = 0;
+            lagTimeSum = 0;
+            taskCount = 0;
+            readyCountSum = 0;
+            lastWindowStart = System.currentTimeMillis();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void shutdown() {
-	// unused
+        // unused
     }
-    
-    /** Tracks a moving average of a specified maximum number of values. */
+
+    /**
+     * Tracks a moving average of a specified maximum number of values.
+     */
     private static class MovingAverage {
 
-	/** Holds the values to average. */
-	private final double[] values;
+        /**
+         * Holds the values to average.
+         */
+        private final double[] values;
 
-	/** The offset in values to store the next value. */
-	private int next = 0;
+        /**
+         * The offset in values to store the next value.
+         */
+        private int next = 0;
 
-	/** The number of values stored. */
-	private int count = 0;
-	
-	/**
-	 * Creates an instance for averaging the specified maximum number of
-	 * values.
-	 */
-	MovingAverage(int maxNumValues) {
-	    values = new double[maxNumValues];
-	}
+        /**
+         * The number of values stored.
+         */
+        private int count = 0;
 
-	/** Returns the number of values added. */
-	int count() {
-	    return count;
-	}
+        /**
+         * Creates an instance for averaging the specified maximum number of
+         * values.
+         */
+        MovingAverage(int maxNumValues) {
+            values = new double[maxNumValues];
+        }
 
-	/** Adds a value. */
-	void add(double value) {
-	    values[next++] = value;
-	    if (next >= values.length) {
-		next = 0;
-	    }
-	    if (count < values.length) {
-		count++;
-	    }
-	}
+        /**
+         * Returns the number of values added.
+         */
+        int count() {
+            return count;
+        }
 
-	/** Returns the average. */
-	double average() {
-	    if (count == 0) {
-		return 0;
-	    }
-	    double sum = 0;
-	    int pos = next;
-	    for (int i = 0; i < count; i++) {
-		pos--;
-		if (pos < 0) {
-		    pos = count - 1;
-		}
-		sum += values[pos];
-	    }
-	    return sum / count;
-	}
+        /**
+         * Adds a value.
+         */
+        void add(double value) {
+            values[next++] = value;
+            if (next >= values.length) {
+                next = 0;
+            }
+            if (count < values.length) {
+                count++;
+            }
+        }
+
+        /**
+         * Returns the average.
+         */
+        double average() {
+            if (count == 0) {
+                return 0;
+            }
+            double sum = 0;
+            int pos = next;
+            for (int i = 0; i < count; i++) {
+                pos--;
+                if (pos < 0) {
+                    pos = count - 1;
+                }
+                sum += values[pos];
+            }
+            return sum / count;
+        }
     }
 }

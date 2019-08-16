@@ -21,14 +21,14 @@
 
 package com.sun.sgs.tutorial.server.lesson5;
 
+import com.sun.sgs.app.AppListener;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ClientSessionListener;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
 
 /**
  * Simple example of listening for user {@linkplain AppListener#loggedIn login}
@@ -38,19 +38,25 @@ import com.sun.sgs.app.ClientSessionListener;
  * new {@link HelloUserSessionListener}.
  */
 public class HelloUser2
-    implements AppListener, // to get called during startup and login.
-               Serializable // since all AppListeners are ManagedObjects.
+        implements AppListener, // to get called during startup and login.
+        Serializable // since all AppListeners are ManagedObjects.
 {
-    /** The version of the serialized form of this class. */
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(HelloUser2.class.getName());
+            Logger.getLogger(HelloUser2.class.getName());
 
     //  implement AppListener
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void initialize(Properties props) {
         // empty
     }

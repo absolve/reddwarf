@@ -28,16 +28,8 @@ import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
 import com.sun.sgs.impl.util.NamedThreadFactory;
 import edu.uci.ics.jung.graph.UndirectedGraph;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
+
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -52,14 +44,14 @@ import java.util.logging.Logger;
  * <dl style="margin-left: 1em">
  *
  * <dt>	<i>Property:</i> <code><b>
- *   com.sun.sgs.impl.service.nodemap.affinity.numThreads
- *	</b></code><br>
- *	<i>Default:</i>
- *    {@code 4}
+ * com.sun.sgs.impl.service.nodemap.affinity.numThreads
+ * </b></code><br>
+ * <i>Default:</i>
+ * {@code 4}
  * <br>
  *
  * <dd style="padding-top: .5em">The number of threads to use while running
- *     the algorithm. Set to {@code 1} to run single-threaded.
+ * the algorithm. Set to {@code 1} to run single-threaded.
  * <p>
  * </dl>
  * The logger for the affinity group finding system is named
@@ -72,43 +64,62 @@ import java.util.logging.Logger;
  * during the run.
  */
 public abstract class AbstractLPA extends BasicState {
-    /** Our base property name. */
+    /**
+     * Our base property name.
+     */
     protected static final String PROP_NAME =
             "com.sun.sgs.impl.service.nodemap.affinity";
-    /** Our logger.  Note this is shared between graph builders and group
+    /**
+     * Our logger.  Note this is shared between graph builders and group
      * finders.
      */
     protected static final LoggerWrapper logger =
             new LoggerWrapper(Logger.getLogger(PROP_NAME));
 
-    /** The property name for the number of threads to use. */
+    /**
+     * The property name for the number of threads to use.
+     */
     public static final String NUM_THREADS_PROPERTY = PROP_NAME + ".numThreads";
 
-    /** The default value for the number of threads to use. */
+    /**
+     * The default value for the number of threads to use.
+     */
     public static final int DEFAULT_NUM_THREADS = 4;
 
-    /** The local node id. */
+    /**
+     * The local node id.
+     */
     protected final long localNodeId;
 
-    /** A random number generator, to break ties. */
+    /**
+     * A random number generator, to break ties.
+     */
     protected final Random ran = new Random();
 
-    /** Our executor, for running tasks in parallel. */
+    /**
+     * Our executor, for running tasks in parallel.
+     */
     // TBD:  use taskScheduler?
     protected final ExecutorService executor;
 
-    /** The number of threads this algorithm should use. */
+    /**
+     * The number of threads this algorithm should use.
+     */
     protected final int numThreads;
 
-    /**  The number of iterations required for the last run. */
+    /**
+     * The number of iterations required for the last run.
+     */
     protected int iterations;
 
-    /** The graph in which we're finding communities.  This is a live
+    /**
+     * The graph in which we're finding communities.  This is a live
      * graph for some graph builders;  we have to be able to handle changes.
      */
     protected volatile UndirectedGraph<LabelVertex, WeightedEdge> graph;
 
-    /** For now, we're only grabbing the vertices of interest at the
+    /**
+     * For now, we're only grabbing the vertices of interest at the
      * start of the algorithm.   This could change so we update for each run,
      * but for now it's easiest to leave this list fixed.
      */
@@ -116,21 +127,20 @@ public abstract class AbstractLPA extends BasicState {
 
     /**
      * Constructs a new instance of the label propagation algorithm.
-     * @param nodeId the local node ID
-     * @param properties the properties for configuring this service
      *
+     * @param nodeId     the local node ID
+     * @param properties the properties for configuring this service
      * @throws IllegalArgumentException if {@code numThreads} is
-     *       less than {@code 1}
-     * @throws Exception if any other error occurs
+     *                                  less than {@code 1}
+     * @throws Exception                if any other error occurs
      */
     public AbstractLPA(long nodeId, Properties properties)
-        throws Exception
-    {
+            throws Exception {
         localNodeId = nodeId;
 
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
         numThreads = wrappedProps.getIntProperty(
-            NUM_THREADS_PROPERTY, DEFAULT_NUM_THREADS, 1, 65535);
+                NUM_THREADS_PROPERTY, DEFAULT_NUM_THREADS, 1, 65535);
         if (numThreads > 1) {
             executor = Executors.newFixedThreadPool(numThreads,
                     new NamedThreadFactory("LPA"));
@@ -138,12 +148,13 @@ public abstract class AbstractLPA extends BasicState {
             executor = null;
         }
         logger.log(Level.CONFIG,
-                       "Creating LPA with properties:" +
-                       "\n  " + NUM_THREADS_PROPERTY + "=" + numThreads);
+                "Creating LPA with properties:" +
+                        "\n  " + NUM_THREADS_PROPERTY + "=" + numThreads);
     }
 
     /**
      * Initialize ourselves for a run of the algorithm.
+     *
      * @param builder the graph producer
      */
     protected void initializeLPARun(AffinityGraphBuilder builder) {
@@ -177,7 +188,7 @@ public abstract class AbstractLPA extends BasicState {
         // Initialize algorithm-specific info
         doOtherInitialization();
         logger.log(Level.FINEST,
-                   "{0}: finished initializing LPA run", localNodeId);
+                "{0}: finished initializing LPA run", localNodeId);
     }
 
     /**
@@ -191,10 +202,10 @@ public abstract class AbstractLPA extends BasicState {
      * label changed.
      *
      * @param vertex a vertex in the graph
-     * @param self {@code true} if we should pick our own label if it is
-     *             in the set of highest labels
+     * @param self   {@code true} if we should pick our own label if it is
+     *               in the set of highest labels
      * @return {@code true} if {@code vertex}'s label is changed, {@code false}
-     *        if it is not changed
+     * if it is not changed
      */
     protected boolean setMostFrequentLabel(LabelVertex vertex, boolean self) {
         List<Integer> highestSet = getMaxCountLabels(vertex);
@@ -212,7 +223,7 @@ public abstract class AbstractLPA extends BasicState {
         // Otherwise, choose a label at random
         vertex.setLabel(highestSet.get(ran.nextInt(highestSet.size())));
         logger.log(Level.FINEST, "{0} : Returning true: vertex is now {1}",
-                                 localNodeId, vertex);
+                localNodeId, vertex);
         return true;
     }
 
@@ -267,7 +278,7 @@ public abstract class AbstractLPA extends BasicState {
         }
         if (logger.isLoggable(Level.FINEST)) {
             logger.log(Level.FINEST, "{0}: Neighbors of {1} : {2}",
-                       localNodeId, vertex, logSB.toString());
+                    localNodeId, vertex, logSB.toString());
         }
 
         // Find the set of labels used the max number of times
@@ -283,11 +294,12 @@ public abstract class AbstractLPA extends BasicState {
     /**
      * Update the label map with any other neighbors known to a
      * particular algorithm.
-     * @param vertex the vertex whose neighbors labels will be examined
+     *
+     * @param vertex   the vertex whose neighbors labels will be examined
      * @param labelMap a map of labels to counts of neighbors using that label
-     * @param logSB a StringBuilder for gathering log info about neighbors
+     * @param logSB    a StringBuilder for gathering log info about neighbors
      * @return the highest number of times a particular label is used among the
-     *        other neighbors, or {@code -1L} if there are no other neighbors.
+     * other neighbors, or {@code -1L} if there are no other neighbors.
      */
     protected abstract long doOtherNeighbors(LabelVertex vertex,
                                              Map<Integer, Long> labelMap,
@@ -301,14 +313,14 @@ public abstract class AbstractLPA extends BasicState {
      * affinity group in the returned set will have the same generation number,
      * which will be {@code gen}.
      * <p>
-     * @param vertices the vertices that we gather groups from
+     *
+     * @param vertices     the vertices that we gather groups from
      * @param reinitialize if {@code true}, reinitialize the labels
-     * @param gen the generation number
+     * @param gen          the generation number
      * @return an unmodifiable set of affinity groups found in the graph
      */
     protected static Set<AffinityGroup> gatherGroups(
-            List<LabelVertex> vertices, boolean reinitialize, long gen)
-    {
+            List<LabelVertex> vertices, boolean reinitialize, long gen) {
         assert (vertices != null);
         // All nodes with the same label are in the same community.
         Map<Integer, AffinitySet> groupMap =

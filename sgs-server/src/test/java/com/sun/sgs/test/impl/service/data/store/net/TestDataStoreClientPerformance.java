@@ -29,26 +29,34 @@ import com.sun.sgs.service.store.DataStore;
 import com.sun.sgs.test.impl.service.data.store.TestDataStorePerformance;
 import com.sun.sgs.test.util.DummyProfileCoordinator;
 
-/** Test the performance of the DataStoreClient class. */
+/**
+ * Test the performance of the DataStoreClient class.
+ */
 public class TestDataStoreClientPerformance extends TestDataStorePerformance {
     /**
      * The name of the host running the DataStoreServer, or null to create one
      * locally.
      */
     private static final String serverHost =
-	System.getProperty("test.server.host");
+            System.getProperty("test.server.host");
 
-    /** The network port for the DataStoreServer. */
+    /**
+     * The network port for the DataStoreServer.
+     */
     private static final int serverPort =
-	Integer.getInteger("test.server.port", 44530);
-    
-    /** The name of the DataStoreClient package. */
-    private static final String DataStoreNetPackage =
-	"com.sun.sgs.impl.service.data.store.net";
+            Integer.getInteger("test.server.port", 44530);
 
-    /** Creates an instance. */
+    /**
+     * The name of the DataStoreClient package.
+     */
+    private static final String DataStoreNetPackage =
+            "com.sun.sgs.impl.service.data.store.net";
+
+    /**
+     * Creates an instance.
+     */
     public TestDataStoreClientPerformance() {
-	count = Integer.getInteger("test.count", 20);
+        count = Integer.getInteger("test.count", 20);
     }
 
     /**
@@ -57,22 +65,22 @@ public class TestDataStoreClientPerformance extends TestDataStorePerformance {
      */
     @Override
     protected DataStore getDataStore() throws Exception {
-	String host = serverHost;
-	int port = serverPort;
+        String host = serverHost;
+        int port = serverPort;
         String nodeType = NodeType.appNode.toString();
-	if (host == null) {
-	    host = "localhost";
-	    port = 0;
-	    nodeType = NodeType.coreServerNode.toString();
-	}
+        if (host == null) {
+            host = "localhost";
+            port = 0;
+            nodeType = NodeType.coreServerNode.toString();
+        }
         props.setProperty(StandardProperties.NODE_TYPE, nodeType);
-	props.setProperty(DataStoreNetPackage + ".server.host", host);
-	props.setProperty(DataStoreNetPackage + ".server.port",
-			  String.valueOf(port));
-	DataStore store = new DataStoreProfileProducer(
-	    new DataStoreClient(props, env.systemRegistry, txnProxy),
-	    DummyProfileCoordinator.getCollector());
-	DummyProfileCoordinator.startProfiling();
-	return store;
+        props.setProperty(DataStoreNetPackage + ".server.host", host);
+        props.setProperty(DataStoreNetPackage + ".server.port",
+                String.valueOf(port));
+        DataStore store = new DataStoreProfileProducer(
+                new DataStoreClient(props, env.systemRegistry, txnProxy),
+                DummyProfileCoordinator.getCollector());
+        DummyProfileCoordinator.startProfiling();
+        return store;
     }
 }

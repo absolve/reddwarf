@@ -61,7 +61,7 @@ class ProfileParticipantDetailImpl implements ProfileParticipantDetail {
      *                        this detail
      */
     ProfileParticipantDetailImpl(String participantName) {
-	this.name = participantName;
+        this.name = participantName;
     }
 
     /**
@@ -96,7 +96,7 @@ class ProfileParticipantDetailImpl implements ProfileParticipantDetail {
      * {@inheritDoc}
      */
     public boolean wasCommittedDirectly() {
-	return committedDirectly;
+        return committedDirectly;
     }
 
     /**
@@ -126,15 +126,15 @@ class ProfileParticipantDetailImpl implements ProfileParticipantDetail {
      * <code>true</code> then none of the other mutator methods should
      * be called after calling <code>setPrepared</code>.
      *
-     * @param time the time in milliseconds that the participant spent
-     *             preparing
+     * @param time                the time in milliseconds that the participant spent
+     *                            preparing
      * @param readOnlyParticipant whether preparation ended with the
      *                            participant voting read-only
      */
     void setPrepared(long time, boolean readOnlyParticipant) {
-	prepareTime = time;
-	prepared = true;
-	readOnly = readOnlyParticipant;
+        prepareTime = time;
+        prepared = true;
+        readOnly = readOnlyParticipant;
     }
 
     /**
@@ -146,8 +146,8 @@ class ProfileParticipantDetailImpl implements ProfileParticipantDetail {
      *             committing
      */
     void setCommitted(long time) {
-	committed = true;
-	commitTime = time;
+        committed = true;
+        commitTime = time;
     }
 
     /**
@@ -159,9 +159,9 @@ class ProfileParticipantDetailImpl implements ProfileParticipantDetail {
      *             preparing and committing
      */
     void setCommittedDirectly(long time) {
-	setPrepared(time, false);
-	setCommitted(time);
-	committedDirectly = true;
+        setPrepared(time, false);
+        setCommitted(time);
+        committedDirectly = true;
     }
 
     /**
@@ -173,7 +173,7 @@ class ProfileParticipantDetailImpl implements ProfileParticipantDetail {
      *             aborting
      */
     void setAborted(long time) {
-	abortTime = time;
+        abortTime = time;
     }
 
 }

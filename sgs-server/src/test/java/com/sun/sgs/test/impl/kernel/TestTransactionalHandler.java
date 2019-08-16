@@ -24,33 +24,35 @@ package com.sun.sgs.test.impl.kernel;
 import com.sun.sgs.impl.kernel.logging.TransactionalHandler;
 import com.sun.sgs.service.TransactionProxy;
 import com.sun.sgs.test.util.SgsTestNode;
-import static com.sun.sgs.test.util.UtilReflection.getConstructor;
 import com.sun.sgs.tools.test.FilteredNameRunner;
-import java.lang.reflect.Constructor;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Constructor;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.sun.sgs.test.util.UtilReflection.getConstructor;
+
 /**
- *  Tests for the transactional logger handler.  
+ * Tests for the transactional logger handler.
  */
 @RunWith(FilteredNameRunner.class)
 public class TestTransactionalHandler {
     private static final Constructor<TransactionalHandler>
-        ctor = getConstructor(
-	    TransactionalHandler.class, TransactionProxy.class, Handler.class);
+            ctor = getConstructor(
+            TransactionalHandler.class, TransactionProxy.class, Handler.class);
     private SgsTestNode serverNode;
     private TransactionProxy txnProxy;
     private Logger logger;
-    
+
     @Before
     public void setUp() throws Exception {
         serverNode = new SgsTestNode("TestNodeMappingServiceImpl", null, null);
         txnProxy = serverNode.getProxy();
-        
+
         logger = Logger.getLogger("testLogger");
         // Find a parent with handlers, which we'll wrap with a transactional
         // handler.  This mimics the actions of the TransactionalLogManager.
@@ -60,8 +62,8 @@ public class TestTransactionalHandler {
             if (parent.getHandlers().length != 0) {
                 break;
             }
-        }   
-	assert (parent != null);
+        }
+        assert (parent != null);
         for (Handler h : parent.getHandlers()) {
             Handler newHandler = ctor.newInstance(txnProxy, h);
             logger.addHandler(newHandler);
@@ -69,11 +71,11 @@ public class TestTransactionalHandler {
         }
         logger.setLevel(Level.FINEST);
     }
-    
+
     // Test for sgs-server issue #126
-    @Test 
+    @Test
     public void runNoTransaction() throws Exception {
         logger.log(Level.SEVERE, "Not in a transaction!");
-        
+
     }
 }

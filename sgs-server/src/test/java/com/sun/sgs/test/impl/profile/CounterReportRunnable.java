@@ -22,7 +22,9 @@ package com.sun.sgs.test.impl.profile;
 
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.profile.ProfileReport;
+
 import java.util.concurrent.Exchanger;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -45,11 +47,10 @@ class CounterReportRunnable implements Runnable {
     final Exchanger<AssertionError> errorExchanger;
     final int incrementValue;
 
-    public CounterReportRunnable(String name, Identity negativeOwner, 
+    public CounterReportRunnable(String name, Identity negativeOwner,
                                  Identity positiveOwner,
-                                 Exchanger<AssertionError> errorExchanger, 
-                                 int incrementValue) 
-    {
+                                 Exchanger<AssertionError> errorExchanger,
+                                 int incrementValue) {
         super();
         this.name = name;
         this.negativeOwner = negativeOwner;
@@ -69,7 +70,7 @@ class CounterReportRunnable implements Runnable {
         if (!update && !owner.equals(negativeOwner)) {
             return;
         }
-        
+
         if (update) {
             try {
                 Long value = report.getUpdatedTaskCounters().get(name);

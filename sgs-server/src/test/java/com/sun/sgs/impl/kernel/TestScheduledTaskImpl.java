@@ -25,12 +25,13 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.Priority;
 import com.sun.sgs.tools.test.FilteredNameRunner;
-import java.lang.reflect.Field;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.lang.reflect.Field;
 
 /**
  * Tests for {@code ScheduledTaskImpl}, mainly state transition tests
@@ -42,14 +43,24 @@ public class TestScheduledTaskImpl {
 
     // empty Identity implementation used for the tests
     private Identity defaultIdentity = new Identity() {
-        public String getName() { return ""; }
-        public void notifyLoggedIn() {}
-        public void notifyLoggedOut() {}
+        public String getName() {
+            return "";
+        }
+
+        public void notifyLoggedIn() {
+        }
+
+        public void notifyLoggedOut() {
+        }
     };
     // empty KernelRunnable implementation used for tests
     private KernelRunnable runnable = new KernelRunnable() {
-        public String getBaseTaskType() { return ""; }
-        public void run() throws Exception { }
+        public String getBaseTaskType() {
+            return "";
+        }
+
+        public void run() throws Exception {
+        }
     };
 
     @Before
@@ -268,14 +279,15 @@ public class TestScheduledTaskImpl {
         Assert.assertEquals("CANCELLED", getTaskState());
     }
 
-    @Test(timeout=500)
+    @Test(timeout = 500)
     public void cancelAndBlockWhenRunningThenComplete() throws Exception {
         setTaskState("RUNNING");
         new Thread(new Runnable() {
             public void run() {
                 try {
                     Thread.sleep(200);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
 
                 task.setDone(null);
             }
@@ -284,14 +296,15 @@ public class TestScheduledTaskImpl {
         Assert.assertEquals("COMPLETED", getTaskState());
     }
 
-    @Test(timeout=500)
+    @Test(timeout = 500)
     public void cancelAndBlockWhenRunningThenRunnable() throws Exception {
         setTaskState("RUNNING");
         new Thread(new Runnable() {
             public void run() {
                 try {
                     Thread.sleep(200);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
 
                 task.setRunning(false);
             }

@@ -29,6 +29,7 @@ import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
 import com.sun.sgs.profile.AccessedObjectsDetail;
 import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.util.Graphs;
+
 import java.util.HashMap;
 
 /**
@@ -39,48 +40,61 @@ public class AbstractTestGraphBuilder implements AffinityGraphBuilder {
     private final UndirectedGraph<LabelVertex, WeightedEdge> graph;
 
     private final HashMap<Identity, LabelVertex> identMap =
-                new HashMap<Identity, LabelVertex>();
+            new HashMap<Identity, LabelVertex>();
 
     public AbstractTestGraphBuilder(
-            UndirectedGraph<LabelVertex, WeightedEdge> graph)
-    {
+            UndirectedGraph<LabelVertex, WeightedEdge> graph) {
         this.graph = graph;
         for (LabelVertex v : graph.getVertices()) {
             identMap.put(v.getIdentity(), v);
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public UndirectedGraph<LabelVertex, WeightedEdge> getAffinityGraph() {
         return Graphs.unmodifiableUndirectedGraph(graph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LabelVertex getVertex(Identity id) {
         return identMap.get(id);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void updateGraph(Identity owner, AccessedObjectsDetail detail) {
         return;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void enable() {
         // do nothing
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void disable() {
         // do nothing
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         // do nothing
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LPAAffinityGroupFinder getAffinityGroupFinder() {
         return null;
     }

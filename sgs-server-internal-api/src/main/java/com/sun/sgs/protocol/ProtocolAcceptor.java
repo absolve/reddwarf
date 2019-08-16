@@ -39,15 +39,15 @@ import java.io.IOException;
  * </ul>
  */
 public interface ProtocolAcceptor {
-    
+
     /**
      * Returns the descriptor for this protocol. Multiple calls to this
      * method may return the same object.
-     * 
+     *
      * @return the descriptor for this protocol
      */
     ProtocolDescriptor getDescriptor();
-    
+
     /**
      * Starts accepting connections, and notifies the specified {@code
      * listener} of new connections.
@@ -58,8 +58,8 @@ public interface ProtocolAcceptor {
      * method with the identity and the {@link SessionProtocol protocol
      * connection}.
      *
-     * @param	listener a protocol listener
-     * @throws	IOException if an IO problem occurs
+     * @param    listener a protocol listener
+     * @throws IOException if an IO problem occurs
      */
     void accept(ProtocolListener listener) throws IOException;
 
@@ -67,7 +67,7 @@ public interface ProtocolAcceptor {
      * Shuts down any pending accept operation as well as the acceptor
      * itself.
      *
-     * @throws	IOException if an IO problem occurs
+     * @throws IOException if an IO problem occurs
      */
     void close() throws IOException;
 }

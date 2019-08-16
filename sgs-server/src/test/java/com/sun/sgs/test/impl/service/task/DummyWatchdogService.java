@@ -21,20 +21,13 @@
 
 package com.sun.sgs.test.impl.service.task;
 
-import com.sun.sgs.kernel.ComponentRegistry;
-
 import com.sun.sgs.impl.kernel.KernelShutdownController;
-import com.sun.sgs.service.DataService;
-import com.sun.sgs.service.Node;
+import com.sun.sgs.kernel.ComponentRegistry;
+import com.sun.sgs.service.*;
 import com.sun.sgs.service.Node.Health;
-import com.sun.sgs.service.NodeListener;
-import com.sun.sgs.service.TransactionProxy;
-import com.sun.sgs.service.WatchdogService;
-import com.sun.sgs.service.RecoveryListener;
 
 import java.util.Iterator;
 import java.util.Properties;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -46,7 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DummyWatchdogService implements WatchdogService {
 
     // the map from node identifier to Node instance
-    private static ConcurrentHashMap<Long,Node> nodeMap;
+    private static ConcurrentHashMap<Long, Node> nodeMap;
     // the collection of listeners
     private static ConcurrentLinkedQueue<NodeListener> listeners;
 
@@ -55,30 +48,38 @@ public class DummyWatchdogService implements WatchdogService {
     // a node-local indicator of the node's health
     private Health health = Health.GREEN;
 
-    /** Creates an instance of the service. */
+    /**
+     * Creates an instance of the service.
+     */
     public DummyWatchdogService(Properties p, ComponentRegistry cr,
-            TransactionProxy tp, KernelShutdownController ctrl) {
+                                TransactionProxy tp, KernelShutdownController ctrl) {
         if (p.getProperty("DummyServer", "false").equals("true")) {
-            nodeMap = new ConcurrentHashMap<Long,Node>();
+            nodeMap = new ConcurrentHashMap<Long, Node>();
             listeners = new ConcurrentLinkedQueue<NodeListener>();
         }
-	localId = tp.getService(DataService.class).getLocalNodeId();
+        localId = tp.getService(DataService.class).getLocalNodeId();
         nodeMap.put(localId, new NodeImpl(localId));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getName() {
         return getClass().getName();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void ready() {
         Node node = nodeMap.get(localId);
         for (NodeListener listener : listeners)
             listener.nodeHealthUpdate(node);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         health = Health.RED;
         nodeMap.remove(localId);
@@ -87,32 +88,44 @@ public class DummyWatchdogService implements WatchdogService {
             listener.nodeHealthUpdate(localNode);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Health getLocalNodeHealth() {
         return health;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Health getLocalNodeHealthNonTransactional() {
         return health;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isLocalNodeAlive() {
         return health.isAlive();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isLocalNodeAliveNonTransactional() {
         return isLocalNodeAlive();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Iterator<Node> getNodes() {
         return nodeMap.values().iterator();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Node getNode(long nodeId) {
         Node node = nodeMap.get(nodeId);
         if (node == null)
@@ -120,25 +133,29 @@ public class DummyWatchdogService implements WatchdogService {
         return node;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void addNodeListener(NodeListener listener) {
         listeners.add(listener);
     }
 
-    /** {@inheritDoc}
+    /**
+     * {@inheritDoc}
      * <p>
-     *  This method is not implemented, and will throw an AssertionError.
+     * This method is not implemented, and will throw an AssertionError.
      */
     public Node getBackup(long nodeId) {
-	throw new AssertionError("not implemented");
+        throw new AssertionError("not implemented");
     }
-       
-    /** {@inheritDoc} 
-     * <p> 
+
+    /**
+     * {@inheritDoc}
+     * <p>
      * This implementation does nothing.
      */
     public void addRecoveryListener(RecoveryListener listener) {
-	// Silently do nothing.
+        // Silently do nothing.
     }
 
     /**
@@ -148,7 +165,7 @@ public class DummyWatchdogService implements WatchdogService {
         // keep it simple for the dummy implementation
         return System.currentTimeMillis();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -163,35 +180,45 @@ public class DummyWatchdogService implements WatchdogService {
         return appTimeMillis;
     }
 
-    /** A basic, private implementation of Node. */
+    /**
+     * A basic, private implementation of Node.
+     */
     private class NodeImpl implements Node {
         private final long nodeId;
 
         NodeImpl(long nodeId) {
             this.nodeId = nodeId;
         }
+
         public long getId() {
             return nodeId;
         }
+
         public String getHostName() {
             return "localhost";
         }
+
         public int getPort() {
             return 20000;
         }
+
         public boolean isAlive() {
             return isLocalNodeAlive();
         }
+
         public Health getHealth() {
             return getLocalNodeHealth();
         }
     }
+
     public void reportHealth(Health health, String component) {
         // Don't do anything for now
     }
+
     public void reportHealth(long nodeId, Health health, String component) {
         // Don't do anything for now
     }
+
     public void reportFailure(long nodeId, String component) {
         // Don't do anything for now
     }

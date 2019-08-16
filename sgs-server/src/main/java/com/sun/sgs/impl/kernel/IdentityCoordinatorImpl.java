@@ -25,19 +25,16 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCoordinator;
 import com.sun.sgs.auth.IdentityCredentials;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 
+import javax.security.auth.login.CredentialException;
+import javax.security.auth.login.LoginException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.security.auth.login.CredentialException;
-import javax.security.auth.login.LoginException;
 
 
 /**
@@ -51,13 +48,12 @@ import javax.security.auth.login.LoginException;
  * can be assigned, safely, after the coordinator is created. An instance of the
  * coordinator is needed before the context can be created.
  */
-class IdentityCoordinatorImpl implements IdentityCoordinator
-{
+class IdentityCoordinatorImpl implements IdentityCoordinator {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(IdentityCoordinatorImpl.
-                                           class.getName()));
+            new LoggerWrapper(Logger.getLogger(IdentityCoordinatorImpl.
+                    class.getName()));
 
     // the available authenticators
     private final HashMap<String, List<IdentityAuthenticator>> authenticatorMap;
@@ -82,11 +78,11 @@ class IdentityCoordinatorImpl implements IdentityCoordinator
         // add the authenticators in the right order
         authenticatorMap = new HashMap<String, List<IdentityAuthenticator>>();
         for (IdentityAuthenticator authenticator : authenticators) {
-            String [] identifiers =
-                authenticator.getSupportedCredentialTypes();
+            String[] identifiers =
+                    authenticator.getSupportedCredentialTypes();
             for (String identifier : identifiers) {
                 List<IdentityAuthenticator> list =
-                    authenticatorMap.get(identifier);
+                        authenticatorMap.get(identifier);
                 if (list == null) {
                     list = new ArrayList<IdentityAuthenticator>();
                     authenticatorMap.put(identifier, list);
@@ -106,17 +102,16 @@ class IdentityCoordinatorImpl implements IdentityCoordinator
      *                             is unknown
      */
     public Identity authenticateIdentity(IdentityCredentials credentials)
-        throws LoginException
-    {
+            throws LoginException {
         if (credentials == null) {
             throw new NullPointerException("Credentials must not be null");
         }
 
         List<IdentityAuthenticator> authenticators =
-            authenticatorMap.get(credentials.getCredentialsType());
+                authenticatorMap.get(credentials.getCredentialsType());
         if (authenticators == null) {
             throw new CredentialException("Unsupported credentials type: " +
-                                          credentials.getCredentialsType());
+                    credentials.getCredentialsType());
         }
 
         for (IdentityAuthenticator authenticator : authenticators) {
@@ -132,7 +127,7 @@ class IdentityCoordinatorImpl implements IdentityCoordinator
                     logger.logThrow(Level.FINEST, le, "Could not " +
                                     "authenticate credentials with " +
                                     "authenticator {0}",
-                                    authenticator.getClass().getName());
+                            authenticator.getClass().getName());
                 }
             }
         }

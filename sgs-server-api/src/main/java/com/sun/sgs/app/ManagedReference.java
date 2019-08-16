@@ -36,13 +36,13 @@ import java.math.BigInteger;
  * <code>ManagedReference</code> instances should be used to store references
  * to instances of <code>ManagedObject</code> referred to by other managed
  * objects or by the non-managed objects they refer to. <p>
- *
+ * <p>
  * Applications should not use instances of <code>ManagedReference</code> as
  * the values of static fields or in other locations not managed by the
  * <code>DataManager</code>.  There is no guarantee that objects only reachable
  * through these external references will continue to be managed by the
  * <code>DataManager</code>. <p>
- *
+ * <p>
  * Some implementations may need to be notified when managed objects and the
  * objects they refer to are modified, while other implementations may be
  * configurable to detect these modifications automatically.  Applications are
@@ -50,8 +50,8 @@ import java.math.BigInteger;
  * produce performance improvements regardless of whether modifications are
  * detected automatically.
  *
- * @param	<T> the type of the referenced object
- * @see		DataManager#createReference DataManager.createReference
+ * @param    <T> the type of the referenced object
+ * @see        DataManager#createReference DataManager.createReference
  */
 public interface ManagedReference<T> {
 
@@ -63,13 +63,13 @@ public interface ManagedReference<T> {
      * DataManager#markForUpdate DataManager.markForUpdate} before modifying
      * the returned object or any of the non-managed objects it refers to.
      *
-     * @return	the associated object
-     * @throws	ObjectNotFoundException if the object associated with this
-     *		reference is not found
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
-     * @see	#getForUpdate getForUpdate
-     * @see	DataManager#markForUpdate DataManager.markForUpdate
+     * @return the associated object
+     * @throws ObjectNotFoundException if the object associated with this
+     * reference is not found
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
+     * @see    #getForUpdate getForUpdate
+     * @see    DataManager#markForUpdate DataManager.markForUpdate
      */
     T get();
 
@@ -78,12 +78,12 @@ public interface ManagedReference<T> {
      * the system that the object is going to be modified.  The object returned
      * will implement {@link ManagedObject} and {@link Serializable}.
      *
-     * @return	the associated object
-     * @throws	ObjectNotFoundException if the object associated with this
-     *		reference is not found
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
-     * @see	DataManager#markForUpdate DataManager.markForUpdate
+     * @return the associated object
+     * @throws ObjectNotFoundException if the object associated with this
+     * reference is not found
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
+     * @see    DataManager#markForUpdate DataManager.markForUpdate
      */
     T getForUpdate();
 
@@ -92,7 +92,7 @@ public interface ManagedReference<T> {
      * reference.  Two references have equal identifiers if and only if they
      * refer to the same object.
      *
-     * @return	a unique identifier for this reference
+     * @return a unique identifier for this reference
      */
     BigInteger getId();
 
@@ -102,15 +102,15 @@ public interface ManagedReference<T> {
      * that refers to the same object as this reference, otherwise
      * <code>false</code>.
      *
-     * @param	object the object to be compared with
-     * @return	if <code>object</code> refers to the same object
+     * @param    object the object to be compared with
+     * @return if <code>object</code> refers to the same object
      */
     boolean equals(Object object);
 
     /**
      * Returns an appropriate hash code value for the object.
      *
-     * @return	the hash code for this object
+     * @return the hash code for this object
      */
     int hashCode();
 }

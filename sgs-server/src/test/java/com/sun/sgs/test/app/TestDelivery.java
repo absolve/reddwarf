@@ -35,25 +35,25 @@ public class TestDelivery extends Assert {
 
     @Test
     public void testSupportsDeliveryNullDelivery() {
-	for (Delivery delivery : Delivery.values()) {
-	    try {
-		delivery.supportsDelivery(null);
-		fail("expected NullPointerException: " + delivery);
-	    } catch (NullPointerException e) {
-		System.err.println(e);
-	    }
-	}
+        for (Delivery delivery : Delivery.values()) {
+            try {
+                delivery.supportsDelivery(null);
+                fail("expected NullPointerException: " + delivery);
+            } catch (NullPointerException e) {
+                System.err.println(e);
+            }
+        }
     }
-    
+
     @Test
     public void testSupportsDeliveryAllCombinations() {
-	for (Delivery delivery : Delivery.values()) {
-	    assertTrue(Delivery.RELIABLE.supportsDelivery(delivery));
-	    assertTrue(delivery.supportsDelivery(delivery));
-	    assertTrue(delivery.supportsDelivery(Delivery.UNRELIABLE));
-	    if (delivery != Delivery.UNRELIABLE) {
-		assertFalse(Delivery.UNRELIABLE.supportsDelivery(delivery));
-	    }
-	}
+        for (Delivery delivery : Delivery.values()) {
+            assertTrue(Delivery.RELIABLE.supportsDelivery(delivery));
+            assertTrue(delivery.supportsDelivery(delivery));
+            assertTrue(delivery.supportsDelivery(Delivery.UNRELIABLE));
+            if (delivery != Delivery.UNRELIABLE) {
+                assertFalse(Delivery.UNRELIABLE.supportsDelivery(delivery));
+            }
+        }
     }
 }

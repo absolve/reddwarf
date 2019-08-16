@@ -24,25 +24,16 @@ package com.sun.sgs.impl.auth;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCredentials;
-
 import com.sun.sgs.impl.kernel.StandardProperties;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Properties;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.CredentialException;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Properties;
 
 
 /**
@@ -56,14 +47,13 @@ import javax.security.auth.login.CredentialException;
  * whitespace, a SHA-256 hashed password that is encoded via
  * <code>encodeBytes</code>, and finally a newline.
  */
-public class NamePasswordAuthenticator implements IdentityAuthenticator
-{
+public class NamePasswordAuthenticator implements IdentityAuthenticator {
 
     /**
      * The property used to define the password file location.
      */
     public static final String PASSWORD_FILE_PROPERTY =
-        "com.sun.sgs.impl.auth.NamePasswordAuthenticator.PasswordFile";
+            "com.sun.sgs.impl.auth.NamePasswordAuthenticator.PasswordFile";
 
     /**
      * The default name for the password file, relative to the app root.
@@ -81,14 +71,12 @@ public class NamePasswordAuthenticator implements IdentityAuthenticator
      * Creates an instance of <code>NamePasswordAuthenticator</code>.
      *
      * @param properties the application's configuration properties
-     *
-     * @throws FileNotFoundException if the password file cannot be found
-     * @throws IOException if any error occurs reading the password file
+     * @throws FileNotFoundException    if the password file cannot be found
+     * @throws IOException              if any error occurs reading the password file
      * @throws NoSuchAlgorithmException if SHA-256 is not supported
      */
     public NamePasswordAuthenticator(Properties properties)
-        throws IOException, NoSuchAlgorithmException
-    {
+            throws IOException, NoSuchAlgorithmException {
         if (properties == null) {
             throw new NullPointerException("Null properties not allowed");
         }
@@ -110,9 +98,9 @@ public class NamePasswordAuthenticator implements IdentityAuthenticator
             String name = stok.sval;
             if (stok.nextToken() == StreamTokenizer.TT_EOF) {
                 throw new IOException("Unexpected EOL at line " +
-                                      stok.lineno());
+                        stok.lineno());
             }
-            byte [] password = decodeBytes(stok.sval.getBytes("UTF-8"));
+            byte[] password = decodeBytes(stok.sval.getBytes("UTF-8"));
             passwordMap.put(name, password);
         }
 
@@ -127,12 +115,11 @@ public class NamePasswordAuthenticator implements IdentityAuthenticator
      * password file.
      *
      * @param bytes an encoded array of bytes as provided by a call
-     *                 to <code>encodePassword</code>
-     *
+     *              to <code>encodePassword</code>
      * @return the original binary representation
      */
-    public static byte [] decodeBytes(byte [] bytes) {
-        byte [] decoded = new byte[bytes.length / 2];
+    public static byte[] decodeBytes(byte[] bytes) {
+        byte[] decoded = new byte[bytes.length / 2];
         for (int i = 0; i < decoded.length; i++) {
             int encodedIndex = i * 2;
             decoded[i] = (byte) (((bytes[encodedIndex] - 'a') << 4) +
@@ -149,11 +136,10 @@ public class NamePasswordAuthenticator implements IdentityAuthenticator
      * into a form suitable for the password file.
      *
      * @param bytes an array of bytes
-     *
      * @return an encoding of the bytes in a form suitable for use in text
      */
-    public static byte [] encodeBytes(byte [] bytes) {
-        byte [] encoded = new byte[bytes.length * 2];
+    public static byte[] encodeBytes(byte[] bytes) {
+        byte[] encoded = new byte[bytes.length * 2];
         for (int i = 0; i < bytes.length; i++) {
             int encodedIndex = i * 2;
             encoded[encodedIndex] = (byte) (((bytes[i] & 0xF0) >> 4) + 'a');
@@ -165,8 +151,9 @@ public class NamePasswordAuthenticator implements IdentityAuthenticator
     /**
      * {@inheritDoc}
      */
-    public String [] getSupportedCredentialTypes() {
-        return new String [] { NamePasswordCredentials.TYPE_IDENTIFIER };
+    @Override
+    public String[] getSupportedCredentialTypes() {
+        return new String[]{NamePasswordCredentials.TYPE_IDENTIFIER};
     }
 
     /**
@@ -176,11 +163,11 @@ public class NamePasswordAuthenticator implements IdentityAuthenticator
      * of <code>NamePasswordCredentials</code>.
      *
      * @throws AccountNotFoundException if the identity is unknown
-     * @throws CredentialException if the credentials are invalid
+     * @throws CredentialException      if the credentials are invalid
      */
+    @Override
     public Identity authenticateIdentity(IdentityCredentials credentials)
-        throws AccountNotFoundException, CredentialException
-    {
+            throws AccountNotFoundException, CredentialException {
         // make sure that we were given the right type of credentials
         if (!(credentials instanceof NamePasswordCredentials)) {
             throw new CredentialException("unsupported credentials");
@@ -189,24 +176,24 @@ public class NamePasswordAuthenticator implements IdentityAuthenticator
 
         // get the name, and make sure they have a password entry
         String name = npc.getName();
-        byte [] validPass = passwordMap.get(name);
+        byte[] validPass = passwordMap.get(name);
         if (validPass == null) {
             throw new AccountNotFoundException("Unknown user: " + name);
         }
 
         // hash the given password
-        byte [] pass = null;
+        byte[] pass = null;
         synchronized (digest) {
             digest.reset();
             try {
                 pass = digest.digest((new String(npc.getPassword())).
-                                     getBytes("UTF-8"));
+                        getBytes("UTF-8"));
             } catch (IOException ioe) {
                 throw new CredentialException("Could not get password: " +
-                                              ioe.getMessage());
+                        ioe.getMessage());
             }
         }
-        
+
         // verify that the hashes match
         if (!Arrays.equals(validPass, pass)) {
             throw new CredentialException("Invalid credentials");

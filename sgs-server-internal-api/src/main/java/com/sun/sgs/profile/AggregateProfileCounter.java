@@ -33,11 +33,11 @@ public interface AggregateProfileCounter extends ProfileCounter {
 
     /**
      * Gets the current counter value.
-     * 
+     *
      * @return the current count value
      */
     long getCount();
-    
+
     /**
      * Clear the counter, resetting it to {@code 0}.
      */

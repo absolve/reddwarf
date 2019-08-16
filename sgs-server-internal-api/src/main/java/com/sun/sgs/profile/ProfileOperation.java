@@ -29,9 +29,9 @@ package com.sun.sgs.profile;
 /**
  * An operation which has occurred.
  * <p>
- * Profile operations are created with calls to {@link 
- * ProfileConsumer#createOperation ProfileConsumer.createOperation}.  An 
- * operations's name includes both the {@code name} supplied to 
+ * Profile operations are created with calls to {@link
+ * ProfileConsumer#createOperation ProfileConsumer.createOperation}.  An
+ * operations's name includes both the {@code name} supplied to
  * {@code createOperation} and the value of {@link ProfileConsumer#getName}.
  */
 public interface ProfileOperation {
@@ -44,7 +44,7 @@ public interface ProfileOperation {
     String getName();
 
     /**
-     * Tells this operation to report that it is happening. 
+     * Tells this operation to report that it is happening.
      */
     void report();
 }

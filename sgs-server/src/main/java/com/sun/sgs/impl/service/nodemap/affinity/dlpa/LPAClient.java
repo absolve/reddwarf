@@ -22,6 +22,7 @@
 package com.sun.sgs.impl.service.nodemap.affinity.dlpa;
 
 import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
+
 import java.io.IOException;
 import java.rmi.Remote;
 import java.util.Collection;
@@ -64,11 +65,11 @@ public interface LPAClient extends Remote {
      *
      * @param runNumber the run number provided to the last
      *                  {@link #prepareAlgorithm} call
-     * @param done {@code true} if all iterations are done, allowing cleanup
+     * @param done      {@code true} if all iterations are done, allowing cleanup
      * @return the affinity groups on this node
      * @throws IllegalArgumentException if runNumber does not match the last
-     *         call to {@code prepareAlgorithm}
-     * @throws IOException if there is a communication problem
+     *                                  call to {@code prepareAlgorithm}
+     * @throws IOException              if there is a communication problem
      */
     Set<AffinityGroup> getAffinityGroups(long runNumber, boolean done)
             throws IOException;
@@ -93,21 +94,21 @@ public interface LPAClient extends Remote {
      * that have used the given objects. If no such vertices exist, nothing
      * is done and an empty map is returned.
      * Called by other LPAClients.
-     * 
+     *
      * @param objIds the collection of objects, representing potential graph
      *               edges, that we want neighbor node information for
      * @return a map of Objects (one for each element of {@code objIds}) to
-     *               neighbor labels, with a count of each use
+     * neighbor labels, with a count of each use
      * @throws IOException if there is a communication problem
      */
     Map<Object, Map<Integer, List<Long>>> getRemoteLabels(
-        Collection<Object> objIds)
+            Collection<Object> objIds)
             throws IOException;
 
     /**
      * Indicates that the affinity group finding system is shutting down,
      * and all local resources should be cleaned up.
-     * 
+     *
      * @throws IOException if there is a communication problem
      */
     void shutdown() throws IOException;

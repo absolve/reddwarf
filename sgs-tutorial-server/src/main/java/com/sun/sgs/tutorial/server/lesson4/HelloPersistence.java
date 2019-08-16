@@ -21,18 +21,12 @@
 
 package com.sun.sgs.tutorial.server.lesson4;
 
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
-import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskManager;
 
 /**
  * A simple persistence example for the Project Darkstar Server.
@@ -41,24 +35,34 @@ import com.sun.sgs.app.TaskManager;
  * was run and displaying the time delta.
  */
 public class HelloPersistence
-    implements AppListener,  // to get called during application startup.
-               Serializable, // since all AppListeners are ManagedObjects.
-               Task          // to schedule future calls to our run() method.
+        implements AppListener,  // to get called during application startup.
+        Serializable, // since all AppListeners are ManagedObjects.
+        Task          // to schedule future calls to our run() method.
 {
-    /** The version of the serialized form of this class. */
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(HelloPersistence.class.getName());
+            Logger.getLogger(HelloPersistence.class.getName());
 
-    /** The delay before the first run of the task. */
+    /**
+     * The delay before the first run of the task.
+     */
     public static final int DELAY_MS = 5000;
 
-    /** The time to wait before repeating the task. */
+    /**
+     * The time to wait before repeating the task.
+     */
     public static final int PERIOD_MS = 500;
 
-    /**  The timestamp when this task was last run. */
+    /**
+     * The timestamp when this task was last run.
+     */
     private long lastTimestamp = System.currentTimeMillis();
 
     // implement AppListener
@@ -105,8 +109,8 @@ public class HelloPersistence
         lastTimestamp = timestamp;
 
         logger.log(Level.INFO,
-            "timestamp = {0,number,#}, delta = {1,number,#}",
-            new Object[] { timestamp, delta }
+                "timestamp = {0,number,#}, delta = {1,number,#}",
+                new Object[]{timestamp, delta}
         );
     }
 }

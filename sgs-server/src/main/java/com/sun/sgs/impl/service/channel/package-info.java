@@ -19,6 +19,8 @@
  * --
  */
 
-/** Provides an implementation of {@link com.sun.sgs.app.ChannelManager}. */
+/**
+ * Provides an implementation of {@link com.sun.sgs.app.ChannelManager}.
+ */
 package com.sun.sgs.impl.service.channel;
 

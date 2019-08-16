@@ -38,7 +38,7 @@ import java.beans.PropertyChangeEvent;
  * implementations do not need to be concurrent.
  *
  * <p>
- *
+ * <p>
  * In order to create listeners with all of the facilities that they need,
  * all implementations of <code>ProfileListener</code> must
  * implement a constructor of the form (<code>java.util.Properties</code>,
@@ -46,7 +46,7 @@ import java.beans.PropertyChangeEvent;
  * <code>com.sun.sgs.kernel.ComponentRegistry</code>).
  *
  * <p>
- *
+ * <p>
  * Note that this interface is not complete. It is provided as an initial
  * attempt to capture basic aspects of operation. As more profiling and
  * investigation is done on the system, expect to see the information
@@ -63,48 +63,48 @@ public interface ProfileListener {
      * integer.
      */
     String WINDOW_SIZE_PROPERTY = "com.sun.sgs.profile.listener.window.size";
-    
+
     /**
      * Notifies this listener of a new change in the system
      * properties.  This method is called for any property that
      * changes.
      *
      * <p>
-     *
+     * <p>
      * The current list of supported property names is as follows:
      *
      * <table border="0" style="font-size:80%" cellpadding="20%">
      * <tr>
-     *   <td><b>name</b></td>
-     *   <td><b>description</b></td>
-     *   <td><b>new value</b></td>
-     *   <td><b>old value</b></td>
+     * <td><b>name</b></td>
+     * <td><b>description</b></td>
+     * <td><b>new value</b></td>
+     * <td><b>old value</b></td>
      * </tr>
      * <tr>
-     *   <td><code>com.sun.sgs.profile.newop</code></td>
-     *   <td>a new operation is registered with the system.</td>
-     *   <td>the new operation : 
-     *          {@link com.sun.sgs.profile.ProfileOperation}</td>
-     *   <td> <code>null</code></td>
+     * <td><code>com.sun.sgs.profile.newop</code></td>
+     * <td>a new operation is registered with the system.</td>
+     * <td>the new operation :
+     * {@link com.sun.sgs.profile.ProfileOperation}</td>
+     * <td> <code>null</code></td>
      * </tr>
      * <tr>
-     *   <td><code>com.sun.sgs.profile.threadcount</code></td>
-     *   <td>the number of threads in the system has changed.</td>
-     *   <td>the current number of threads : <code>Integer</code></td>
-     *   <td>the previous number of threads : <code>Integer</code></td>
+     * <td><code>com.sun.sgs.profile.threadcount</code></td>
+     * <td>the number of threads in the system has changed.</td>
+     * <td>the current number of threads : <code>Integer</code></td>
+     * <td>the previous number of threads : <code>Integer</code></td>
      * </tr>
      * <tr>
-     *   <td><code>com.sun.sgs.profile.nodeid</code></td>
-     *   <td>the local node has been assigned a unique identifier</td>
-     *   <td>the identifier for the local node: <code>Long</code></td>
-     *   <td><code>null</code></td>
+     * <td><code>com.sun.sgs.profile.nodeid</code></td>
+     * <td>the local node has been assigned a unique identifier</td>
+     * <td>the identifier for the local node: <code>Long</code></td>
+     * <td><code>null</code></td>
      * </tr>
      *
      * </table>
      *
      * @param event A <code>PropertyChangeEvent</code> object
-     *        describing the name of the property, its old and new
-     *        values and the source of the change.
+     *              describing the name of the property, its old and new
+     *              values and the source of the change.
      */
     void propertyChange(PropertyChangeEvent event);
 

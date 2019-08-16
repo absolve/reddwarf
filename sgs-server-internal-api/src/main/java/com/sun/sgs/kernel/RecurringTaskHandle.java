@@ -29,8 +29,7 @@ package com.sun.sgs.kernel;
 /**
  * This interface provides a handle to a recurring task in the scheduler.
  */
-public interface RecurringTaskHandle
-{
+public interface RecurringTaskHandle {
 
     /**
      * Cancels the associated recurring task. A recurring task may be

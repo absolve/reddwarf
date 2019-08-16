@@ -32,43 +32,45 @@ import com.sun.sgs.kernel.NodeType;
 import com.sun.sgs.test.util.SgsTestNode;
 import com.sun.sgs.test.util.UtilReflection;
 import com.sun.sgs.tools.test.ParameterizedFilteredNameRunner;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
- *  Tests for the graph listener and graph builders
- *
+ * Tests for the graph listener and graph builders
  */
 @RunWith(ParameterizedFilteredNameRunner.class)
 public class TestDistLPABuilder extends GraphBuilderTests {
 
-   @Parameterized.Parameters
+    @Parameterized.Parameters
     public static Collection data() {
         return Arrays.asList(
-            new Object[][] {{WeightedGraphBuilder.class.getName()},
-                            {BipartiteGraphBuilder.class.getName()}});
+                new Object[][]{{WeightedGraphBuilder.class.getName()},
+                        {BipartiteGraphBuilder.class.getName()}});
         // TBD:  if default is changed from NONE
 //            new Object[][] {{"default"},
 //                            {WeightedGraphBuilder.class.getName()},
 //                            {BipartiteGraphBuilder.class.getName()}});
     }
-   
+
     private final static String APP_NAME = "TestDistLPABuilders";
 
     // Passed into each test run
     private final String builderName;
 
     private DLPAGraphBuilder graphBuilder;
+
     /**
      * Create this test class.
+     *
      * @param builderName the type of graph builder to use
      */
     public TestDistLPABuilder(String builderName) {
@@ -79,7 +81,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
             this.builderName = builderName;
         }
         System.err.println("Graph builder used is: " + builderName);
-        
+
     }
 
     @Override
@@ -89,8 +91,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
     }
 
     protected Properties getProps(SgsTestNode serverNode, Properties addProps)
-            throws Exception
-    {
+            throws Exception {
         Properties p =
                 SgsTestNode.getDefaultProperties(APP_NAME, serverNode, null);
         if (builderName == null) {
@@ -101,7 +102,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         if (serverNode == null) {
             serverPort = SgsTestNode.getNextUniquePort();
             p.setProperty(StandardProperties.NODE_TYPE,
-                          NodeType.coreServerNode.toString());
+                    NodeType.coreServerNode.toString());
         }
         p.setProperty(LabelPropagationServer.SERVER_PORT_PROPERTY,
                 String.valueOf(serverPort));
@@ -113,7 +114,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         }
         return p;
     }
-    
+
     // TBD change if the default changes
     @Test
     public void testDefault() throws Exception {
@@ -121,9 +122,9 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         try {
             Properties p = getProps(serverNode);
             p.remove(LPADriver.GRAPH_CLASS_PROPERTY);
-            newNode =  new SgsTestNode(serverNode, null, p);
+            newNode = new SgsTestNode(serverNode, null, p);
             LPADriver newDriver = (LPADriver)
-                finderField.get(newNode.getNodeMappingService());
+                    finderField.get(newNode.getNodeMappingService());
             Assert.assertNull(newDriver.getGraphBuilder());
             Assert.assertNull(newDriver.getGraphListener());
         } finally {
@@ -139,10 +140,10 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         try {
             Properties p = getProps(serverNode);
             p.setProperty(LPADriver.GRAPH_CLASS_PROPERTY,
-                          LPADriver.GRAPH_CLASS_NONE);
-            newNode =  new SgsTestNode(serverNode, null, p);
+                    LPADriver.GRAPH_CLASS_NONE);
+            newNode = new SgsTestNode(serverNode, null, p);
             LPADriver newDriver = (LPADriver)
-                finderField.get(newNode.getNodeMappingService());
+                    finderField.get(newNode.getNodeMappingService());
             Assert.assertNull(newDriver.getGraphBuilder());
             Assert.assertNull(newDriver.getGraphListener());
         } finally {
@@ -167,13 +168,13 @@ public class TestDistLPABuilder extends GraphBuilderTests {
 
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testBadConfig() throws Exception {
         afterEachTest();
 
         Properties addProps = new Properties();
         addProps.setProperty(StandardProperties.NODE_TYPE,
-                             NodeType.singleNode.toString());
+                NodeType.singleNode.toString());
         try {
             beforeEachTest(addProps);
         } catch (InvocationTargetException e) {
@@ -181,7 +182,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         }
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testNoteConflictDetectedBadObjId() throws Throwable {
         if (builderName == null) {
             // We'll also test it when explicitly called - much easier this way
@@ -190,7 +191,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         Class builderClass = Class.forName(builderName);
         // args:  object, node, forUpdate
         Method meth = UtilReflection.getMethod(builderClass,
-            "noteConflictDetected", Object.class, long.class, boolean.class);
+                "noteConflictDetected", Object.class, long.class, boolean.class);
 
         Object obj = null;
         long nodeId = 99L;
@@ -200,7 +201,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
             throw e.getCause();
         }
     }
-    
+
     @Test
     public void testNoteConflictDetected() throws Exception {
         if (builderName == null) {
@@ -210,8 +211,8 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         Class builderClass = Class.forName(builderName);
         // args:  object, node, forUpdate
         Method meth = UtilReflection.getMethod(builderClass,
-            "noteConflictDetected", Object.class, long.class, boolean.class);
-        
+                "noteConflictDetected", Object.class, long.class, boolean.class);
+
         Object obj = new String("obj");
         long nodeId = 99L;
         meth.invoke(builder, obj, nodeId, false);
@@ -255,7 +256,7 @@ public class TestDistLPABuilder extends GraphBuilderTests {
         Class builderClass = Class.forName(builderName);
         // args:  object, node, forUpdate
         Method meth = UtilReflection.getMethod(builderClass,
-            "noteConflictDetected", Object.class, long.class, boolean.class);
+                "noteConflictDetected", Object.class, long.class, boolean.class);
 
         Object obj = new String("obj");
         Object obj1 = new String("obj1");

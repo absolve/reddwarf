@@ -21,22 +21,24 @@
 
 package com.sun.sgs.tutorial.server.lesson1;
 
-import java.io.Serializable;
-import java.util.Properties;
-
 import com.sun.sgs.app.AppListener;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ClientSessionListener;
+
+import java.io.Serializable;
+import java.util.Properties;
 
 /**
  * Hello World example for the Project Darkstar Server.
  * Prints {@code "Hello World!"} to the console the first time it is started.
  */
 public class HelloWorld
-    implements AppListener, // to get called during application startup.
-               Serializable // since all AppListeners are ManagedObjects.
+        implements AppListener, // to get called during application startup.
+        Serializable // since all AppListeners are ManagedObjects.
 {
-    /** The version of the serialized form of this class. */
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
     /**

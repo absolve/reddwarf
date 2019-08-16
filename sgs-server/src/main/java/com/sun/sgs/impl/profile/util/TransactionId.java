@@ -41,18 +41,22 @@ public final class TransactionId {
      *
      * @param txnId the transaction identifier
      */
-    public TransactionId(byte [] txnId) {
+    public TransactionId(byte[] txnId) {
         // assert that this really fits into a long
         assert txnId.length <= 8;
         this.txnId = (new BigInteger(1, txnId)).longValue();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String toString() {
         return String.valueOf(txnId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean equals(Object o) {
         if ((o == null) || (!(o instanceof TransactionId))) {
             return false;
@@ -60,7 +64,9 @@ public final class TransactionId {
         return txnId == ((TransactionId) o).txnId;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int hashCode() {
         // the hash code specified in the javadoc for java.lang.Long
         return (int) (txnId ^ (txnId >>> 32));

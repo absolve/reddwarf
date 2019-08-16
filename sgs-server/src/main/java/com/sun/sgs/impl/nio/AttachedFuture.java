@@ -21,12 +21,12 @@
 
 package com.sun.sgs.impl.nio;
 
+import com.sun.sgs.nio.channels.IoFuture;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import com.sun.sgs.nio.channels.IoFuture;
 
 /**
  * An implementation of {@link IoFuture} that adds an object attachment
@@ -54,9 +54,9 @@ public class AttachedFuture<R, A> implements IoFuture<R, A> {
      * and attachment.  Provided as a static factory method so that
      * the template types can be inferred by the compiler.
      *
-     * @param <R> the result type
-     * @param <A> the attachment type
-     * @param future the {@code Future} to wrap
+     * @param <R>        the result type
+     * @param <A>        the attachment type
+     * @param future     the {@code Future} to wrap
      * @param attachment the initial attachment, or {@code null}
      * @return a new {@code AttachedFuture}
      */
@@ -69,7 +69,7 @@ public class AttachedFuture<R, A> implements IoFuture<R, A> {
      * Creates an {@code AttachedFuture} from the given future
      * and attachment.
      *
-     * @param future the {@code Future} to wrap
+     * @param future     the {@code Future} to wrap
      * @param attachment the initial attachment, or {@code null}
      */
     protected AttachedFuture(Future<R> future, A attachment) {
@@ -79,24 +79,32 @@ public class AttachedFuture<R, A> implements IoFuture<R, A> {
 
     // Implement IoFuture
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public A attach(A ob) {
         A previous = attachment;
         attachment = ob;
         return previous;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public A attachment() {
         return attachment;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean cancel(boolean mayInterruptIfRunning) {
         return future.cancel(mayInterruptIfRunning);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public R getNow() throws ExecutionException {
         if (!isDone()) {
             throw new IllegalStateException("not done");
@@ -126,24 +134,31 @@ public class AttachedFuture<R, A> implements IoFuture<R, A> {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public R get() throws InterruptedException, ExecutionException {
         return future.get();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public R get(long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException
-    {
+            throws InterruptedException, ExecutionException, TimeoutException {
         return future.get(timeout, unit);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isCancelled() {
         return future.isCancelled();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDone() {
         return future.isDone();
     }

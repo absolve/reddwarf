@@ -32,23 +32,26 @@ package com.sun.sgs.internal;
  * should not be instantiated.
  */
 public final class InternalContext {
-    
+
     // the current locator for this context
     private static volatile ManagerLocator managerLocator;
-    
-    /** This class should not be instantiated. */
-    private InternalContext() { }
-    
+
+    /**
+     * This class should not be instantiated.
+     */
+    private InternalContext() {
+    }
+
     /**
      * Returns the {@code ManagerLocator} for use by the current
-     * application.  This method is used by the 
+     * application.  This method is used by the
      * {@link com.sun.sgs.app.AppContext AppContext} to retrieve Managers
-     * from the Project Darkstar stack.  Generally, it should not need to be 
+     * from the Project Darkstar stack.  Generally, it should not need to be
      * called by an application.
      *
-     * @return	the {@code ManagerLocator} for the current application
-     * @throws	IllegalStateException if the {@code ManagerLocator}
-     *          is uninitialized
+     * @return the {@code ManagerLocator} for the current application
+     * @throws IllegalStateException if the {@code ManagerLocator}
+     * is uninitialized
      */
     public static ManagerLocator getManagerLocator() {
         ManagerLocator locator = managerLocator;
@@ -57,11 +60,11 @@ public final class InternalContext {
         }
         return locator;
     }
-    
+
     /**
      * Sets the {@code ManagerLocator} which is used to retrieve
      * managers for the application.  <p>
-     * 
+     * <p>
      * In most situations, this method
      * should only be called once upon bootup of a Project Darkstar
      * container.  It is also useful for swapping out implementations
@@ -69,16 +72,16 @@ public final class InternalContext {
      * Typically, an application should never have a reason
      * to call this method, and doing so could cause unexpected
      * results. <p>
-     * 
-     * Specifying {@code null} for {@code managerLocator} sets the 
+     * <p>
+     * Specifying {@code null} for {@code managerLocator} sets the
      * {@code ManagerLocator} back to its original, uninitialized state.
-     * 
-     * @param managerLocator the {@code ManagerLocator} that the 
-     *        {@code InternalContext} should use to retrieve managers
-     *        or {@code null} to make it uninitialized
+     *
+     * @param managerLocator the {@code ManagerLocator} that the
+     *                       {@code InternalContext} should use to retrieve managers
+     *                       or {@code null} to make it uninitialized
      */
-    public static synchronized void 
-            setManagerLocator(ManagerLocator managerLocator) {
+    public static synchronized void
+    setManagerLocator(ManagerLocator managerLocator) {
         InternalContext.managerLocator = managerLocator;
     }
 }

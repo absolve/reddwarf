@@ -28,11 +28,12 @@ import com.sun.sgs.impl.service.nodemap.affinity.single.SingleGraphBuilder;
 import com.sun.sgs.kernel.NodeType;
 import com.sun.sgs.test.util.SgsTestNode;
 import com.sun.sgs.tools.test.FilteredNameRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Properties;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Tests for single node graph builder/ lpa implementation.
@@ -61,12 +62,11 @@ public class TestSingleNodeBuilder extends GraphBuilderTests {
 
     @Override
     protected Properties getProps(SgsTestNode serverNode, Properties addProps)
-            throws Exception
-    {
+            throws Exception {
         Properties p = super.getProps(null, addProps);
         p.setProperty(StandardProperties.NODE_TYPE, NodeType.singleNode.name());
         p.setProperty(LPADriver.GRAPH_CLASS_PROPERTY,
-                      SingleGraphBuilder.class.getName());
+                SingleGraphBuilder.class.getName());
         p.setProperty(LPADriver.UPDATE_FREQ_PROPERTY, "3600"); // one hour
         if (addProps != null) {
             for (Map.Entry<Object, Object> entry : addProps.entrySet()) {
@@ -83,7 +83,7 @@ public class TestSingleNodeBuilder extends GraphBuilderTests {
         for (Map.Entry<Object, Object> entry : addProps.entrySet()) {
             props.put(entry.getKey(), entry.getValue());
         }
-        node =  new SgsTestNode(appName, null, props);
+        node = new SgsTestNode(appName, null, props);
         graphDriver = (LPADriver)
                 finderField.get(node.getNodeMappingService());
         groupDriver = graphDriver;
@@ -91,12 +91,12 @@ public class TestSingleNodeBuilder extends GraphBuilderTests {
         builder = graphDriver.getGraphBuilder();
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     @Override
     public void testGraphBuilderBadCount() throws Exception {
         props = getProps(serverNode);
         props.setProperty(AbstractAffinityGraphBuilder.PERIOD_COUNT_PROPERTY,
-                          "0");
+                "0");
 
         SgsTestNode newNode = null;
         try {

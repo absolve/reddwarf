@@ -22,22 +22,19 @@
 package com.sun.sgs.test.impl.kernel;
 
 import com.sun.sgs.impl.kernel.LoggerPropertiesInit;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.lang.reflect.Method;
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
 import com.sun.sgs.tools.test.FilteredNameRunner;
 import com.sun.sgs.tools.test.IntegrationTest;
+import org.junit.*;
+import org.junit.runner.RunWith;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Test the logging configuration initialization with the LoggerPropertiesInit
@@ -47,8 +44,7 @@ import com.sun.sgs.tools.test.IntegrationTest;
  */
 @IntegrationTest
 @RunWith(FilteredNameRunner.class)
-public class TestLoggerPropertiesInit
-{
+public class TestLoggerPropertiesInit {
     private static String originalClass;
     private static String originalFile;
     private static Method init;
@@ -61,23 +57,23 @@ public class TestLoggerPropertiesInit
      * An already existing resource file that is used as the
      * defaultLogProperties resource in the tests
      */
-    private static String resource = 
+    private static String resource =
             "com/sun/sgs/test/impl/kernel/TestLoggerPropertiesInit.resource";
-    
+
     @BeforeClass
     public static void saveLogManagerConfig() throws Exception {
         originalClass = System.getProperty("java.util.logging.config.class");
         originalFile = System.getProperty("java.util.logging.config.file");
-        
+
         System.setProperty("java.util.logging.config.class",
-                           "com.sun.sgs.impl.kernel.LoggerPropertiesInit");
+                "com.sun.sgs.impl.kernel.LoggerPropertiesInit");
         System.getProperties().remove("java.util.logging.config.file");
-        
-        init = LoggerPropertiesInit.class.getDeclaredMethod("init", 
-                                                            String.class);
+
+        init = LoggerPropertiesInit.class.getDeclaredMethod("init",
+                String.class);
         init.setAccessible(true);
     }
-    
+
     @BeforeClass
     public static void buildTempItems() throws Exception {
         configFile = File.createTempFile(
@@ -89,34 +85,34 @@ public class TestLoggerPropertiesInit
         writer.println("d.e.f.level = FINEST");
         writer.close();
     }
-    
+
     @Before
     public void clearLogManager() {
         LogManager.getLogManager().reset();
         System.getProperties().remove("java.util.logging.config.file");
     }
-    
+
     @Test
     public void testInitNoResourceNoFile() throws Exception {
         init.invoke(LoggerPropertiesInit.class, "noSuchResource");
-        Assert.assertEquals("INFO", 
-                            LogManager.getLogManager().getProperty(".level"));
+        Assert.assertEquals("INFO",
+                LogManager.getLogManager().getProperty(".level"));
         Assert.assertNull(LogManager.getLogManager().getProperty("a.b.c.level"));
         Assert.assertNull(LogManager.getLogManager().getProperty("d.e.f.level"));
         Assert.assertNull(LogManager.getLogManager().getProperty("x.y.z.level"));
     }
-    
+
     @Test
     public void testInitNoFile() throws Exception {
         init.invoke(LoggerPropertiesInit.class, resource);
         Assert.assertEquals("WARNING",
-                            LogManager.getLogManager().getProperty(".level"));
+                LogManager.getLogManager().getProperty(".level"));
         Assert.assertEquals("FINE",
-                            LogManager.getLogManager().getProperty("a.b.c.level"));
+                LogManager.getLogManager().getProperty("a.b.c.level"));
         Assert.assertEquals("FINEST",
-                            LogManager.getLogManager().getProperty("x.y.z.level"));
+                LogManager.getLogManager().getProperty("x.y.z.level"));
         Assert.assertNull(LogManager.getLogManager().getProperty("d.e.f.level"));
-        
+
         Logger abc = Logger.getLogger("a.b.c");
         Logger xyz = Logger.getLogger("x.y.z");
         Assert.assertEquals(Level.FINE, abc.getLevel());
@@ -126,32 +122,32 @@ public class TestLoggerPropertiesInit
     @Test
     public void testInitNoResource() throws Exception {
         System.setProperty("java.util.logging.config.file",
-                           configFile.getAbsolutePath());
+                configFile.getAbsolutePath());
         init.invoke(LoggerPropertiesInit.class, "noSuchResource");
         Assert.assertEquals("SEVERE",
-                            LogManager.getLogManager().getProperty(".level"));
+                LogManager.getLogManager().getProperty(".level"));
         Assert.assertEquals("FINER",
-                            LogManager.getLogManager().getProperty("a.b.c.level"));
+                LogManager.getLogManager().getProperty("a.b.c.level"));
         Assert.assertEquals("FINEST",
-                            LogManager.getLogManager().getProperty("d.e.f.level"));
+                LogManager.getLogManager().getProperty("d.e.f.level"));
         Assert.assertNull(LogManager.getLogManager().getProperty("x.y.z.level"));
     }
-    
+
     @Test
     public void testInitResourceAndFile() throws Exception {
         System.setProperty("java.util.logging.config.file",
-                           configFile.getAbsolutePath());
+                configFile.getAbsolutePath());
         init.invoke(LoggerPropertiesInit.class, resource);
         Assert.assertEquals("SEVERE",
-                            LogManager.getLogManager().getProperty(".level"));
-        
+                LogManager.getLogManager().getProperty(".level"));
+
         Assert.assertEquals("FINER",
-                            LogManager.getLogManager().getProperty("a.b.c.level"));
+                LogManager.getLogManager().getProperty("a.b.c.level"));
         Assert.assertEquals("FINEST",
-                            LogManager.getLogManager().getProperty("d.e.f.level"));
+                LogManager.getLogManager().getProperty("d.e.f.level"));
         Assert.assertEquals("FINEST",
-                            LogManager.getLogManager().getProperty("x.y.z.level"));
-        
+                LogManager.getLogManager().getProperty("x.y.z.level"));
+
         Logger abc = Logger.getLogger("a.b.c");
         Logger def = Logger.getLogger("d.e.f");
         Logger xyz = Logger.getLogger("x.y.z");
@@ -159,29 +155,29 @@ public class TestLoggerPropertiesInit
         Assert.assertEquals(Level.FINEST, def.getLevel());
         Assert.assertEquals(Level.FINEST, xyz.getLevel());
     }
-    
+
     @AfterClass
     public static void cleanupTempItems() throws Exception {
         if (configFile != null) {
             configFile.delete();
         }
     }
-    
-    
+
+
     @AfterClass
     public static void restoreLogManagerConfig() throws Exception {
-        if(originalFile != null) {
+        if (originalFile != null) {
             System.setProperty("java.util.logging.config.file", originalFile);
         } else {
             System.getProperties().remove("java.util.logging.config.file");
         }
-        
-        if(originalClass != null) {
+
+        if (originalClass != null) {
             System.setProperty("java.util.logging.config.class", originalClass);
         } else {
             System.getProperties().remove("java.util.logging.config.class");
         }
-        
+
         LogManager.getLogManager().readConfiguration();
     }
 

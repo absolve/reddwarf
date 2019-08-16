@@ -43,16 +43,16 @@ public interface LPAServer extends Remote {
      * Indicates that the given {@code nodeId} has completed an iteration
      * of the label propagation algorithm.
      *
-     * @param nodeId the node that has finished an iteration
+     * @param nodeId    the node that has finished an iteration
      * @param converged {@code true} if the node believes the algorithm has
-     *     converged and can be stopped
-     * @param failed {@code true} if there was a problem while running
+     *                  converged and can be stopped
+     * @param failed    {@code true} if there was a problem while running
      * @param iteration the iteration that has finished
      * @throws IOException if there is a communication problem
      */
     void finishedIteration(long nodeId, boolean converged, boolean failed,
                            int iteration)
-        throws IOException;
+            throws IOException;
 
     /**
      * Registers a proxy for the node. If a client has already
@@ -60,7 +60,7 @@ public interface LPAServer extends Remote {
      *
      * @param nodeId the node the proxy represents
      * @param client the client proxy, which this server and other nodes
-     *        can call
+     *               can call
      * @throws IOException if there is a communication problem
      */
     void register(long nodeId, LPAClient client) throws IOException;
@@ -68,10 +68,10 @@ public interface LPAServer extends Remote {
     /**
      * Returns the {@code LPAClient} for the given {@code nodeId}.
      * If {@code null} is returned, the node should be considered failed.
-     * 
+     *
      * @param nodeId the node we need the proxy for
      * @return the LPA client proxy for the given node, or {@code null}
-     *        if the node has failed
+     * if the node has failed
      * @throws IOException if there is a communication problem
      */
     LPAClient getLPAClientProxy(long nodeId) throws IOException;

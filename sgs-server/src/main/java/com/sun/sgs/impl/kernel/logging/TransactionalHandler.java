@@ -27,16 +27,9 @@ import com.sun.sgs.service.TransactionProxy;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
-
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import java.util.logging.ErrorManager;
-import java.util.logging.Filter;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
+import java.util.logging.*;
 
 
 /**
@@ -49,15 +42,15 @@ import java.util.logging.LogRecord;
  * @see com.sun.sgs.impl.kernel.logging.TransactionAwareLogManager
  */
 public class TransactionalHandler extends Handler
-    implements NonDurableTransactionParticipant {
+        implements NonDurableTransactionParticipant {
 
     /**
      * A mapping from transaction to the list of records waiting to be
      * published on transaction commit.
      */
     private final ConcurrentMap<Transaction, Queue<LogRecord>>
-	bufferedRecords;
-    
+            bufferedRecords;
+
     /**
      * The proxy used to join transactions upon the first {@link
      * #publish(LogRecord)} call for that transaction.
@@ -75,20 +68,19 @@ public class TransactionalHandler extends Handler
      * {@code proxy} for joining transactions a the backing handler
      * for performing the actual logging.
      *
-     * @param proxy the proxy used to join transactions
+     * @param proxy          the proxy used to join transactions
      * @param backingHandler the handler used to perform the actual
-     *        logging at commit time
-     *
+     *                       logging at commit time
      * @throws NullPointerException if the {@code backingHandler} or
-     *         {@code proxy} is {@code null}.
+     *                              {@code proxy} is {@code null}.
      */
     TransactionalHandler(TransactionProxy proxy, Handler backingHandler) {
-	if (proxy == null || backingHandler == null) {
-	    throw new NullPointerException();
+        if (proxy == null || backingHandler == null) {
+            throw new NullPointerException();
         }
 
-	this.proxy = proxy;
-	this.handler = backingHandler;	
+        this.proxy = proxy;
+        this.handler = backingHandler;
         bufferedRecords =
                 new ConcurrentHashMap<Transaction, Queue<LogRecord>>();
     }
@@ -98,17 +90,17 @@ public class TransactionalHandler extends Handler
      * no logging.
      *
      * @param txn the failed transaction that in the past performed
-     *        some logging operation
+     *            some logging operation
      */
     public void abort(Transaction txn) {
-	bufferedRecords.remove(txn);	
+        bufferedRecords.remove(txn);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void close() {
-	handler.close();
+        handler.close();
     }
 
     /**
@@ -116,20 +108,20 @@ public class TransactionalHandler extends Handler
      * buffered records using the backing {@code Handler}.
      *
      * @param txn the successful transaction that in the past
-     *        performed some logging operation
+     *            performed some logging operation
      */
-    public void commit(Transaction txn) { 
-	Queue<LogRecord> records = bufferedRecords.remove(txn);
-	for (LogRecord r : records) {
-	    handler.publish(r);
-	}
+    public void commit(Transaction txn) {
+        Queue<LogRecord> records = bufferedRecords.remove(txn);
+        for (LogRecord r : records) {
+            handler.publish(r);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void flush() {
-	handler.flush();
+        handler.flush();
     }
 
     /**
@@ -139,42 +131,42 @@ public class TransactionalHandler extends Handler
      * @return the backing handler used for actual record publication
      */
     public Handler getBackingHandler() {
-	return handler;
+        return handler;
     }
 
     /**
      * {@inheritDoc}
      */
     public String getEncoding() {
-	return handler.getEncoding();
+        return handler.getEncoding();
     }
 
     /**
      * {@inheritDoc}
      */
     public ErrorManager getErrorManager() {
-	return handler.getErrorManager();
+        return handler.getErrorManager();
     }
 
     /**
      * {@inheritDoc}
      */
     public Filter getFilter() {
-	return handler.getFilter();
+        return handler.getFilter();
     }
 
     /**
      * {@inheritDoc}
      */
     public Formatter getFormatter() {
-	return handler.getFormatter();
+        return handler.getFormatter();
     }
 
     /**
      * {@inheritDoc}
      */
     public Level getLevel() {
-	return handler.getLevel();
+        return handler.getLevel();
     }
 
     /**
@@ -191,25 +183,25 @@ public class TransactionalHandler extends Handler
     // is not a problem.  However if in the future they are required
     // then a new naming scheme should be devised. -dj202934
     public String getTypeName() {
-	return handler.getClass().getName();
+        return handler.getClass().getName();
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isLoggable(LogRecord record) {
-	return handler.isLoggable(record);
+        return handler.isLoggable(record);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * This participant always returns {@code false}.
      *
      * @return {@code false}
      */
     public boolean prepare(Transaction txn) {
-	return false;
+        return false;
     }
 
     /**
@@ -217,18 +209,18 @@ public class TransactionalHandler extends Handler
      * buffered records using the backing {@code Handler}.
      *
      * @param txn the successful transaction that in the past
-     *        performed some logging operation
+     *            performed some logging operation
      */
     public void prepareAndCommit(Transaction txn) {
-	commit(txn);
+        commit(txn);
     }
-   
+
     /**
      * Joins the current transaction and buffers the provided record
      * for later publication until transaction commit time.
      *
      * @param record the record to be buffer and later publication
-     *        upon transaction success.
+     *               upon transaction success.
      */
     public void publish(LogRecord record) {
         // If we're not in a transaction at all, just publish the record.
@@ -237,78 +229,78 @@ public class TransactionalHandler extends Handler
             handler.publish(record);
             return;
         }
-	Transaction txn = proxy.getCurrentTransaction();
-	if (txn == null) {
-	    // in the event that a TransactionalHandler is used
-	    // outside the scope of a transaction (which could happen
-	    // if it is used by certain classes like DataStoreImpl),
-	    // then we just pass the log record on through without
-	    // buffering
-	    handler.publish(record);
+        Transaction txn = proxy.getCurrentTransaction();
+        if (txn == null) {
+            // in the event that a TransactionalHandler is used
+            // outside the scope of a transaction (which could happen
+            // if it is used by certain classes like DataStoreImpl),
+            // then we just pass the log record on through without
+            // buffering
+            handler.publish(record);
         } else {
-	    Queue<LogRecord> records = bufferedRecords.get(txn);
-	    if (records == null) {
-		txn.join(this);
-		records = new ArrayDeque<LogRecord>();
-		// this code path is guaranteed to be unique by way of
-		// the transaction's uniqueness, so we don't need to
-		// worry about a race condition with putting the queue
-		// into the map
-		bufferedRecords.put(txn, records);
-	    }
-	    records.add(record);
-	}
+            Queue<LogRecord> records = bufferedRecords.get(txn);
+            if (records == null) {
+                txn.join(this);
+                records = new ArrayDeque<LogRecord>();
+                // this code path is guaranteed to be unique by way of
+                // the transaction's uniqueness, so we don't need to
+                // worry about a race condition with putting the queue
+                // into the map
+                bufferedRecords.put(txn, records);
+            }
+            records.add(record);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void reportError(String msg, Exception ex, int code) {
-	// NOTE: we can't call report error on the handler directly
-	// because it has protected access, so we emulate the code in
-	// Hander.java directly here, including the catch block
-	try {
+        // NOTE: we can't call report error on the handler directly
+        // because it has protected access, so we emulate the code in
+        // Hander.java directly here, including the catch block
+        try {
             handler.getErrorManager().error(msg, ex, code);
-	} catch (Exception ex2) {
-	    System.err.println("TransactionalHandler.reportError() caught:");
-	    ex2.printStackTrace();
-	}
+        } catch (Exception ex2) {
+            System.err.println("TransactionalHandler.reportError() caught:");
+            ex2.printStackTrace();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setEncoding(String encoding) 
-	throws java.io.UnsupportedEncodingException {
-	handler.setEncoding(encoding);
+    public void setEncoding(String encoding)
+            throws java.io.UnsupportedEncodingException {
+        handler.setEncoding(encoding);
     }
 
     /**
      * {@inheritDoc}
      */
     public void setErrorManager(ErrorManager em) {
-	handler.setErrorManager(em);
+        handler.setErrorManager(em);
     }
 
     /**
      * {@inheritDoc}
      */
     public void setFilter(Filter newFilter) {
-	handler.setFilter(newFilter);
+        handler.setFilter(newFilter);
     }
 
     /**
      * {@inheritDoc}
      */
     public void setFormatter(Formatter newFormatter) {
-	handler.setFormatter(newFormatter);
+        handler.setFormatter(newFormatter);
     }
 
-     /**
+    /**
      * {@inheritDoc}
      */
-   public void setLevel(Level newLevel) {
-	handler.setLevel(newLevel);
+    public void setLevel(Level newLevel) {
+        handler.setLevel(newLevel);
     }
 
 }

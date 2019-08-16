@@ -21,21 +21,33 @@
 
 package com.sun.sgs.impl.util.lock;
 
-/** The type of a lock conflict detected by a {@link LockManager}. */
+/**
+ * The type of a lock conflict detected by a {@link LockManager}.
+ */
 public enum LockConflictType {
 
-    /** The request is currently blocked. */
+    /**
+     * The request is currently blocked.
+     */
     BLOCKED,
 
-    /** The request timed out. */
+    /**
+     * The request timed out.
+     */
     TIMEOUT,
 
-    /** The request was denied. */
+    /**
+     * The request was denied.
+     */
     DENIED,
 
-    /** The request was interrupted. */
+    /**
+     * The request was interrupted.
+     */
     INTERRUPTED,
 
-    /** The request resulted in deadlock and was chosen to be aborted. */
+    /**
+     * The request resulted in deadlock and was chosen to be aborted.
+     */
     DEADLOCK;
 }

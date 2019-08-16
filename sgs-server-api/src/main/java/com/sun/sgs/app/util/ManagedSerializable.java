@@ -29,6 +29,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+
 import java.io.Serializable;
 
 /**
@@ -38,7 +39,7 @@ import java.io.Serializable;
  * accessed through a {@code ManagedReference}.
  *
  * <p>
- *
+ * <p>
  * The serialization costs for a class largely depend on the size of the
  * objects that it references.  The {@code ManagedReference} class allows
  * developers the ability to create breaks in the serialization graphs where
@@ -50,7 +51,7 @@ import java.io.Serializable;
  * improvement.
  *
  * <p>
- *
+ * <p>
  * Following is an example of where an existing class has been retrofitted to
  * have {@code ManagedReference} references to its large fields, rather than
  * standard references.
@@ -111,7 +112,7 @@ import java.io.Serializable;
  * }
  * }
  * </pre>
- * 
+ * <p>
  * Application developers are responsible for removing {@code
  * ManagedSerializable} instances by calling {@link DataManager#removeObject
  * DataManager.removeObject}.  Developers should call {@link
@@ -123,7 +124,9 @@ import java.io.Serializable;
  */
 public class ManagedSerializable<T> implements ManagedObject, Serializable {
 
-    /** The version of the serialized form. */
+    /**
+     * The version of the serialized form.
+     */
     private static final long serialVersionUID = 1;
 
     /**
@@ -140,20 +143,19 @@ public class ManagedSerializable<T> implements ManagedObject, Serializable {
      * implement {@link Serializable} or be {@code null}.
      *
      * @param object the object to wrap
-     *
      * @throws IllegalArgumentException if {@code object} is an instance of
-     *         {@code ManagedObject}, or if {@code object} is not {@code null}
-     *         and does not implement {@code Serializable}
+     *                                  {@code ManagedObject}, or if {@code object} is not {@code null}
+     *                                  and does not implement {@code Serializable}
      */
     public ManagedSerializable(T object) {
-	if (object instanceof ManagedObject) {
-	    throw new IllegalArgumentException(
-		"The argument must not implement ManagedObject");
-	} else if (object != null && !(object instanceof Serializable)) {
-	    throw new IllegalArgumentException(
-		"The argument must implement Serializable");
-	}
-	this.object = object;
+        if (object instanceof ManagedObject) {
+            throw new IllegalArgumentException(
+                    "The argument must not implement ManagedObject");
+        } else if (object != null && !(object instanceof Serializable)) {
+            throw new IllegalArgumentException(
+                    "The argument must implement Serializable");
+        }
+        this.object = object;
     }
 
     /**
@@ -161,19 +163,18 @@ public class ManagedSerializable<T> implements ManagedObject, Serializable {
      * wraps an object that is equal to the object wrapped by this instance.
      *
      * @param o the object to compared for equality with this instance
-     *
      * @return {@code true} if {@code o} is a {@code ManagedSerializable} that
-     *         wraps an object equal to the object wrapped by this instance
+     * wraps an object equal to the object wrapped by this instance
      */
     @Override
     public boolean equals(Object o) {
-	if (o instanceof ManagedSerializable) {
-	    ManagedSerializable m = (ManagedSerializable) o;
-	    return (object == null)
-		? object == m.object
-		: object.equals(m.object);
-	}
-	return false;
+        if (o instanceof ManagedSerializable) {
+            ManagedSerializable m = (ManagedSerializable) o;
+            return (object == null)
+                    ? object == m.object
+                    : object.equals(m.object);
+        }
+        return false;
     }
 
     /**
@@ -182,7 +183,7 @@ public class ManagedSerializable<T> implements ManagedObject, Serializable {
      * @return the object wrapped by this instance
      */
     public T get() {
-	return object;
+        return object;
     }
 
     /**
@@ -190,7 +191,7 @@ public class ManagedSerializable<T> implements ManagedObject, Serializable {
      */
     @Override
     public int hashCode() {
-	return (object == null) ? 0 : object.hashCode();
+        return (object == null) ? 0 : object.hashCode();
     }
 
     /**
@@ -198,8 +199,8 @@ public class ManagedSerializable<T> implements ManagedObject, Serializable {
      */
     @Override
     public String toString() {
-	return getClass().getName() +
-	    "[" + (object == null ? "null" : object.toString()) + "]";
+        return getClass().getName() +
+                "[" + (object == null ? "null" : object.toString()) + "]";
     }
 
     /**
@@ -208,20 +209,19 @@ public class ManagedSerializable<T> implements ManagedObject, Serializable {
      * implement {@link Serializable} or be {@code null}.
      *
      * @param object the new object to wrap
-     *
      * @throws IllegalArgumentException if {@code object} is an instance of
-     *         {@code ManagedObject}, or if {@code object} is not {@code null}
-     *         and does not implement {@code Serializable}
+     *                                  {@code ManagedObject}, or if {@code object} is not {@code null}
+     *                                  and does not implement {@code Serializable}
      */
     public void set(T object) {
-	if (object instanceof ManagedObject) {
-	    throw new IllegalArgumentException(
-		"The argument must not implement ManagedObject");
-	} else if (object != null && !(object instanceof Serializable)) {
-	    throw new IllegalArgumentException(
-		"The argument must implement Serializable");
-	}
-	this.object = object;
-	AppContext.getDataManager().markForUpdate(this);
+        if (object instanceof ManagedObject) {
+            throw new IllegalArgumentException(
+                    "The argument must not implement ManagedObject");
+        } else if (object != null && !(object instanceof Serializable)) {
+            throw new IllegalArgumentException(
+                    "The argument must implement Serializable");
+        }
+        this.object = object;
+        AppContext.getDataManager().markForUpdate(this);
     }
 }

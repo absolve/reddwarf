@@ -24,10 +24,11 @@ package com.sun.sgs.impl.app.profile;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+
 import java.math.BigInteger;
 
 /**
- * This implementation of {@code DataManager} simply calls its 
+ * This implementation of {@code DataManager} simply calls its
  * backing manager for each manager method.
  */
 public class ProfileDataManager implements DataManager {
@@ -104,6 +105,6 @@ public class ProfileDataManager implements DataManager {
      * {@inheritDoc}
      */
     public BigInteger getObjectId(Object object) {
-	return backingManager.getObjectId(object);
+        return backingManager.getObjectId(object);
     }
 }

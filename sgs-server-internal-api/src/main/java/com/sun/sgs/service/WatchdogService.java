@@ -25,10 +25,11 @@
 
 package com.sun.sgs.service;
 
-import java.util.Iterator;
 import com.sun.sgs.app.AppListener;
 import com.sun.sgs.app.TransactionException;
 import com.sun.sgs.service.Node.Health;
+
+import java.util.Iterator;
 
 /**
  * The {@code WatchdogService} monitors the health of server nodes and
@@ -42,9 +43,9 @@ public interface WatchdogService extends Service {
      * Returns the health of the local node.  This method should only be
      * called from within a transaction.
      *
-     * @return	the health of the local node
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @return the health of the local node
      */
     Health getLocalNodeHealth();
 
@@ -53,12 +54,12 @@ public interface WatchdogService extends Service {
      * recent information known to this service and may not be
      * definitive.  For definitive information, use the {@link
      * #getLocalNodeHealth getLocalNodeHealth} method. <p>
-     *
+     * <p>
      * This method may be invoked any time after this service is
      * initialized, whether or not the calling context is inside or outside
      * of a transaction.
      *
-     * @return	the health of the local node
+     * @return the health of the local node
      */
     Health getLocalNodeHealthNonTransactional();
 
@@ -67,10 +68,10 @@ public interface WatchdogService extends Service {
      * otherwise returns {@code false}.  This method should only be
      * called from within a transaction.
      *
-     * @return	{@code true} if the local node is considered alive, and
-     * 		{@code false} otherwise
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @return    {@code true} if the local node is considered alive, and
+     * {@code false} otherwise
      */
     boolean isLocalNodeAlive();
 
@@ -80,13 +81,13 @@ public interface WatchdogService extends Service {
      * recent information known to this service and may not be
      * definitive.  For definitive information, use the {@link
      * #isLocalNodeAlive isLocalNodeAlive} method. <p>
-     *
+     * <p>
      * This method may be invoked any time after this service is
      * initialized, whether or not the calling context is inside or outside
      * of a transaction.
      *
-     * @return	{@code true} if the local node is considered alive, and
-     * 		{@code false} otherwise
+     * @return    {@code true} if the local node is considered alive, and
+     * {@code false} otherwise
      */
     boolean isLocalNodeAliveNonTransactional();
 
@@ -98,10 +99,10 @@ public interface WatchdogService extends Service {
      * be called within a transaction, and the returned iterator
      * must only be used within that transaction.
      *
-     * @return	an iterator for the set of nodes that this service
-     *		monitors
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @return an iterator for the set of nodes that this service
+     * monitors
      */
     Iterator<Node> getNodes();
 
@@ -110,13 +111,13 @@ public interface WatchdogService extends Service {
      * {@code nodeId}, or {@code null} if the node is unknown.  This
      * method should only be called within a transaction.
      *
-     * @param	nodeId	a node ID
-     * @return	node status information for the specified {@code nodeId},
-     *		or {@code null}
-     * @throws	IllegalArgumentException if the specified {@code nodeId}
-     *		is not within the range of valid IDs
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    nodeId    a node ID
+     * @return node status information for the specified {@code nodeId},
+     * or {@code null}
+     * @throws IllegalArgumentException if the specified {@code nodeId}
+     * is not within the range of valid IDs
      */
     Node getNode(long nodeId);
 
@@ -130,12 +131,12 @@ public interface WatchdogService extends Service {
      * interface, or it should throw an exception in the case where
      * there is no existing node corresponding to {@code nodeId}.</b>
      *
-     * @param	nodeId a node ID
-     * @return	a backup node, or {@code null}
-     * @throws	IllegalArgumentException if the specified {@code nodeId}
-     *		is not within the range of valid IDs
-     * @throws 	TransactionException if there is a problem with the
-     *		current transaction
+     * @throws TransactionException if there is a problem with the
+     *                              current transaction
+     * @param    nodeId a node ID
+     * @return a backup node, or {@code null}
+     * @throws IllegalArgumentException if the specified {@code nodeId}
+     * is not within the range of valid IDs
      */
     Node getBackup(long nodeId);
 
@@ -143,12 +144,12 @@ public interface WatchdogService extends Service {
      * Registers a {@code listener} to be notified when any node that
      * this service monitors starts or fails.  Registered listeners
      * are notified outside of a transaction. <p>
-     *
+     * <p>
      * This method must be invoked outside of a transaction.
      *
-     * @param	listener a node listener
-     * @throws	IllegalStateException if this method is invoked from a
-     *		transactional context
+     * @param    listener a node listener
+     * @throws IllegalStateException if this method is invoked from a
+     * transactional context
      */
     void addNodeListener(NodeListener listener);
 
@@ -162,12 +163,12 @@ public interface WatchdogService extends Service {
      * SimpleCompletionHandler#completed completed} method must be invoked
      * when the recovery operations initiated by the {@code listener} are
      * complete. <p>
-     *
+     * <p>
      * This method must be invoked outside of a transaction.
      *
-     * @param	listener a recovery listener
-     * @throws	IllegalStateException if this method is invoked from a
-     *		transactional context
+     * @param    listener a recovery listener
+     * @throws IllegalStateException if this method is invoked from a
+     * transactional context
      */
     void addRecoveryListener(RecoveryListener listener);
 
@@ -180,14 +181,13 @@ public interface WatchdogService extends Service {
      * Once {@code reportLocalHealth} has been called with a health that returns
      * {@code false} from its {@code Health.isAlive} method, the health
      * of the local node can not be changed. <p>
-     *
+     * <p>
      * This method must be invoked outside of a transaction.
      *
-     * @param health the health
+     * @param health    the health
      * @param component the name of the component reporting health
-     *
-     * @throws	IllegalStateException if this method is invoked from a
-     *		transactional context
+     * @throws IllegalStateException if this method is invoked from a
+     * transactional context
      */
     void reportHealth(Health health, String component);
 
@@ -201,15 +201,14 @@ public interface WatchdogService extends Service {
      * Once {@code reportHealth} has been called with a health that returns
      * {@code false} from its {@code Health.isAlive} method, the health
      * of the specified node can not be changed. <p>
-     *
+     * <p>
      * This method must be invoked outside of a transaction.
      *
-     * @param nodeId the id of the node
-     * @param health the health
+     * @param nodeId    the id of the node
+     * @param health    the health
      * @param component the name of the component reporting health
-     *
-     * @throws	IllegalStateException if this method is invoked from a
-     *		transactional context
+     * @throws IllegalStateException if this method is invoked from a
+     * transactional context
      */
     void reportHealth(long nodeId, Health health, String component);
 
@@ -220,16 +219,16 @@ public interface WatchdogService extends Service {
      * {@code nodeId} can be the local node or a remote node. The
      * {@code component} parameter may be any identifying string, but is
      * typically the class name of the component.<p>
-     *
+     * <p>
      * Once {@code reportFailure} has been called, the health of the
      * specified node can not be changed. <p>
-     *
+     * <p>
      * This method must be invoked outside of a transaction.
      *
-     * @param nodeId the id of the node to shutdown
+     * @param nodeId    the id of the node to shutdown
      * @param component the name of the component that failed
-     * @throws	IllegalStateException if this method is invoked from a
-     *		transactional context
+     * @throws IllegalStateException if this method is invoked from a
+     * transactional context
      */
     void reportFailure(long nodeId, String component);
 

@@ -32,8 +32,7 @@ import java.io.Serializable;
  * TaskManager} to run periodically.  Classes that implement
  * <code>PeriodicTaskHandle</code> must also implement {@link Serializable}.
  *
- * @see		TaskManager#schedulePeriodicTask 
- *		TaskManager.schedulePeriodicTask
+ * @see        TaskManager#schedulePeriodicTask TaskManager.schedulePeriodicTask
  */
 public interface PeriodicTaskHandle {
 
@@ -47,10 +46,10 @@ public interface PeriodicTaskHandle {
      * object by throwing {@link ObjectNotFoundException} when this method is
      * called, although that behavior is not guaranteed.
      *
-     * @throws	ObjectNotFoundException if the task has already been cancelled
-     *		and removed
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
+     * @throws ObjectNotFoundException if the task has already been cancelled
+     * and removed
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
      */
     void cancel();
 }

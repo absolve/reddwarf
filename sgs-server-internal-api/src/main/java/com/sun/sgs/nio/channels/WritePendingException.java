@@ -30,9 +30,10 @@ package com.sun.sgs.nio.channels;
  * operation on a channel and a previous write operation has not completed.
  */
 public class WritePendingException
-    extends IllegalStateException
-{
-    /** The version of the serialized representation of this class. */
+        extends IllegalStateException {
+    /**
+     * The version of the serialized representation of this class.
+     */
     private static final long serialVersionUID = 1L;
 
     /**

@@ -14,20 +14,20 @@
 
 <FindBugsFilter>
 
-  <!-- Package com.sun.sgs.system -->
+    <!-- Package com.sun.sgs.system -->
 
-  <!-- Intentionally ignoring possible IOException. -->
-  <Match>
-    <Class name="com.sun.sgs.system.Boot$1"/>
-    <Method name="closeStream"/>
-    <Bug pattern="DE_MIGHT_IGNORE"/>
-  </Match>
+    <!-- Intentionally ignoring possible IOException. -->
+    <Match>
+        <Class name="com.sun.sgs.system.Boot$1"/>
+        <Method name="closeStream"/>
+        <Bug pattern="DE_MIGHT_IGNORE"/>
+    </Match>
 
-  <!-- The version field is included for future use. -->
-  <Match>
-    <Class name="com.sun.sgs.system.ExtJarGraph$JarNode"/>
-    <Field name="version"/>
-    <Bug pattern="URF_UNREAD_FIELD"/>
-  </Match>
+    <!-- The version field is included for future use. -->
+    <Match>
+        <Class name="com.sun.sgs.system.ExtJarGraph$JarNode"/>
+        <Field name="version"/>
+        <Bug pattern="URF_UNREAD_FIELD"/>
+    </Match>
 
 </FindBugsFilter>

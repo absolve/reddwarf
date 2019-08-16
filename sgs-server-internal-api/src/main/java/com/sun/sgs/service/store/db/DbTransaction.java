@@ -25,7 +25,9 @@
 
 package com.sun.sgs.service.store.db;
 
-/** The interface for a database transaction. */
+/**
+ * The interface for a database transaction.
+ */
 public interface DbTransaction {
 
     /**
@@ -34,8 +36,8 @@ public interface DbTransaction {
      * open.  No methods should be called on this transaction after this method
      * is called.
      *
-     * @param	gid the global transaction ID, which must be at least 128 bytes
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @param    gid the global transaction ID, which must be at least 128 bytes
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     void prepare(byte[] gid);
 
@@ -44,7 +46,7 @@ public interface DbTransaction {
      * cursors associated with this transaction are still open.  No methods
      * should be called on this transaction after this method is called.
      *
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     void commit();
 
@@ -53,7 +55,7 @@ public interface DbTransaction {
      * associated with this transaction are still open.  No methods should be
      * called on this transaction after this method is called.
      *
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
-    void abort();    
+    void abort();
 }

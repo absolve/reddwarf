@@ -22,24 +22,19 @@
 package com.sun.sgs.impl.profile.listener;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.kernel.ComponentRegistry;
-
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileOperation;
 import com.sun.sgs.profile.ProfileReport;
 
 import java.beans.PropertyChangeEvent;
-
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,11 +58,11 @@ public class OperationLoggingProfileOpListener implements ProfileListener {
 
     // the name of the class
     private static final String CLASSNAME =
-        OperationLoggingProfileOpListener.class.getName();
+            OperationLoggingProfileOpListener.class.getName();
 
     // the logger where all data is reported
     static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(CLASSNAME));
+            new LoggerWrapper(Logger.getLogger(CLASSNAME));
 
     // the property for setting the operation window, and its default
     private static final String LOG_OPS_PROPERTY = CLASSNAME + ".logOps";
@@ -100,37 +95,38 @@ public class OperationLoggingProfileOpListener implements ProfileListener {
      * Creates an instance of <code>OperationLoggingProfileOpListener</code>.
      *
      * @param properties the <code>Properties</code> for this listener
-     * @param owner the <code>Identity</code> to use for all tasks run by
-     *              this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *        available system components
+     * @param owner      the <code>Identity</code> to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      */
     public OperationLoggingProfileOpListener(Properties properties,
                                              Identity owner,
-                                             ComponentRegistry registry)
-    {
+                                             ComponentRegistry registry) {
         logOps = (new PropertiesWrapper(properties)).
-            getIntProperty(LOG_OPS_PROPERTY, DEFAULT_LOG_OPS);
-	localCounters = new HashMap<String, Long>();
+                getIntProperty(LOG_OPS_PROPERTY, DEFAULT_LOG_OPS);
+        localCounters = new HashMap<String, Long>();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent event) {
-	if (event.getPropertyName().
-                equals("com.sun.sgs.profile.newop")) 
-        {        
-	    ProfileOperation op = (ProfileOperation) (event.getNewValue());
-	    opCounts.put(op.getName(), 0L);
-	} else {
-	    if (event.getPropertyName().
-                    equals("com.sun.sgs.profile.threadcount")) 
-            {
-		threadCount = ((Integer) (event.getNewValue())).intValue();
+        if (event.getPropertyName().
+                equals("com.sun.sgs.profile.newop")) {
+            ProfileOperation op = (ProfileOperation) (event.getNewValue());
+            opCounts.put(op.getName(), 0L);
+        } else {
+            if (event.getPropertyName().
+                    equals("com.sun.sgs.profile.threadcount")) {
+                threadCount = ((Integer) (event.getNewValue())).intValue();
             }
-	}
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void report(ProfileReport profileReport) {
         if (profileReport.wasTaskSuccessful()) {
             commitCount++;
@@ -141,21 +137,21 @@ public class OperationLoggingProfileOpListener implements ProfileListener {
         totalRunningTime += profileReport.getRunningTime();
 
         for (String op : profileReport.getReportedOperations()) {
-	    Long i = opCounts.get(op);
-	    opCounts.put(op, Long.valueOf(i == null ? 1 : i + 1));
-	}
+            Long i = opCounts.get(op);
+            opCounts.put(op, Long.valueOf(i == null ? 1 : i + 1));
+        }
 
-	Map<String, Long> counterMap = profileReport.getUpdatedTaskCounters();
-	if (counterMap != null) {
-	    for (Entry<String, Long> entry : counterMap.entrySet()) {
-		String key = entry.getKey();
-		long value = 0;
-		if (localCounters.containsKey(key)) {
-		    value = localCounters.get(key);
+        Map<String, Long> counterMap = profileReport.getUpdatedTaskCounters();
+        if (counterMap != null) {
+            for (Entry<String, Long> entry : counterMap.entrySet()) {
+                String key = entry.getKey();
+                long value = 0;
+                if (localCounters.containsKey(key)) {
+                    value = localCounters.get(key);
                 }
-		localCounters.put(key, entry.getValue() + value);
-	    }
-	}
+                localCounters.put(key, entry.getValue() + value);
+            }
+        }
 
         if ((commitCount + abortCount) >= logOps) {
             if (logger.isLoggable(Level.FINE)) {
@@ -167,29 +163,29 @@ public class OperationLoggingProfileOpListener implements ProfileListener {
                         opCountTally.format("%n");
                     }
                     first = false;
-		    Long count = opCounts.get(op);
+                    Long count = opCounts.get(op);
                     opCountTally.format("  %s: %d", op,
-			(count == null) ? 0 : count.longValue());
+                            (count == null) ? 0 : count.longValue());
                     opCounts.put(op, 0L);
                 }
 
-		Formatter counterTally = new Formatter();
-		if (!localCounters.isEmpty()) {
-		    counterTally.format("[task counters]%n");
-		    for (Entry<String, Long> entry : localCounters.entrySet()) {
-			counterTally.format(
-			    "  %s: %d%n", entry.getKey(), entry.getValue());
+                Formatter counterTally = new Formatter();
+                if (!localCounters.isEmpty()) {
+                    counterTally.format("[task counters]%n");
+                    for (Entry<String, Long> entry : localCounters.entrySet()) {
+                        counterTally.format(
+                                "  %s: %d%n", entry.getKey(), entry.getValue());
                     }
-		}
+                }
 
                 logger.log(Level.FINE, "Operations [logOps=" + logOps + "]:\n" +
-                           "  succeeded: " + commitCount +
-                           "  failed: " + abortCount + "\n" +
-                           "  elapsed time: " + (now - lastReport) + " ms\n" +
-                           "  running time: " + totalRunningTime + " ms " +
-                           "[threads=" + threadCount + "]\n" +
-			   opCountTally.toString() + "\n" +
-			   counterTally.toString());
+                        "  succeeded: " + commitCount +
+                        "  failed: " + abortCount + "\n" +
+                        "  elapsed time: " + (now - lastReport) + " ms\n" +
+                        "  running time: " + totalRunningTime + " ms " +
+                        "[threads=" + threadCount + "]\n" +
+                        opCountTally.toString() + "\n" +
+                        counterTally.toString());
             } else {
                 for (String op : opCounts.keySet()) {
                     opCounts.put(op, 0L);
@@ -199,12 +195,14 @@ public class OperationLoggingProfileOpListener implements ProfileListener {
             commitCount = 0;
             abortCount = 0;
             totalRunningTime = 0;
-	    localCounters.clear();
+            localCounters.clear();
             lastReport = System.currentTimeMillis();
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         // there is nothing to shutdown on this listener
     }

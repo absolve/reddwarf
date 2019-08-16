@@ -24,6 +24,7 @@ package com.sun.sgs.impl.util;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.util.ManagedSerializable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -35,7 +36,7 @@ import java.io.Serializable;
  * well as the ability to dynamically switch where the field's value is stored.
  *
  * <p>
- *
+ * <p>
  * A {@code ManagedObject} will deserialize all of its non-transient fields,
  * which at times is undesirable for latency (e.g. when the field is large, or
  * will not be used).  An {@code AdaptiveField} allow the developer finer
@@ -44,7 +45,7 @@ import java.io.Serializable;
  * how it is stored.
  *
  * <p>
- *
+ * <p>
  * A local {@code AdaptiveField} has its value stored just like any other Java
  * field.  When a {@code ManagedObject} deserializes from the data store, the
  * field will be included in its serialization graph.  For this reason a {@code
@@ -60,7 +61,9 @@ import java.io.Serializable;
  */
 public final class AdaptiveField<T> implements Serializable {
 
-    /** The version of the serialized form. */
+    /**
+     * The version of the serialized form.
+     */
     private static final long serialVersionUID = 0x1L;
 
     /**
@@ -99,36 +102,34 @@ public final class AdaptiveField<T> implements Serializable {
      * provided value.
      *
      * @param value the value of this field
-     *
      * @throws IllegalArgumentException if the provided value is a {@code
-     *         ManagedObject}
+     *                                  ManagedObject}
      */
     public AdaptiveField(T value) {
-	this(value, true);
+        this(value, true);
     }
 
     /**
      * Constructs this {@code AdaptiveField} with the provided value, and
      * stores it as specified.
      *
-     * @param value the value of this field
+     * @param value   the value of this field
      * @param isLocal whether this field should be kept with a local reference
-     *        or stored in the data store.
-     *
+     *                or stored in the data store.
      * @throws IllegalArgumentException if the provided value is a {@code
-     *         ManagedObject}
+     *                                  ManagedObject}
      */
     public AdaptiveField(T value, boolean isLocal) {
 
-	this.isLocal = isLocal;
+        this.isLocal = isLocal;
 
-	if (isLocal) {
-	    local = value;
-	} else {
-	    remoteCache = value;
-	    ref = AppContext.getDataManager().createReference(
-		new ManagedSerializable<T>(value));
-	}
+        if (isLocal) {
+            local = value;
+        } else {
+            remoteCache = value;
+            ref = AppContext.getDataManager().createReference(
+                    new ManagedSerializable<T>(value));
+        }
     }
 
     /**
@@ -143,13 +144,13 @@ public final class AdaptiveField<T> implements Serializable {
      * @return the value of the field
      */
     public T get() {
-	if (isLocal) {
-	    return local;
-	}
-	if (remoteCache == null && ref != null) {
-	    remoteCache = ref.get().get();
-	}
-	return remoteCache;
+        if (isLocal) {
+            return local;
+        }
+        if (remoteCache == null && ref != null) {
+            remoteCache = ref.get().get();
+        }
+        return remoteCache;
     }
 
     /**
@@ -162,13 +163,13 @@ public final class AdaptiveField<T> implements Serializable {
      * @return the value of the field
      */
     public T getForUpdate() {
-	if (isLocal) {
-	    return local;
-	}
-	if (ref != null) {
-	    remoteCache = ref.getForUpdate().get();
-	}
-	return remoteCache;
+        if (isLocal) {
+            return local;
+        }
+        if (ref != null) {
+            remoteCache = ref.getForUpdate().get();
+        }
+        return remoteCache;
     }
 
     /**
@@ -180,7 +181,7 @@ public final class AdaptiveField<T> implements Serializable {
      * @return {@code true} if this field is stored as a local reference
      */
     public boolean isLocal() {
-	return isLocal;
+        return isLocal;
     }
 
     /**
@@ -190,25 +191,25 @@ public final class AdaptiveField<T> implements Serializable {
      * field.
      */
     public void makeLocal() {
-	if (!isLocal) {
-	    if (ref != null) {
-		ManagedSerializable<T> m = ref.get();
-		// REMINDER: if we can ever remote the object without having to
-		// call get(), then we could use to localCache to speed this
-		// next call up a bit.
-		local = m.get();
-		AppContext.getDataManager().removeObject(m);
-	    } else {
-		// If the field was stored remotely and ref == null, then the
-		// value should be null, as we remove the ManagedSerializable
-		// from the data store when a remotely managed object is set to
-		// null
-		local = null;
-	    }
-	    ref = null;
-	    remoteCache = null;
-	    isLocal = true;
-	}
+        if (!isLocal) {
+            if (ref != null) {
+                ManagedSerializable<T> m = ref.get();
+                // REMINDER: if we can ever remote the object without having to
+                // call get(), then we could use to localCache to speed this
+                // next call up a bit.
+                local = m.get();
+                AppContext.getDataManager().removeObject(m);
+            } else {
+                // If the field was stored remotely and ref == null, then the
+                // value should be null, as we remove the ManagedSerializable
+                // from the data store when a remotely managed object is set to
+                // null
+                local = null;
+            }
+            ref = null;
+            remoteCache = null;
+            isLocal = true;
+        }
     }
 
     /**
@@ -218,22 +219,22 @@ public final class AdaptiveField<T> implements Serializable {
      * field.
      */
     public void makeManaged() {
-	if (isLocal) {
-	    ref = AppContext.getDataManager().
-		createReference(new ManagedSerializable<T>(local));
-	    remoteCache = local;
-	    local = null;
-	    isLocal = false;
-	}
+        if (isLocal) {
+            ref = AppContext.getDataManager().
+                    createReference(new ManagedSerializable<T>(local));
+            remoteCache = local;
+            local = null;
+            isLocal = false;
+        }
     }
 
     /**
      * If this field is not stored locally, marks the field for update.
      */
     public void markForUpdate() {
-	if (!isLocal && ref != null) {
-	    AppContext.getDataManager().markForUpdate(ref.get());
-	}
+        if (!isLocal && ref != null) {
+            AppContext.getDataManager().markForUpdate(ref.get());
+        }
     }
 
     /**
@@ -242,72 +243,74 @@ public final class AdaptiveField<T> implements Serializable {
      * @param value the new value of the field
      */
     public void set(T value) {
-	set(value, isLocal);
+        set(value, isLocal);
     }
 
     /**
      * Sets the value of this field and updates its locality based on {@code
      * isLocal}.
      *
-     * @param value the new value of the field
+     * @param value   the new value of the field
      * @param isLocal whether this field should be kept with a local reference
-     *        or stored in the data store.
+     *                or stored in the data store.
      */
     public void set(T value, boolean isLocal) {
-	if (isLocal) {
-	    local = value;
-	    // check whether it was previously managed object and if so, remove
-	    // it
-	    if (!this.isLocal) {
-		this.isLocal = true;
-		if (ref != null) {
-		    AppContext.getDataManager().removeObject(ref.get());
-		    ref = null;
-		    remoteCache = null;
-		}
-	    }
-	} else {
-	    // invalidate the local copy and move this field into the data
-	    // store
-	    if (this.isLocal) {
-		this.isLocal = false;
-		local = null;
-		// null remote values are never stored in the data store, and
-		// the ref should already be null at this point
-		if (value != null) {
-		    ref = AppContext.getDataManager().createReference(
-			new ManagedSerializable<T>(value));
-		}
-	    } else {
-		// the value was already remotely managed, so attempt to reuse
-		// the old ManagedSerializable
-		if (ref == null) {
-		    if (value != null) {
-			// if the previously the remote value was null, we need
-			// to create a new managed reference
-			ref = AppContext.getDataManager().createReference(
-			    new ManagedSerializable<T>(value));
-		    }
-		} else if (value != null) {
-		    // we can reuse the previous ManagedSerializable to hold
-		    // the value
-		    ref.get().set(value);
-		} else {
-		    // else, the value is null but we had an old value stored
-		    // by reference, so remove it from the data store
-		    AppContext.getDataManager().removeObject(ref.get());
-		    ref = null;
-		}
-	    }
-	    remoteCache = value;
-	}
+        if (isLocal) {
+            local = value;
+            // check whether it was previously managed object and if so, remove
+            // it
+            if (!this.isLocal) {
+                this.isLocal = true;
+                if (ref != null) {
+                    AppContext.getDataManager().removeObject(ref.get());
+                    ref = null;
+                    remoteCache = null;
+                }
+            }
+        } else {
+            // invalidate the local copy and move this field into the data
+            // store
+            if (this.isLocal) {
+                this.isLocal = false;
+                local = null;
+                // null remote values are never stored in the data store, and
+                // the ref should already be null at this point
+                if (value != null) {
+                    ref = AppContext.getDataManager().createReference(
+                            new ManagedSerializable<T>(value));
+                }
+            } else {
+                // the value was already remotely managed, so attempt to reuse
+                // the old ManagedSerializable
+                if (ref == null) {
+                    if (value != null) {
+                        // if the previously the remote value was null, we need
+                        // to create a new managed reference
+                        ref = AppContext.getDataManager().createReference(
+                                new ManagedSerializable<T>(value));
+                    }
+                } else if (value != null) {
+                    // we can reuse the previous ManagedSerializable to hold
+                    // the value
+                    ref.get().set(value);
+                } else {
+                    // else, the value is null but we had an old value stored
+                    // by reference, so remove it from the data store
+                    AppContext.getDataManager().removeObject(ref.get());
+                    ref = null;
+                }
+            }
+            remoteCache = value;
+        }
     }
 
-    /** Make sure that the cached value is cleared. */
+    /**
+     * Make sure that the cached value is cleared.
+     */
     private void readObject(ObjectInputStream s)
-	throws IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException {
 
-	s.defaultReadObject();
-	remoteCache = null;
+        s.defaultReadObject();
+        remoteCache = null;
     }
 }

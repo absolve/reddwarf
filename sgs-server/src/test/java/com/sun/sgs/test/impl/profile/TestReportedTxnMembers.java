@@ -33,16 +33,17 @@ import com.sun.sgs.profile.TransactionListenerDetail;
 import com.sun.sgs.test.util.SgsTestNode;
 import com.sun.sgs.test.util.TestAbstractKernelRunnable;
 import com.sun.sgs.tools.test.FilteredNameRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Simple test to verify that in normal oparation a known
@@ -60,7 +61,7 @@ public class TestReportedTxnMembers {
 
     final String LISTENER_NAME = "com.sun.sgs.impl.service.data.Context";
     final String TASK_NS =
-        "com.sun.sgs.test.impl.profile.TestReportedTxnMembers";
+            "com.sun.sgs.test.impl.profile.TestReportedTxnMembers";
 
     // the test node
     private SgsTestNode serverNode;
@@ -73,9 +74,9 @@ public class TestReportedTxnMembers {
     public void setUp() throws Exception {
         // Start a partial stack.
         Properties p =
-            SgsTestNode.getDefaultProperties("TestTxnMembers", null, null);
-        p.setProperty(StandardProperties.NODE_TYPE, 
-                      NodeType.coreServerNode.name());
+                SgsTestNode.getDefaultProperties("TestTxnMembers", null, null);
+        p.setProperty(StandardProperties.NODE_TYPE,
+                NodeType.coreServerNode.name());
         p.setProperty("com.sun.sgs.impl.kernel.profile.level", "MEDIUM");
         serverNode = new SgsTestNode("TextTxnMembers", null, p);
         ComponentRegistry registry = serverNode.getSystemRegistry();
@@ -91,58 +92,55 @@ public class TestReportedTxnMembers {
     @Test
     public void testDataServiceListenerIncluded() throws Exception {
         final AtomicReference<RuntimeException> throwableRef =
-            new AtomicReference<RuntimeException>();
+                new AtomicReference<RuntimeException>();
         final AtomicBoolean beforeShouldBeCalled = new AtomicBoolean(true);
         final Semaphore sem = new Semaphore(0);
 
         // listener that only looks at the transactions run from this test,
         // and verifies that the Context class was correctly reported
         SimpleTestListener listener = new SimpleTestListener(new Runnable() {
-                public void run() {
-                    ProfileReport r = SimpleTestListener.report;
-                    // only proceed for transactions that were run from
-                    // this test class
-                    if ((! r.wasTaskTransactional()) ||
-                        (! r.getTask().getBaseTaskType().startsWith(TASK_NS)))
-                    {
-                        return;
-                    }
-                    boolean foundDataListener = false;
-                    for (TransactionListenerDetail detail :
-                             SimpleTestListener.report.getListenerDetails())
-                    {
-                        // look for the known data Context listener
-                        if (detail.getListenerName().equals(LISTENER_NAME)) {
-                            foundDataListener = true;
-                            // check that before completion was reported
-                            // correctly for successful and failed tasks
-                            if (beforeShouldBeCalled.get() !=
-                                detail.calledBeforeCompletion())
-                            {
-                                throwableRef.
-                                    set(new RuntimeException("wrong before " +
-                                                             "status"));
-                            }
-                            break;
-                        }
-                    }
-                    if (! foundDataListener) {
-                        throwableRef.set(new RuntimeException("data listener " +
-                                                              "not reported"));
-                    }
-                    sem.release();
+            public void run() {
+                ProfileReport r = SimpleTestListener.report;
+                // only proceed for transactions that were run from
+                // this test class
+                if ((!r.wasTaskTransactional()) ||
+                        (!r.getTask().getBaseTaskType().startsWith(TASK_NS))) {
+                    return;
                 }
-            });
+                boolean foundDataListener = false;
+                for (TransactionListenerDetail detail :
+                        SimpleTestListener.report.getListenerDetails()) {
+                    // look for the known data Context listener
+                    if (detail.getListenerName().equals(LISTENER_NAME)) {
+                        foundDataListener = true;
+                        // check that before completion was reported
+                        // correctly for successful and failed tasks
+                        if (beforeShouldBeCalled.get() !=
+                                detail.calledBeforeCompletion()) {
+                            throwableRef.
+                                    set(new RuntimeException("wrong before " +
+                                            "status"));
+                        }
+                        break;
+                    }
+                }
+                if (!foundDataListener) {
+                    throwableRef.set(new RuntimeException("data listener " +
+                            "not reported"));
+                }
+                sem.release();
+            }
+        });
         profileCollector.addListener(listener, true);
 
         // run a successful task that uses the DataService
         txnScheduler.runTask(new TestAbstractKernelRunnable() {
-                public void run() {
-                    AppContext.getDataManager().
+            public void run() {
+                AppContext.getDataManager().
                         createReference(new DummyObject());
-                }
-            }, serverNode.getProxy().getCurrentOwner());
-        if (! sem.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+            }
+        }, serverNode.getProxy().getCurrentOwner());
+        if (!sem.tryAcquire(500, TimeUnit.MILLISECONDS)) {
             throw new RuntimeException("Listener never reported");
         }
         if (throwableRef.get() != null) {
@@ -155,14 +153,15 @@ public class TestReportedTxnMembers {
         beforeShouldBeCalled.set(false);
         try {
             txnScheduler.runTask(new TestAbstractKernelRunnable() {
-                    public void run() {
-                        AppContext.getDataManager().
+                public void run() {
+                    AppContext.getDataManager().
                             createReference(new DummyObject());
-                        throw new ExpectedException();
-                    }
-                }, serverNode.getProxy().getCurrentOwner());
-        } catch (ExpectedException ee) {}
-        if (! sem.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+                    throw new ExpectedException();
+                }
+            }, serverNode.getProxy().getCurrentOwner());
+        } catch (ExpectedException ee) {
+        }
+        if (!sem.tryAcquire(500, TimeUnit.MILLISECONDS)) {
             throw new RuntimeException("Listener never reported");
         }
         if (throwableRef.get() != null) {
@@ -170,11 +169,16 @@ public class TestReportedTxnMembers {
         }
     }
 
-    /** A dummy class used so the DataService can be invoked. */
+    /**
+     * A dummy class used so the DataService can be invoked.
+     */
     private static final class DummyObject
-        implements ManagedObject, Serializable {}
+            implements ManagedObject, Serializable {
+    }
 
-    /** A custom exception that the tests can catch deliberately. */
+    /**
+     * A custom exception that the tests can catch deliberately.
+     */
     private static final class ExpectedException extends RuntimeException {
         ExpectedException() {
             super("expected failure");

@@ -24,36 +24,37 @@ package com.sun.sgs.system.stop;
 import com.sun.sgs.management.KernelMXBean;
 import com.sun.sgs.system.BootEnvironment;
 import com.sun.sgs.system.SubstitutionProperties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Initiates a shutdown of a running Project Darkstar server.
  */
 public final class Stop {
     private static final Logger logger = Logger.getLogger(Stop.class.getName());
-    
+
     /**
      * This class should not be instantiated.
      */
     private Stop() {
-        
+
     }
-    
+
     /**
      * Main-line method that shuts down a running Project Darkstar server.
      * <p>
      * If a single argument is given on the command line, the value of
-     * the argument is assumed to be a filename.  This file is used to 
+     * the argument is assumed to be a filename.  This file is used to
      * specify a set of configuration properties that were used to startup
-     * the running Project Darkstar Server.  If no argument is given on the 
-     * command line, the filename is assumed to be at the location specified 
+     * the running Project Darkstar Server.  If no argument is given on the
+     * command line, the filename is assumed to be at the location specified
      * by the system resource {@link BootEnvironment#SGS_BOOT}.
      * <p>
      * A shutdown command is sent to the running Project Darkstar Server
@@ -63,7 +64,7 @@ public final class Stop {
      * is given for the property. The {@code KernelMXBean.requestShutdown()}
      * method is invoked to start shutdown. Note that shutdown may not
      * complete until after {@code main()} has already returned.
-     * 
+     *
      * @param args optional filename of configuration file
      * @throws Exception if there is a problem
      */
@@ -72,7 +73,7 @@ public final class Stop {
             logger.log(Level.SEVERE, "Invalid number of arguments");
             throw new IllegalArgumentException("Invalid number of arguments");
         }
-        
+
         //load properties from configuration file
         SubstitutionProperties properties = null;
         if (args.length == 0) {
@@ -83,10 +84,10 @@ public final class Stop {
 
         // get the JMX port and make the connection
         String port = properties.getProperty(BootEnvironment.JMX_PORT,
-                                             BootEnvironment.DEFAULT_JMX_PORT);
+                BootEnvironment.DEFAULT_JMX_PORT);
         JMXServiceURL url =
-            new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:" +
-                              port + "/jmxrmi");
+                new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:" +
+                        port + "/jmxrmi");
         JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
         MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
 

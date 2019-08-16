@@ -63,25 +63,25 @@ public interface NetworkChannel extends Channel {
      * <p>
      * An implementation of this interface should specify if a permission is
      * required when a security manager is installed.
-     * 
+     *
      * @param local the address to bind the socket, or {@code null} to bind the
-     *        socket to an automatically assigned socket address
+     *              socket to an automatically assigned socket address
      * @return this channel
-     * @throws AlreadyBoundException if the socket is already bound
+     * @throws AlreadyBoundException           if the socket is already bound
      * @throws UnsupportedAddressTypeException if the type of the given
-     *         address is not supported
-     * @throws ClosedChannelException if the channel is closed
-     * @throws IOException if some other I/O error occurs
+     *                                         address is not supported
+     * @throws ClosedChannelException          if the channel is closed
+     * @throws IOException                     if some other I/O error occurs
      */
     NetworkChannel bind(SocketAddress local) throws IOException;
 
     /**
      * Returns the socket address that this channel's socket is bound to, or
      * {@code null} if the socket is not bound.
-     * 
+     *
      * @return the socket address that the socket is bound to, or {@code null}
-     *         if the channel is not {@link Channel#isOpen() open}
-     *         or the channel's socket is not bound
+     * if the channel is not {@link Channel#isOpen() open}
+     * or the channel's socket is not bound
      * @throws IOException if an I/O error occurs
      */
     SocketAddress getLocalAddress() throws IOException;
@@ -93,32 +93,32 @@ public interface NetworkChannel extends Channel {
      * The {@code value} parameter is the value of the option and is of the
      * {@link SocketOption#type() type} specified by the option. A value of
      * {@code null} may be a valid value for some socket options.
-     * 
-     * @param name the name of the socket option
+     *
+     * @param name  the name of the socket option
      * @param value the value of the socket option
      * @return this channel
      * @throws IllegalArgumentException If the socket option is not
-     *         supported by this channel, or the value is not a valid value
-     *         for this socket option
-     * @throws ClosedChannelException if this channel is closed
-     * @throws IOException if an I/O error occurs
+     *                                  supported by this channel, or the value is not a valid value
+     *                                  for this socket option
+     * @throws ClosedChannelException   if this channel is closed
+     * @throws IOException              if an I/O error occurs
      * @see SocketOption
      */
     NetworkChannel setOption(SocketOption name, Object value)
-        throws IOException;
+            throws IOException;
 
     /**
      * Returns the value of a socket option.
      * <p>
      * The return type is specific to the socket option and {@code null}
      * may be a valid value for some socket options.
-     * 
+     *
      * @param name the socket option
      * @return the value of the socket option
      * @throws IllegalArgumentException if the socket option is not
-     *         supported by this channel
-     * @throws ClosedChannelException if this channel is closed
-     * @throws IOException if an I/O error occurs
+     *                                  supported by this channel
+     * @throws ClosedChannelException   if this channel is closed
+     * @throws IOException              if an I/O error occurs
      * @see SocketOption
      */
     Object getOption(SocketOption name) throws IOException;
@@ -128,7 +128,7 @@ public interface NetworkChannel extends Channel {
      * <p>
      * This method will continue to return the set of options even after the
      * channel has been closed.
-     * 
+     *
      * @return a set of the socket options supported by this channel
      */
     Set<SocketOption> options();

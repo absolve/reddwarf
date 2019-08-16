@@ -23,6 +23,7 @@ package com.sun.sgs.impl.transport.tcp;
 
 import com.sun.sgs.impl.sharedutil.MessageBuffer;
 import com.sun.sgs.transport.TransportDescriptor;
+
 import java.io.Serializable;
 
 /**
@@ -33,10 +34,11 @@ class TcpDescriptor implements TransportDescriptor, Serializable {
 
     final String hostName;
     final int listeningPort;
-        
+
     /**
      * Constructor.
-     * @param hostName host name
+     *
+     * @param hostName      host name
      * @param listeningPort port transport is listening on
      */
     TcpDescriptor(String hostName, int listeningPort) {
@@ -47,14 +49,16 @@ class TcpDescriptor implements TransportDescriptor, Serializable {
         this.listeningPort = listeningPort;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean supportsTransport(TransportDescriptor descriptor) {
         return descriptor instanceof TcpDescriptor;
     }
-    
+
     /**
      * {@inheritDoc}
-     *     
+     * <p>
      * This method will return a {@code byte} array that contains the
      * following data:
      * <ul>
@@ -66,16 +70,16 @@ class TcpDescriptor implements TransportDescriptor, Serializable {
         MessageBuffer buf =
                 new MessageBuffer(MessageBuffer.getSize(hostName) + 4);
         buf.putString(hostName).
-            putInt(listeningPort);
+                putInt(listeningPort);
         return buf.getBuffer();
     }
 
     /**
      * Returns a string representation of this descriptor.
      *
-     * @return	a string representation of this descriptor
+     * @return a string representation of this descriptor
      */
     public String toString() {
-	return "TCP[host:" + hostName + ", port:" + listeningPort + "]";
+        return "TCP[host:" + hostName + ", port:" + listeningPort + "]";
     }
 }

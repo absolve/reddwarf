@@ -21,40 +21,42 @@
 
 package com.sun.sgs.tutorial.server.lesson4;
 
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskManager;
-
 /**
  * A simple persistence example for the Project Darkstar Server.
  */
 public class HelloPersistence3
-    implements AppListener, Serializable, Task
-{
-    /** The version of the serialized form of this class. */
+        implements AppListener, Serializable, Task {
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(HelloPersistence3.class.getName());
+            Logger.getLogger(HelloPersistence3.class.getName());
 
-    /** The delay before the first run of the task. */
+    /**
+     * The delay before the first run of the task.
+     */
     public static final int DELAY_MS = 5000;
 
-    /** The time to wait before repeating the task. */
+    /**
+     * The time to wait before repeating the task.
+     */
     public static final int PERIOD_MS = 500;
 
-    /** A reference to our subtask, a {@link TrivialTimedTask}.  */
+    /**
+     * A reference to our subtask, a {@link TrivialTimedTask}.
+     */
     private ManagedReference<TrivialTimedTask> subTaskRef = null;
 
     /**
@@ -82,7 +84,7 @@ public class HelloPersistence3
      * not accept null parameters.
      *
      * @param subTask the subtask this task should delegate to,
-     *        or null to clear the subtask
+     *                or null to clear the subtask
      */
     public void setSubTask(TrivialTimedTask subTask) {
         if (subTask == null) {

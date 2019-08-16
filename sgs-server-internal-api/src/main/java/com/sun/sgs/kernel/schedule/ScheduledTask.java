@@ -32,7 +32,6 @@
 package com.sun.sgs.kernel.schedule;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.Priority;
 import com.sun.sgs.kernel.RecurringTaskHandle;
@@ -45,10 +44,14 @@ import com.sun.sgs.kernel.RecurringTaskHandle;
  */
 public interface ScheduledTask {
 
-    /** Identifier that represents a non-recurring task. */
+    /**
+     * Identifier that represents a non-recurring task.
+     */
     int NON_RECURRING = -1;
 
-    /** Identifier that represents an unbounded timeout. */
+    /**
+     * Identifier that represents an unbounded timeout.
+     */
     int UNBOUNDED = -1;
 
     /**
@@ -130,7 +133,7 @@ public interface ScheduledTask {
      * task then {@code getPeriod} should always return {@code NON_RECURRING}.
      *
      * @return {@code true} if this task is a recurring task,
-     *         {@code false} otherwise.
+     * {@code false} otherwise.
      */
     boolean isRecurring();
 
@@ -146,7 +149,7 @@ public interface ScheduledTask {
      * Returns whether this task has been cancelled.
      *
      * @return {@code true} if this {@code ScheduledTask} has been cancelled,
-     *         {@code false} otherwise
+     * {@code false} otherwise
      */
     boolean isCancelled();
 
@@ -160,9 +163,8 @@ public interface ScheduledTask {
      * @param block if {@code true}, this call will block until the task is
      *              cancelled or has completed, if {@code false}, it will not
      *              block
-     *
      * @return {@code true} if the task was cancelled by this call,
-     *         {@code false} otherwise
+     * {@code false} otherwise
      */
     boolean cancel(boolean block);
 

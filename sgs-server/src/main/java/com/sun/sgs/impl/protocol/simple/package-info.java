@@ -22,5 +22,5 @@
 /**
  * Provides an implementation of the protocol layer APIs using the
  * {@code SimpleSgsProtocol}.
- */ 
+ */
 package com.sun.sgs.impl.protocol.simple;

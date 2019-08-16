@@ -34,7 +34,7 @@ public class LinearHistogram implements Histogram {
     /**
      * the longest bar in the histogram
      */
-    private static final int MAX_HIST_LENGTH = 40;	
+    private static final int MAX_HIST_LENGTH = 40;
 
     /**
      * The inclusive lower bound for the histogram
@@ -79,58 +79,57 @@ public class LinearHistogram implements Histogram {
 
     /**
      * Creates a linear frequency histogram with the provided lower
-     * bound, upper bound and step size.  
+     * bound, upper bound and step size.
      *
-     * @param lBound the lower bound for the histogram; values
-     *        strictly less than this will not be included
-     * @param uBound the upper bound for the histogram; values
-     *        strictly greater than this will not be included
+     * @param lBound   the lower bound for the histogram; values
+     *                 strictly less than this will not be included
+     * @param uBound   the upper bound for the histogram; values
+     *                 strictly greater than this will not be included
      * @param stepSize the maximum range for each bin between {@code
-     *        lBound} and {@code uBound}; if {@code stepSize} does not
-     *        evenly divide the difference, the last bin will be
-     *        truncated in size
-     *
+     *                 lBound} and {@code uBound}; if {@code stepSize} does not
+     *                 evenly divide the difference, the last bin will be
+     *                 truncated in size
      * @throws IllegalArgumentException if {@code lBound} is not less
-     *         than {@code uBound}, or if {@code stepSize} is not
-     *         strictly positive     
+     *                                  than {@code uBound}, or if {@code stepSize} is not
+     *                                  strictly positive
      */
     public LinearHistogram(int lBound, int uBound, long stepSize) {
-	if (lBound >= uBound) {
-	    throw new IllegalArgumentException("Lower bound must be less " +
-					       "than upper bound");
+        if (lBound >= uBound) {
+            throw new IllegalArgumentException("Lower bound must be less " +
+                    "than upper bound");
         }
-	if (stepSize <= 0) {
-	    throw new IllegalArgumentException("Step size must be " +
-					       "strictly positive");
+        if (stepSize <= 0) {
+            throw new IllegalArgumentException("Step size must be " +
+                    "strictly positive");
         }
 
-	this.lBound = lBound;
-	this.uBound = uBound;
-	this.stepSize = stepSize;
+        this.lBound = lBound;
+        this.uBound = uBound;
+        this.stepSize = stepSize;
 
-	bins = new int[(int) ((uBound - lBound) / stepSize) + 1];
+        bins = new int[(int) ((uBound - lBound) / stepSize) + 1];
 
-	maxIndex = Integer.MIN_VALUE;
-	minIndex = Integer.MAX_VALUE;
-	maxCount = 0;
-	size = 0;
+        maxIndex = Integer.MIN_VALUE;
+        minIndex = Integer.MAX_VALUE;
+        maxCount = 0;
+        size = 0;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Values are binned in the largest bin that is <i>less than</i>
      * the element is incremented.  Values less than the lower bound
      * or values that are greater than the upper bound are not counted.
-     */ 
+     */
     public void bin(long value) {
-	if (value < lBound || value > uBound) {
-	    return;
+        if (value < lBound || value > uBound) {
+            return;
         }
-	
-	// find the appropriate bin for this value, starting at the
-	// lower bound and increasing by the provided step size
-	int bin = 0;
+
+        // find the appropriate bin for this value, starting at the
+        // lower bound and increasing by the provided step size
+        int bin = 0;
         long i = lBound + stepSize;
         while (i < uBound) {
             i += stepSize;
@@ -140,15 +139,15 @@ public class LinearHistogram implements Histogram {
                 break;
             }
         }
-		
-	maxIndex = Math.max(maxIndex, bin);
-	minIndex = Math.min(minIndex, bin);
-	
-	// keep track of which bin has the most number of elements,
-	// after incrementing the bin's count
-	int count = bins[bin]++;
-	if (count  > maxCount) {
-	    maxCount = count;
+
+        maxIndex = Math.max(maxIndex, bin);
+        minIndex = Math.min(minIndex, bin);
+
+        // keep track of which bin has the most number of elements,
+        // after incrementing the bin's count
+        int count = bins[bin]++;
+        if (count > maxCount) {
+            maxCount = count;
         }
     }
 
@@ -156,20 +155,20 @@ public class LinearHistogram implements Histogram {
      * {@inheritDoc}
      */
     public void clear() {
-	for (int i = 0; i < bins.length; ++i) {
-	    bins[i] = 0;
+        for (int i = 0; i < bins.length; ++i) {
+            bins[i] = 0;
         }
-	maxIndex = Integer.MIN_VALUE;
-	minIndex = Integer.MAX_VALUE;
-	maxCount = 0;
-	size = 0;
+        maxIndex = Integer.MIN_VALUE;
+        minIndex = Integer.MAX_VALUE;
+        maxCount = 0;
+        size = 0;
     }
 
     /**
      * {@inheritDoc}
      */
     public int size() {
-	return size;
+        return size;
     }
 
     /**
@@ -183,7 +182,7 @@ public class LinearHistogram implements Histogram {
      *  [l.b. + 2*step] |*
      *    [upper-bound] |****
      * </pre>
-     *
+     * <p>
      * Bins that have at least one sample will have a bar displayed.
      * All leading and trailing empty bins are truncated, which may
      * result in the lower and upper bound bins not being displayed.
@@ -192,7 +191,7 @@ public class LinearHistogram implements Histogram {
      * @return a string representation of this histogram
      */
     public String toString() {
-	return toString("");
+        return toString("");
     }
 
     /**
@@ -205,45 +204,44 @@ public class LinearHistogram implements Histogram {
      * 400ms |*
      * 600ms |*****
      * </pre>
-     * 
-     * @param binLabel the label to append to each of the bins
      *
+     * @param binLabel the label to append to each of the bins
      * @return a string representation of this histogram
      */
     public String toString(String binLabel) {
-	// get the length of the longest string version of the integer
-	// to make the histogram line up correctly
-	int maxLength = 
-	    Long.toString(lBound + (maxIndex * stepSize)).length();
-	
-	StringBuilder b = new StringBuilder(128);
+        // get the length of the longest string version of the integer
+        // to make the histogram line up correctly
+        int maxLength =
+                Long.toString(lBound + (maxIndex * stepSize)).length();
 
-	for (int i = minIndex; i <= maxIndex; ++i) {
-	    
-	    String binName = 
-		Long.toString(Math.min(lBound + (i * stepSize), uBound));
+        StringBuilder b = new StringBuilder(128);
 
-	    // make the bars all line up evenly by padding with spaces	    
-	    for (int j = binName.length(); j < maxLength; ++j) {
-		b.append(" ");
+        for (int i = minIndex; i <= maxIndex; ++i) {
+
+            String binName =
+                    Long.toString(Math.min(lBound + (i * stepSize), uBound));
+
+            // make the bars all line up evenly by padding with spaces
+            for (int j = binName.length(); j < maxLength; ++j) {
+                b.append(" ");
             }
-	    b.append(binName).append("binLabel").append(" |");
+            b.append(binName).append("binLabel").append(" |");
 
-	    // scale the bar length relative to the max
-	    int bars = (int) ((bins[i] / (double) maxCount) * MAX_HIST_LENGTH);
+            // scale the bar length relative to the max
+            int bars = (int) ((bins[i] / (double) maxCount) * MAX_HIST_LENGTH);
 
-	    // bump all non-empty buckets by one, so we can tell the
-	    // difference
-	    if (bins[i] > 0) {
-		bars++;
+            // bump all non-empty buckets by one, so we can tell the
+            // difference
+            if (bins[i] > 0) {
+                bars++;
             }
-	    for (int j = 0; j < bars; ++j) {
-		b.append("*");
+            for (int j = 0; j < bars; ++j) {
+                b.append("*");
             }
-	    b.append("\n");
-	}
-	
-	return b.toString();
+            b.append("\n");
+        }
+
+        return b.toString();
     }
 
 }

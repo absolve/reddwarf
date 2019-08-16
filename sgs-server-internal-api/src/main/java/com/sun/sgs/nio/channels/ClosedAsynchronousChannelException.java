@@ -30,9 +30,10 @@ package com.sun.sgs.nio.channels;
  * asynchronous operation on an asynchronous channel that is closed.
  */
 public class ClosedAsynchronousChannelException
-    extends IllegalStateException
-{
-    /** The version of the serialized representation of this class. */
+        extends IllegalStateException {
+    /**
+     * The version of the serialized representation of this class.
+     */
     private static final long serialVersionUID = 1L;
 
     /**

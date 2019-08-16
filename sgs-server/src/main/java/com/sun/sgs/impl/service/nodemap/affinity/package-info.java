@@ -24,7 +24,7 @@
  * with the label propagation algorithm (LPA).  Specific implementations,
  * both single- and multi-node, are found in subpackages.
  * <p>
- * An {@link com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup} is a 
+ * An {@link com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup} is a
  * set of identities which are affiliated with each other and should be
  * co-located on a node.  An
  * {@link com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinder} finds

@@ -22,22 +22,21 @@
 package com.sun.sgs.test.util;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.kernel.ConfigManager;
 import com.sun.sgs.impl.profile.ProfileCollectorHandle;
 import com.sun.sgs.impl.profile.ProfileCollectorHandleImpl;
 import com.sun.sgs.impl.profile.ProfileCollectorImpl;
-
 import com.sun.sgs.impl.profile.listener.OperationLoggingProfileOpListener;
-
 import com.sun.sgs.kernel.KernelRunnable;
-
 import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
-import java.util.Properties;
+
 import javax.management.JMException;
+import java.util.Properties;
 
 
-/** Simple profiling utility to support tests. */
+/**
+ * Simple profiling utility to support tests.
+ */
 public class DummyProfileCoordinator {
 
     // the production collector
@@ -52,24 +51,26 @@ public class DummyProfileCoordinator {
     private static final Identity owner = new DummyIdentity();
 
     // a single instance that will be non-null if we're profiling
-    private static DummyProfileCoordinator instance = 
+    private static DummyProfileCoordinator instance =
             new DummyProfileCoordinator();
 
     // a lock to ensure shutdown is done correctly
     private static final Object lockObject = new String("lock");
 
     // a test transaction id used in reporting
-    private static final byte [] dummyTxnId = {0x01};
+    private static final byte[] dummyTxnId = {0x01};
 
-    /** Creates an instance of DummyProfileCoordinator */
+    /**
+     * Creates an instance of DummyProfileCoordinator
+     */
     private DummyProfileCoordinator() {
         Properties props = System.getProperties();
         collector = new ProfileCollectorImpl(ProfileLevel.MIN, props, null);
         collectorHandle = new ProfileCollectorHandleImpl(collector);
         OperationLoggingProfileOpListener listener =
-            new OperationLoggingProfileOpListener(props, owner, null);
+                new OperationLoggingProfileOpListener(props, owner, null);
         collector.addListener(listener, true);
-        
+
         ConfigManager config = new ConfigManager(props);
         try {
             collector.registerMBean(config, ConfigManager.MXBEAN_NAME);
@@ -78,39 +79,51 @@ public class DummyProfileCoordinator {
         }
     }
 
-    /** Get the singleton, backing collector. */
+    /**
+     * Get the singleton, backing collector.
+     */
     public static ProfileCollectorImpl getCollector() {
         return instance.collector;
     }
 
-    /** Starts profiling */
+    /**
+     * Starts profiling
+     */
     public static void startProfiling() {
         synchronized (lockObject) {
             instance.collector.setDefaultProfileLevel(ProfileLevel.MAX);
         }
     }
 
-    /** Stops all profiling */
+    /**
+     * Stops all profiling
+     */
     public static void stopProfiling() {
         synchronized (lockObject) {
             instance.collector.setDefaultProfileLevel(ProfileLevel.MIN);
         }
     }
 
-    /** Signals that a single task is starting in the current thread */
+    /**
+     * Signals that a single task is starting in the current thread
+     */
     public static void startTask() {
         synchronized (lockObject) {
             if (instance != null) {
                 try {
                     instance.collectorHandle.
-                        startTask(task, owner, System.currentTimeMillis(), 0);
+                            startTask(task, owner, System.currentTimeMillis(), 0);
                     instance.collectorHandle.noteTransactional(dummyTxnId);
-                } catch (Exception e) { e.printStackTrace(); }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    /** Signals that the current thread's task is done */
+    /**
+     * Signals that the current thread's task is done
+     */
     public static void endTask(boolean committed) {
         synchronized (lockObject) {
             if (instance != null) {
@@ -122,7 +135,9 @@ public class DummyProfileCoordinator {
         }
     }
 
-    /** Shuts down the associated resource coordinator */
+    /**
+     * Shuts down the associated resource coordinator
+     */
     public void shutdown() {
         synchronized (lockObject) {
             instance.shutdown();

@@ -21,9 +21,10 @@
 
 package com.sun.sgs.impl.nio;
 
-import static java.nio.channels.SelectionKey.OP_CONNECT;
-import static java.nio.channels.SelectionKey.OP_READ;
-import static java.nio.channels.SelectionKey.OP_WRITE;
+import com.sun.sgs.nio.channels.AlreadyBoundException;
+import com.sun.sgs.nio.channels.AsynchronousSocketChannel;
+import com.sun.sgs.nio.channels.CompletionHandler;
+import com.sun.sgs.nio.channels.*;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -31,12 +32,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousCloseException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.UnresolvedAddressException;
-import java.nio.channels.UnsupportedAddressTypeException;
+import java.nio.channels.*;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -44,14 +40,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.sgs.nio.channels.AlreadyBoundException;
-import com.sun.sgs.nio.channels.AsynchronousSocketChannel;
-import com.sun.sgs.nio.channels.ClosedAsynchronousChannelException;
-import com.sun.sgs.nio.channels.CompletionHandler;
-import com.sun.sgs.nio.channels.IoFuture;
-import com.sun.sgs.nio.channels.ShutdownType;
-import com.sun.sgs.nio.channels.SocketOption;
-import com.sun.sgs.nio.channels.StandardSocketOption;
+import static java.nio.channels.SelectionKey.*;
 
 /**
  * An implementation of {@link AsynchronousSocketChannel}.
@@ -59,35 +48,40 @@ import com.sun.sgs.nio.channels.StandardSocketOption;
  * returned by this channel's channel group.
  */
 class AsyncSocketChannelImpl
-    extends AsynchronousSocketChannel
-{
-    /** The valid socket options for this channel. */
+        extends AsynchronousSocketChannel {
+    /**
+     * The valid socket options for this channel.
+     */
     private static final Set<SocketOption> socketOptions;
+
     static {
         Set<? extends SocketOption> es = EnumSet.of(
-            StandardSocketOption.SO_SNDBUF,
-            StandardSocketOption.SO_RCVBUF,
-            StandardSocketOption.SO_KEEPALIVE,
-            StandardSocketOption.SO_REUSEADDR,
-            StandardSocketOption.TCP_NODELAY);
+                StandardSocketOption.SO_SNDBUF,
+                StandardSocketOption.SO_RCVBUF,
+                StandardSocketOption.SO_KEEPALIVE,
+                StandardSocketOption.SO_REUSEADDR,
+                StandardSocketOption.TCP_NODELAY);
         socketOptions = Collections.unmodifiableSet(es);
     }
 
-    /** The underlying {@code SocketChannel}. */
+    /**
+     * The underlying {@code SocketChannel}.
+     */
     final SocketChannel channel;
 
-    /** The {@code AsyncKey} for the underlying channel. */
+    /**
+     * The {@code AsyncKey} for the underlying channel.
+     */
     final AsyncKey key;
 
     /**
      * Creates a new instance registered with the given channel group.
-     * 
+     *
      * @param group the channel group
      * @throws IOException if an I/O error occurs
      */
     AsyncSocketChannelImpl(AsyncGroupImpl group)
-        throws IOException
-    {
+            throws IOException {
         this(group, group.selectorProvider().openSocketChannel());
     }
 
@@ -96,15 +90,14 @@ class AsyncSocketChannelImpl
      * the given underlying {@link SocketChannel}. Used by an
      * {@link AsyncServerSocketChannelImpl} when a new connection is
      * accepted.
-     * 
-     * @param group the channel group
+     *
+     * @param group   the channel group
      * @param channel the {@link SocketChannel} for this async channel
      * @throws IOException if an I/O error occurs
      */
     AsyncSocketChannelImpl(AsyncGroupImpl group,
                            SocketChannel channel)
-        throws IOException
-    {
+            throws IOException {
         super(group.provider());
         this.channel = channel;
         key = group.register(channel);
@@ -138,8 +131,7 @@ class AsyncSocketChannelImpl
      */
     @Override
     public AsyncSocketChannelImpl bind(SocketAddress local)
-        throws IOException
-    {
+            throws IOException {
         if ((local != null) && (!(local instanceof InetSocketAddress))) {
             throw new UnsupportedAddressTypeException();
         }
@@ -176,8 +168,7 @@ class AsyncSocketChannelImpl
      */
     @Override
     public AsyncSocketChannelImpl setOption(SocketOption name, Object value)
-        throws IOException
-    {
+            throws IOException {
         if (!(name instanceof StandardSocketOption)) {
             throw new IllegalArgumentException("Unsupported option " + name);
         }
@@ -188,32 +179,32 @@ class AsyncSocketChannelImpl
 
         StandardSocketOption stdOpt = (StandardSocketOption) name;
         final Socket socket = channel.socket();
-        
+
         try {
             switch (stdOpt) {
-            case SO_SNDBUF:
-                socket.setSendBufferSize(((Integer) value).intValue());
-                break;
+                case SO_SNDBUF:
+                    socket.setSendBufferSize(((Integer) value).intValue());
+                    break;
 
-            case SO_RCVBUF:
-                socket.setReceiveBufferSize(((Integer) value).intValue());
-                break;
+                case SO_RCVBUF:
+                    socket.setReceiveBufferSize(((Integer) value).intValue());
+                    break;
 
-            case SO_KEEPALIVE:
-                socket.setKeepAlive(((Boolean) value).booleanValue());
-                break;
+                case SO_KEEPALIVE:
+                    socket.setKeepAlive(((Boolean) value).booleanValue());
+                    break;
 
-            case SO_REUSEADDR:
-                socket.setReuseAddress(((Boolean) value).booleanValue());
-                break;
+                case SO_REUSEADDR:
+                    socket.setReuseAddress(((Boolean) value).booleanValue());
+                    break;
 
-            case TCP_NODELAY:
-                socket.setTcpNoDelay(((Boolean) value).booleanValue());
-                break;
+                case TCP_NODELAY:
+                    socket.setTcpNoDelay(((Boolean) value).booleanValue());
+                    break;
 
-            default:
-                throw new IllegalArgumentException(
-                    "Unsupported option " + name);
+                default:
+                    throw new IllegalArgumentException(
+                            "Unsupported option " + name);
             }
         } catch (SocketException e) {
             if (socket.isClosed()) {
@@ -236,24 +227,24 @@ class AsyncSocketChannelImpl
         final Socket socket = channel.socket();
         try {
             switch (stdOpt) {
-            case SO_SNDBUF:
-                return socket.getSendBufferSize();
+                case SO_SNDBUF:
+                    return socket.getSendBufferSize();
 
-            case SO_RCVBUF:
-                return socket.getReceiveBufferSize();
+                case SO_RCVBUF:
+                    return socket.getReceiveBufferSize();
 
-            case SO_KEEPALIVE:
-                return socket.getKeepAlive();
+                case SO_KEEPALIVE:
+                    return socket.getKeepAlive();
 
-            case SO_REUSEADDR:
-                return socket.getReuseAddress();
+                case SO_REUSEADDR:
+                    return socket.getReuseAddress();
 
-            case TCP_NODELAY:
-                return socket.getTcpNoDelay();
+                case TCP_NODELAY:
+                    return socket.getTcpNoDelay();
 
-            default:
-                throw new IllegalArgumentException("Unsupported option " 
-                                                   + name);
+                default:
+                    throw new IllegalArgumentException("Unsupported option "
+                            + name);
             }
         } catch (SocketException e) {
             if (socket.isClosed()) {
@@ -275,11 +266,10 @@ class AsyncSocketChannelImpl
      */
     @Override
     public AsyncSocketChannelImpl shutdown(ShutdownType how)
-        throws IOException
-    {
+            throws IOException {
         final Socket socket = channel.socket();
         try {
-            if (how == ShutdownType.READ  || how == ShutdownType.BOTH) {
+            if (how == ShutdownType.READ || how == ShutdownType.BOTH) {
                 if (!socket.isInputShutdown()) {
                     socket.shutdownInput();
                     key.selected(OP_READ);
@@ -340,10 +330,9 @@ class AsyncSocketChannelImpl
      */
     @Override
     public <A> IoFuture<Void, A> connect(
-        SocketAddress remote,
-        final A attachment,
-        final CompletionHandler<Void, ? super A> handler)
-    {
+            SocketAddress remote,
+            final A attachment,
+            final CompletionHandler<Void, ? super A> handler) {
         try {
             if (channel.connect(remote)) {
                 Future<Void> result = Util.finishedFuture(null);
@@ -359,17 +348,18 @@ class AsyncSocketChannelImpl
         }
 
         return key.execute(
-            OP_CONNECT, attachment, handler, 0, TimeUnit.MILLISECONDS,
-            new Callable<Void>() {
-                public Void call() throws IOException {
-                    try {
-                        channel.finishConnect();
-                        return null;
-                    } catch (ClosedChannelException e) {
-                        throw Util.initCause(
-                            new AsynchronousCloseException(), e);
+                OP_CONNECT, attachment, handler, 0, TimeUnit.MILLISECONDS,
+                new Callable<Void>() {
+                    public Void call() throws IOException {
+                        try {
+                            channel.finishConnect();
+                            return null;
+                        } catch (ClosedChannelException e) {
+                            throw Util.initCause(
+                                    new AsynchronousCloseException(), e);
+                        }
                     }
-                } });
+                });
     }
 
     /**
@@ -381,18 +371,18 @@ class AsyncSocketChannelImpl
             long timeout,
             TimeUnit unit,
             A attachment,
-            CompletionHandler<Integer, ? super A> handler)
-    {
+            CompletionHandler<Integer, ? super A> handler) {
         return key.execute(OP_READ, attachment, handler, timeout, unit,
-            new Callable<Integer>() {
-                public Integer call() throws IOException {
-                    try {
-                        return channel.read(dst);
-                    } catch (ClosedChannelException e) {
-                        throw Util.initCause(
-                            new AsynchronousCloseException(), e);
+                new Callable<Integer>() {
+                    public Integer call() throws IOException {
+                        try {
+                            return channel.read(dst);
+                        } catch (ClosedChannelException e) {
+                            throw Util.initCause(
+                                    new AsynchronousCloseException(), e);
+                        }
                     }
-                } });
+                });
     }
 
     /**
@@ -402,12 +392,11 @@ class AsyncSocketChannelImpl
     public <A> IoFuture<Long, A> read(
             final ByteBuffer[] dsts,
             final int offset,
-            final int length, 
-            long timeout, 
-            TimeUnit unit, 
+            final int length,
+            long timeout,
+            TimeUnit unit,
             A attachment,
-            CompletionHandler<Long, ? super A> handler)
-    {
+            CompletionHandler<Long, ? super A> handler) {
         if ((offset < 0) || (offset >= dsts.length)) {
             throw new IllegalArgumentException("offset out of range");
         }
@@ -416,15 +405,16 @@ class AsyncSocketChannelImpl
         }
 
         return key.execute(OP_READ, attachment, handler, timeout, unit,
-            new Callable<Long>() {
-                public Long call() throws IOException {
-                    try {
-                        return channel.read(dsts, offset, length);
-                    } catch (ClosedChannelException e) {
-                        throw Util.initCause(
-                            new AsynchronousCloseException(), e);
+                new Callable<Long>() {
+                    public Long call() throws IOException {
+                        try {
+                            return channel.read(dsts, offset, length);
+                        } catch (ClosedChannelException e) {
+                            throw Util.initCause(
+                                    new AsynchronousCloseException(), e);
+                        }
                     }
-                } });
+                });
     }
 
     /**
@@ -436,18 +426,18 @@ class AsyncSocketChannelImpl
             long timeout,
             TimeUnit unit,
             A attachment,
-            CompletionHandler<Integer, ? super A> handler)
-    {
+            CompletionHandler<Integer, ? super A> handler) {
         return key.execute(OP_WRITE, attachment, handler, timeout, unit,
-            new Callable<Integer>() {
-                public Integer call() throws IOException {
-                    try {
-                        return channel.write(src);
-                    } catch (ClosedChannelException e) {
-                        throw Util.initCause(
-                            new AsynchronousCloseException(), e);
+                new Callable<Integer>() {
+                    public Integer call() throws IOException {
+                        try {
+                            return channel.write(src);
+                        } catch (ClosedChannelException e) {
+                            throw Util.initCause(
+                                    new AsynchronousCloseException(), e);
+                        }
                     }
-                } });
+                });
     }
 
     /**
@@ -455,14 +445,13 @@ class AsyncSocketChannelImpl
      */
     @Override
     public <A> IoFuture<Long, A> write(
-            final ByteBuffer[] srcs, 
+            final ByteBuffer[] srcs,
             final int offset,
             final int length,
             long timeout,
             TimeUnit unit,
             A attachment,
-           CompletionHandler<Long, ? super A> handler)
-    {
+            CompletionHandler<Long, ? super A> handler) {
         if ((offset < 0) || (offset >= srcs.length)) {
             throw new IllegalArgumentException("offset out of range");
         }
@@ -471,14 +460,15 @@ class AsyncSocketChannelImpl
         }
 
         return key.execute(OP_WRITE, attachment, handler, timeout, unit,
-            new Callable<Long>() {
-                public Long call() throws IOException {
-                    try {
-                        return channel.write(srcs, offset, length);
-                    } catch (ClosedChannelException e) {
-                        throw Util.initCause(
-                            new AsynchronousCloseException(), e);
+                new Callable<Long>() {
+                    public Long call() throws IOException {
+                        try {
+                            return channel.write(srcs, offset, length);
+                        } catch (ClosedChannelException e) {
+                            throw Util.initCause(
+                                    new AsynchronousCloseException(), e);
+                        }
                     }
-                } });
+                });
     }
 }

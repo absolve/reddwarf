@@ -27,7 +27,7 @@ import com.sun.sgs.app.TaskManager;
 
 
 /**
- * This is implementation of {@code TaskManager} simply calls its backing 
+ * This is implementation of {@code TaskManager} simply calls its backing
  * manager for each manager method.
  */
 public class ProfileTaskManager implements TaskManager {
@@ -63,8 +63,7 @@ public class ProfileTaskManager implements TaskManager {
      * {@inheritDoc}
      */
     public PeriodicTaskHandle schedulePeriodicTask(Task task, long delay,
-                                                   long period) 
-    {
+                                                   long period) {
         return backingManager.schedulePeriodicTask(task, delay, period);
     }
 

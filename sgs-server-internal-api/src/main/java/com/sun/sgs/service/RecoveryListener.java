@@ -51,8 +51,8 @@ public interface RecoveryListener {
      * {@link SimpleCompletionHandler#completed completed} method must be
      * called for each {@code handler} provided.
      *
-     * @param	node a failed node to recover
-     * @param	handler a handler to notify when recovery is complete
+     * @param    node a failed node to recover
+     * @param    handler a handler to notify when recovery is complete
      */
     void recover(Node node, SimpleCompletionHandler handler);
 }

@@ -35,84 +35,92 @@ import java.util.Map;
  * implementation ensures that a caller will not have access to stale
  * entries (i.e., entries whose timeout has expired).
  *
- * @param	<K> the key type
- * @param	<V> the value type
+ * @param    <K> the key type
+ * @param    <V> the value type
  */
 public class CacheMap<K, V> {
 
-    /** The underlying map. */
+    /**
+     * The underlying map.
+     */
     private final Map<K, Value<K, V>> map = new HashMap<K, Value<K, V>>();
 
-    /** The reference queue, for detecting weak references removals. */
+    /**
+     * The reference queue, for detecting weak references removals.
+     */
     private final ReferenceQueue<V> queue = new ReferenceQueue<V>();
 
-    /** The entry timeout. */
+    /**
+     * The entry timeout.
+     */
     private final long entryTimeout;
 
-    /** Creates an instance of this class. */
+    /**
+     * Creates an instance of this class.
+     */
     public CacheMap() {
-	this(0);
+        this(0);
     }
 
     /**
      * Creates an instance of this class with the specified {@code
      * entryTimeout}.
      *
-     * @param	entryTimeout an entry timeout, in milliseconds
-     * @throws	IllegalArgumentException if {@code entryTimeout} is negative
+     * @param    entryTimeout an entry timeout, in milliseconds
+     * @throws IllegalArgumentException if {@code entryTimeout} is negative
      */
     public CacheMap(long entryTimeout) {
-	if (entryTimeout < 0) {
-	    throw new IllegalArgumentException("entryTimeout is negative");
-	}
-	this.entryTimeout = entryTimeout;
+        if (entryTimeout < 0) {
+            throw new IllegalArgumentException("entryTimeout is negative");
+        }
+        this.entryTimeout = entryTimeout;
     }
 
     /**
      * Associates a value with given key, returning the value previously
      * associated with key, or {@code null} if none is found.
      *
-     * @param	key the key
-     * @param	value the value
-     * @return	the previous value or {@code null}
+     * @param    key the key
+     * @param    value the value
+     * @return the previous value or {@code null}
      */
     public V put(K key, V value) {
-	processQueue();
-	Value<K, V> oldValue =
-	    map.put(key, new Value<K, V>(key, value, queue, entryTimeout));
-	return oldValue != null ? oldValue.get() : null;
+        processQueue();
+        Value<K, V> oldValue =
+                map.put(key, new Value<K, V>(key, value, queue, entryTimeout));
+        return oldValue != null ? oldValue.get() : null;
     }
 
     /**
      * Checks if the map contains the specified key.
      *
-     * @param	key the key
-     * @return	{@code true} if the map contains the key, else {@code false}
+     * @param    key the key
+     * @return    {@code true} if the map contains the key, else {@code false}
      */
     public boolean containsKey(K key) {
-	processQueue();
-	return get(key) != null;
-	
+        processQueue();
+        return get(key) != null;
+
     }
 
     /**
      * Returns the value associated with given key, or {@code null} if the key
      * is not found.
      *
-     * @param	key the key
-     * @return	the value associated with the key or {@code null}	
+     * @param    key the key
+     * @return the value associated with the key or {@code null}
      */
     public V get(K key) {
-	processQueue();
-	Value<K, V> value = map.get(key);
-	if (value == null) {
-	    return null;
-	} else if (value.isExpired()) {
-	    map.remove(key);
-	    return null;
-	} else {
-	    return value.get();
-	}
+        processQueue();
+        Value<K, V> value = map.get(key);
+        if (value == null) {
+            return null;
+        } else if (value.isExpired()) {
+            map.remove(key);
+            return null;
+        } else {
+            return value.get();
+        }
     }
 
     /**
@@ -120,19 +128,21 @@ public class CacheMap<K, V> {
      * previously associated with the key, or {@code null} if the key is not
      * found.
      *
-     * @param	key the key
-     * @return	the value previously associated with the key or {@code null}
+     * @param    key the key
+     * @return the value previously associated with the key or {@code null}
      */
     public V remove(K key) {
-	processQueue();
-	Value<K, V> oldValue = map.remove(key);
-	return oldValue != null ? oldValue.get() : null;
+        processQueue();
+        Value<K, V> oldValue = map.remove(key);
+        return oldValue != null ? oldValue.get() : null;
     }
 
-    /** Removes all associations from this map. */
+    /**
+     * Removes all associations from this map.
+     */
     public void clear() {
-	processQueue();
-	map.clear();
+        processQueue();
+        map.clear();
     }
 
     /**
@@ -140,62 +150,66 @@ public class CacheMap<K, V> {
      * no longer referenced.
      */
     private void processQueue() {
-	while (true) {
-	    /* No way to say that the queue holds Values */
-	    @SuppressWarnings("unchecked")
-	    Value<K, V> value = (Value<K, V>) queue.poll();
-	    if (value != null) {
-		map.remove(value.getKey());
-	    } else {
-		break;
-	    }
-	}
+        while (true) {
+            /* No way to say that the queue holds Values */
+            @SuppressWarnings("unchecked")
+            Value<K, V> value = (Value<K, V>) queue.poll();
+            if (value != null) {
+                map.remove(value.getKey());
+            } else {
+                break;
+            }
+        }
     }
 
     /**
      * A key that maintains a weak reference to an object which should be
      * compared by object identity.
      *
-     * @param	<K> the type of the referenced object
-    */
+     * @param    <K> the type of the referenced object
+     */
     private static final class Value<K, V> extends SoftReference<V> {
 
-	/** The value's associated key. */
-	private final K key;
-	/** The value's expiration time. */
-	private final long expirationTime;
+        /**
+         * The value's associated key.
+         */
+        private final K key;
+        /**
+         * The value's expiration time.
+         */
+        private final long expirationTime;
 
-	/**
-	 * Creates an instance of this class and registers it with the
-	 * specified reference queue.
-	 *
-	 * @param	key the key
-	 * @param	value the value (held softly)
-	 * @param	queue the reference queue
-	 * @param	timeout a timeout (0 = infinite)
-	 */
-	Value(K key, V value, ReferenceQueue<V> queue, long timeout) {
-	    super(value, queue);
-	    this.key = key;
-	    this.expirationTime =
-		timeout > 0 ?
-		System.currentTimeMillis() + timeout :
-		Long.MAX_VALUE;
-	}
+        /**
+         * Creates an instance of this class and registers it with the
+         * specified reference queue.
+         *
+         * @param    key the key
+         * @param    value the value (held softly)
+         * @param    queue the reference queue
+         * @param    timeout a timeout (0 = infinite)
+         */
+        Value(K key, V value, ReferenceQueue<V> queue, long timeout) {
+            super(value, queue);
+            this.key = key;
+            this.expirationTime =
+                    timeout > 0 ?
+                            System.currentTimeMillis() + timeout :
+                            Long.MAX_VALUE;
+        }
 
-	/**
-	 * Returns {@code true} if this value has expired, otherwise
-	 * returns {@code false}.
-	 */
-	boolean isExpired() {
-	    return expirationTime <= System.currentTimeMillis();
-	}
+        /**
+         * Returns {@code true} if this value has expired, otherwise
+         * returns {@code false}.
+         */
+        boolean isExpired() {
+            return expirationTime <= System.currentTimeMillis();
+        }
 
-	/**
-	 * Returns this value's associated key.
-	 */
-	K getKey() {
-	    return key;
-	}
+        /**
+         * Returns this value's associated key.
+         */
+        K getKey() {
+            return key;
+        }
     }
 }

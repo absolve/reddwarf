@@ -32,13 +32,12 @@ import java.security.MessageDigest;
  * whitespace, a SHA-256 hashed password encoded via a call to
  * <code>NamePasswordAuthenticator.encodeBytes</code>, and finally a newline.
  */
-public final class PasswordFileEditor
-{
+public final class PasswordFileEditor {
     /**
      * This class should not be instantiated
      */
     private PasswordFileEditor() {
-    
+
     }
 
     /**
@@ -48,19 +47,18 @@ public final class PasswordFileEditor
      * password.
      *
      * @param args the arguments for this utility
-     *
      * @throws Exception if anything fails
      */
-    public static void main(String [] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         if (args.length != 3) {
             System.out.println("Usage: password_file name password");
             return;
         }
 
         // make sure we can hash and encode the password
-        byte [] pass = MessageDigest.getInstance("SHA-256").
-            digest(args[2].getBytes("UTF-8"));
-        byte [] encodedPass = NamePasswordAuthenticator.encodeBytes(pass);
+        byte[] pass = MessageDigest.getInstance("SHA-256").
+                digest(args[2].getBytes("UTF-8"));
+        byte[] encodedPass = NamePasswordAuthenticator.encodeBytes(pass);
 
         FileOutputStream out = null;
         try {
@@ -71,6 +69,7 @@ public final class PasswordFileEditor
             out.write(encodedPass);
             out.write("\n".getBytes("UTF-8"));
         } finally {
+            assert out != null;
             out.close();
         }
     }

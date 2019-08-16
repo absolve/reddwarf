@@ -30,7 +30,6 @@ import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
 
 import java.beans.PropertyChangeEvent;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,7 @@ import java.util.Properties;
  * fixed-size window of tasks as well as the lifetime of the program.
  * This class uses a {@link PowerOfTwoHistogram} to display the
  * distribution for each sample
- *
+ * <p>
  * Note that this class uses a fixed number of tasks between outputs,
  * rather than a period of time.  The number of tasks can be
  * configured by defining the {@code
@@ -76,29 +75,27 @@ public class ProfileSampleListener implements ProfileListener {
      * Creates an instance of {@code ProfileSampleListener}.
      *
      * @param properties the {@code Properties} for this listener
-     * @param owner the {@code Identity} to use for all tasks run by
-     *        this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *        available system components
-     *
+     * @param owner      the {@code Identity} to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      */
     public ProfileSampleListener(Properties properties, Identity owner,
-                                 ComponentRegistry registry) 
-    {
+                                 ComponentRegistry registry) {
 
-	taskCount = 0;
-	profileSamples = new HashMap<String, Histogram>();
+        taskCount = 0;
+        profileSamples = new HashMap<String, Histogram>();
 
-	windowSize = new PropertiesWrapper(properties).
-	    getIntProperty(ProfileListener.WINDOW_SIZE_PROPERTY, 
-                           DEFAULT_WINDOW_SIZE);
+        windowSize = new PropertiesWrapper(properties).
+                getIntProperty(ProfileListener.WINDOW_SIZE_PROPERTY,
+                        DEFAULT_WINDOW_SIZE);
     }
 
     /**
      * {@inheritDoc}
      */
     public void propertyChange(PropertyChangeEvent event) {
-	// unused
+        // unused
     }
 
     /**
@@ -111,54 +108,53 @@ public class ProfileSampleListener implements ProfileListener {
      * @param profileReport the summary for the finished {@code Task}
      */
     public void report(ProfileReport profileReport) {
-	
-	taskCount++;
-	
-	Map<String, List<Long>> m = profileReport.getUpdatedTaskSamples();
 
-	if (m == null) {
-	    return;
+        taskCount++;
+
+        Map<String, List<Long>> m = profileReport.getUpdatedTaskSamples();
+
+        if (m == null) {
+            return;
         }
 
-	for (Entry<String, List<Long>> entry : m.entrySet()) {
-	    String name = entry.getKey();
+        for (Entry<String, List<Long>> entry : m.entrySet()) {
+            String name = entry.getKey();
 
-	    Histogram hist = profileSamples.get(name);
-	    if (hist == null) {
-		hist = new PowerOfTwoHistogram();
-		profileSamples.put(name, hist);
-	    }
-
-	    List<Long> samples = entry.getValue();
-	    for (Long l : samples) {
-		hist.bin(l.longValue());
+            Histogram hist = profileSamples.get(name);
+            if (hist == null) {
+                hist = new PowerOfTwoHistogram();
+                profileSamples.put(name, hist);
             }
-	}
-	
-	if (taskCount % windowSize == 0) {
 
-	    if (profileSamples.size() > 0) {
-		System.out.printf("Profile samples for the past %d tasks:%n", 
-				  taskCount);
-		
-		for (Map.Entry<String, Histogram> e : 
-                         profileSamples.entrySet()) 
-                {
-		    System.out.printf("%s: (%d samples)%n%s%n", e.getKey(), 
-				      e.getValue().size(), e.getValue());
+            List<Long> samples = entry.getValue();
+            for (Long l : samples) {
+                hist.bin(l.longValue());
+            }
+        }
+
+        if (taskCount % windowSize == 0) {
+
+            if (profileSamples.size() > 0) {
+                System.out.printf("Profile samples for the past %d tasks:%n",
+                        taskCount);
+
+                for (Map.Entry<String, Histogram> e :
+                        profileSamples.entrySet()) {
+                    System.out.printf("%s: (%d samples)%n%s%n", e.getKey(),
+                            e.getValue().size(), e.getValue());
                 }
-		
 
-		// reset the samples for the next window
-		profileSamples.clear();
-	    }
-	}	
+
+                // reset the samples for the next window
+                profileSamples.clear();
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void shutdown() {
-	// unused
+        // unused
     }
 }

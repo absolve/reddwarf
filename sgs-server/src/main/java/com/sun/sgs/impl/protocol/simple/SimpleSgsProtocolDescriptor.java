@@ -23,6 +23,7 @@ package com.sun.sgs.impl.protocol.simple;
 
 import com.sun.sgs.protocol.ProtocolDescriptor;
 import com.sun.sgs.transport.TransportDescriptor;
+
 import java.io.Serializable;
 
 /**
@@ -31,18 +32,19 @@ import java.io.Serializable;
  * for protocol and/or transport-specific needs.
  */
 public class SimpleSgsProtocolDescriptor
-    implements ProtocolDescriptor, Serializable
-{
+        implements ProtocolDescriptor, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** The transport descriptor for this protocol. */
-    protected final TransportDescriptor transportDesc;   
-        
+    /**
+     * The transport descriptor for this protocol.
+     */
+    protected final TransportDescriptor transportDesc;
+
     /**
      * Constructs an instance with the specified transport descriptor.
      *
-     * @param	transportDesc transport descriptor
+     * @param    transportDesc transport descriptor
      */
     public SimpleSgsProtocolDescriptor(TransportDescriptor transportDesc) {
         if (transportDesc == null) {
@@ -51,21 +53,23 @@ public class SimpleSgsProtocolDescriptor
         this.transportDesc = transportDesc;
     }
 
-    /** {@inheritDoc}
+    /**
+     * {@inheritDoc}
      *
      * <p>This implementation returns {@code true} if the specified {@code
      * descriptor} is an instance of this class and this descriptor's
      * underlying transport descriptor is compatible with the specified
      * {@code descriptor}'s transport descriptor.
      */
+    @Override
     public boolean supportsProtocol(ProtocolDescriptor descriptor) {
         if (!(descriptor instanceof SimpleSgsProtocolDescriptor)) {
             return false;
-	}
-        
+        }
+
         SimpleSgsProtocolDescriptor desc =
-	    (SimpleSgsProtocolDescriptor) descriptor;
-        
+                (SimpleSgsProtocolDescriptor) descriptor;
+
         return transportDesc.supportsTransport(desc.transportDesc);
     }
 
@@ -73,18 +77,19 @@ public class SimpleSgsProtocolDescriptor
      * Return the protocol specific connection data as a byte array. The data
      * can be used by a client to connect to a server. The format of the data
      * may be dependent on the transport configured with this protocol.
+     *
      * @return the connection data
      */
     public byte[] getConnectionData() {
-	return transportDesc.getConnectionData();
+        return transportDesc.getConnectionData();
     }
 
     /**
      * Returns a string representation of this descriptor.
      *
-     * @return	a string representation of this descriptor
+     * @return a string representation of this descriptor
      */
     public String toString() {
-	return "SimpleSgsProtocolDescriptor[" + transportDesc.toString() + "]";
+        return "SimpleSgsProtocolDescriptor[" + transportDesc.toString() + "]";
     }
 }

@@ -33,8 +33,8 @@ public interface IoRunnable {
      * Runs IO-related operations to be executed within the context of
      * {@link AbstractService#runIoTask AbstractService.runIoTask}.
      *
-     * @throws	IOException if an IOException occurs while running this
-     *		method 
+     * @throws IOException if an IOException occurs while running this
+     * method
      */
-   void run() throws IOException;
+    void run() throws IOException;
 }

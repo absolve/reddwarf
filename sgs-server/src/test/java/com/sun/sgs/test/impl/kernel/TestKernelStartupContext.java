@@ -31,10 +31,11 @@ import com.sun.sgs.service.Service;
 import com.sun.sgs.service.TransactionProxy;
 import com.sun.sgs.test.util.SgsTestNode;
 import com.sun.sgs.tools.test.FilteredNameRunner;
-import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Properties;
 
 /**
  * A regression test for sgs-server issue 129.  It's desirable
@@ -48,17 +49,17 @@ public class TestKernelStartupContext {
         // Ensure that the manager locator has not been set before
         // running the tests.
         InternalContext.setManagerLocator(null);
-    } 
-    
-    @Test 
+    }
+
+    @Test
     public void startupContext() throws Exception {
         // Ensure that we have a context during startup
         Properties properties =
-            SgsTestNode.getDefaultProperties("TestStartupContext", null, null);
-        properties.setProperty(StandardProperties.SERVICES, 
-                               TestService.class.getName());
+                SgsTestNode.getDefaultProperties("TestStartupContext", null, null);
+        properties.setProperty(StandardProperties.SERVICES,
+                TestService.class.getName());
         properties.setProperty(StandardProperties.MANAGERS, "");
-        
+
         SgsTestNode node = null;
         try {
             node = new SgsTestNode("TestStartupContext", null, properties);
@@ -68,50 +69,56 @@ public class TestKernelStartupContext {
             }
         }
     }
-    
+
     /**
      * A service used for testing.  This service is a system extension
      * and has no associated manager.
      */
     public static final class TestService implements Service {
-       
-        /** 
+
+        /**
          * Constructs a TestService instance, using the Data Manager.
          * Because the data service is constructed by the kernel before
          * this service, we expect to be able to reach the data manager.
-         * 
-         * @param properties the properties
+         *
+         * @param properties     the properties
          * @param systemRegistry the component registry
-         * @param txnProxy the proxy
+         * @param txnProxy       the proxy
          * @throws Exception if there is an error during construction
          */
-        public TestService(Properties properties, 
-                    ComponentRegistry systemRegistry,
-                    TransactionProxy txnProxy)
-            throws Exception
-        {
+        public TestService(Properties properties,
+                           ComponentRegistry systemRegistry,
+                           TransactionProxy txnProxy)
+                throws Exception {
             TransactionScheduler transactionScheduler =
-                systemRegistry.getComponent(TransactionScheduler.class);
+                    systemRegistry.getComponent(TransactionScheduler.class);
 
             transactionScheduler.runTask(
-		new AbstractKernelRunnable("UseStartupContext") {
-		    public void run() {
-                        DataManager data = AppContext.getDataManager();
-                        System.out.println("Data manager is " + data);
-		    } },  txnProxy.getCurrentOwner());
+                    new AbstractKernelRunnable("UseStartupContext") {
+                        public void run() {
+                            DataManager data = AppContext.getDataManager();
+                            System.out.println("Data manager is " + data);
+                        }
+                    }, txnProxy.getCurrentOwner());
         }
-       
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public String getName() {
             return "test service";
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void ready() throws Exception {
             // do nothing
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void shutdown() {
             //do nothing
         }

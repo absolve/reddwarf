@@ -1,58 +1,58 @@
 <assembly>
-  <includeBaseDirectory>false</includeBaseDirectory>
-  <formats>
-    <format>zip</format>
-  </formats>
-  
-  <dependencySets>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <formats>
+        <format>zip</format>
+    </formats>
 
-    <!-- Include the sgs-tutorial-server jar file -->
-    <dependencySet>
-      <includes>
-	<include>org.reddwarfserver.server:sgs-tutorial-server:jar</include>
-      </includes>
-      <outputDirectory>tutorial</outputDirectory>
-      <outputFileNameMapping>tutorial.jar</outputFileNameMapping>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
+    <dependencySets>
 
-    <!-- Unpack the sources artifact of the sgs-tutorial-server
-	 module into the src directory -->
-    <dependencySet>
-      <includes>
-	<include>org.reddwarfserver.server:sgs-tutorial-server:jar:sources</include>
-      </includes>
-      <unpack>true</unpack>
-      <unpackOptions>
-	<excludes>
-	  <exclude>META-INF</exclude>
-	  <exclude>META-INF/*</exclude>
-	</excludes>
-      </unpackOptions>
-      <outputDirectory>tutorial/src</outputDirectory>
-      <useProjectArtifact>false</useProjectArtifact>
-    </dependencySet>
-  </dependencySets>
-  
-  
-  <fileSets>
+        <!-- Include the sgs-tutorial-server jar file -->
+        <dependencySet>
+            <includes>
+                <include>org.reddwarfserver.server:sgs-tutorial-server:jar</include>
+            </includes>
+            <outputDirectory>tutorial</outputDirectory>
+            <outputFileNameMapping>tutorial.jar</outputFileNameMapping>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
 
-    <!-- Include the example configuration files used in
-	 the tutorial -->
-    <fileSet>
-      <directory>src/main/conf</directory>
-      <outputDirectory>tutorial/conf</outputDirectory>
-    </fileSet>
+        <!-- Unpack the sources artifact of the sgs-tutorial-server
+         module into the src directory -->
+        <dependencySet>
+            <includes>
+                <include>org.reddwarfserver.server:sgs-tutorial-server:jar:sources</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <excludes>
+                    <exclude>META-INF</exclude>
+                    <exclude>META-INF/*</exclude>
+                </excludes>
+            </unpackOptions>
+            <outputDirectory>tutorial/src</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+    </dependencySets>
 
-    <!-- Include the tutorial file -->
-    <fileSet>
-      <directory>src/main/doc</directory>
-      <outputDirectory>tutorial</outputDirectory>
-      <includes>
-	<include>**/*.txt</include>
-      </includes>
-    </fileSet>
 
-  </fileSets>
-  
+    <fileSets>
+
+        <!-- Include the example configuration files used in
+         the tutorial -->
+        <fileSet>
+            <directory>src/main/conf</directory>
+            <outputDirectory>tutorial/conf</outputDirectory>
+        </fileSet>
+
+        <!-- Include the tutorial file -->
+        <fileSet>
+            <directory>src/main/doc</directory>
+            <outputDirectory>tutorial</outputDirectory>
+            <includes>
+                <include>**/*.txt</include>
+            </includes>
+        </fileSet>
+
+    </fileSets>
+
 </assembly>

@@ -21,5 +21,5 @@
 
 /**
  * Provides an implementation of the transport layer APIs using TCP.
- */ 
+ */
 package com.sun.sgs.impl.transport.tcp;

@@ -22,6 +22,7 @@
 package com.sun.sgs.impl.service.nodemap.affinity;
 
 import com.sun.sgs.auth.Identity;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,17 +52,18 @@ public class RelocatingAffinityGroup implements AffinityGroup, Comparable {
 
     // hashcode, lazily computed
     private volatile int hashcode;
+
     /**
      * Creates a new affinity group containing node information.
-     * @param agid the group id
+     *
+     * @param agid       the group id
      * @param identities the identities and their nodes in the group
      * @param generation the generation number of this group
      * @throws IllegalArgumentException if {@code identities} is empty
      */
     public RelocatingAffinityGroup(long agid,
                                    Map<Identity, Long> identities,
-                                   long generation)
-    {
+                                   long generation) {
         if (identities.size() == 0) {
             throw new IllegalArgumentException("Identities must not be empty");
         }
@@ -73,6 +75,7 @@ public class RelocatingAffinityGroup implements AffinityGroup, Comparable {
 
     /**
      * Calculate the node that the most number of identities is on.
+     *
      * @return the node id of the most used node
      */
     private long calcMostUsedNode() {
@@ -94,7 +97,7 @@ public class RelocatingAffinityGroup implements AffinityGroup, Comparable {
             if (highestCount < count) {
                 highestCount = count;
                 retNode = entry.getKey();
-            }         
+            }
         }
         return retNode;
     }
@@ -125,7 +128,9 @@ public class RelocatingAffinityGroup implements AffinityGroup, Comparable {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -136,16 +141,18 @@ public class RelocatingAffinityGroup implements AffinityGroup, Comparable {
         }
         RelocatingAffinityGroup other = (RelocatingAffinityGroup) obj;
         return (agid == other.agid) &&
-               (generation == other.generation) &&
-               (identities.equals(other.identities));
+                (generation == other.generation) &&
+                (identities.equals(other.identities));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         if (hashcode == 0) {
             int result = 17;
-            result = result * 37 + (int) (agid  ^ agid >>> 32);
+            result = result * 37 + (int) (agid ^ agid >>> 32);
             result = result * 37 + (int) (generation ^ generation >>> 32);
             result = result * 37 + identities.hashCode();
             hashcode = result;
@@ -153,24 +160,32 @@ public class RelocatingAffinityGroup implements AffinityGroup, Comparable {
         return hashcode;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "AffinityGroup: " + agid + " targetNodeId: " + targetNodeId +
-               " #identities: " + identities.size();
+                " #identities: " + identities.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getId() {
         return agid;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Set<Identity> getIdentities() {
         return Collections.unmodifiableSet(identities.keySet());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getGeneration() {
         return generation;
     }

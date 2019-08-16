@@ -38,10 +38,14 @@ package com.sun.sgs.management;
  */
 public interface KernelMXBean {
 
-    /** The name for uniquely identifying this MBean. */
+    /**
+     * The name for uniquely identifying this MBean.
+     */
     String MXBEAN_NAME = "com.sun.sgs:type=Kernel";
 
-    /** Requests that this node starts an orderly shutdown. */
+    /**
+     * Requests that this node starts an orderly shutdown.
+     */
     void requestShutdown();
 
 }

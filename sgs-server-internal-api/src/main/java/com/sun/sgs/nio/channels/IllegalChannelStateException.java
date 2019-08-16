@@ -32,9 +32,10 @@ package com.sun.sgs.nio.channels;
  * [[Not specified by JSR-203, but referenced in the JSR-203 Javadoc]]
  */
 public class IllegalChannelStateException
-    extends IllegalStateException
-{
-    /** The version of the serialized representation of this class. */
+        extends IllegalStateException {
+    /**
+     * The version of the serialized representation of this class.
+     */
     private static final long serialVersionUID = 1L;
 
     /**

@@ -19,6 +19,8 @@
  * --
  */
 
-/** Provides an implementation of {@link
- * com.sun.sgs.service.ClientSessionService}. */
+/**
+ * Provides an implementation of {@link
+ * com.sun.sgs.service.ClientSessionService}.
+ */
 package com.sun.sgs.impl.service.session;

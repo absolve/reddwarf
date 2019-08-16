@@ -22,19 +22,15 @@
 package com.sun.sgs.impl.profile.listener;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.profile.util.TransactionId;
-
 import com.sun.sgs.kernel.AccessedObject;
 import com.sun.sgs.kernel.ComponentRegistry;
-
 import com.sun.sgs.profile.AccessedObjectsDetail;
 import com.sun.sgs.profile.AccessedObjectsDetail.ConflictType;
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
 
 import java.beans.PropertyChangeEvent;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -61,11 +57,13 @@ public class AccessedObjectsListener implements ProfileListener {
 
     // a local backlog of the past access detail
     private final BoundedLinkedHashMap<TransactionId, AccessedObjectsDetail>
-        backlogMap;
+            backlogMap;
 
-    /** Property that defines the maximum number of accesses to display. */
-    public static final String ACCESS_COUNT_PROPERTY = 
-	AccessedObjectsListener.class.getName() + ".access.count";
+    /**
+     * Property that defines the maximum number of accesses to display.
+     */
+    public static final String ACCESS_COUNT_PROPERTY =
+            AccessedObjectsListener.class.getName() + ".access.count";
 
     // the default and configured number of accesses to display
     private static final int DEFAULT_ACCESS_COUNT = 20;
@@ -75,46 +73,44 @@ public class AccessedObjectsListener implements ProfileListener {
      * Creates an instance of {@code AccessedObjectsListener}.
      *
      * @param properties the {@code Properties} for this listener
-     * @param owner the {@code Identity} to use for all tasks run by
-     *        this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *        available system components
-     *
+     * @param owner      the {@code Identity} to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      * @throws IllegalArgumentException if either of the backlog or count
      *                                  properties is provided but invalid
      */
     public AccessedObjectsListener(Properties properties, Identity owner,
-				   ComponentRegistry registry) 
-    {
+                                   ComponentRegistry registry) {
         if (properties == null) {
             throw new NullPointerException("Properties cannot be null");
         }
 
         String backlogProp =
-            properties.getProperty("com.sun.sgs.impl.kernel." +
-                                   "TrackingAccessCoordinator.queue.size");
+                properties.getProperty("com.sun.sgs.impl.kernel." +
+                        "TrackingAccessCoordinator.queue.size");
         if (backlogProp != null) {
             try {
                 backlogMap = new BoundedLinkedHashMap
-                    <TransactionId, AccessedObjectsDetail>(Integer.
-                                                       parseInt(backlogProp));
+                        <TransactionId, AccessedObjectsDetail>(Integer.
+                        parseInt(backlogProp));
             } catch (NumberFormatException nfe) {
                 throw new IllegalArgumentException("Backlog size must be a " +
-                                                   "number: " + backlogProp);
+                        "number: " + backlogProp);
             }
         } else {
             backlogMap = null;
         }
 
-	String countProp = properties.getProperty(ACCESS_COUNT_PROPERTY);
-	if (countProp != null) {
-	    try {
-		accessesToShow = Integer.parseInt(countProp);
-	    } catch (NumberFormatException nfe) {
-		throw new IllegalArgumentException("Access count moust be a " +
-						   "number: " + countProp);
-	    }
-	} else {
+        String countProp = properties.getProperty(ACCESS_COUNT_PROPERTY);
+        if (countProp != null) {
+            try {
+                accessesToShow = Integer.parseInt(countProp);
+            } catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("Access count moust be a " +
+                        "number: " + countProp);
+            }
+        } else {
             accessesToShow = DEFAULT_ACCESS_COUNT;
         }
     }
@@ -123,7 +119,7 @@ public class AccessedObjectsListener implements ProfileListener {
      * {@inheritDoc}
      */
     public void propertyChange(PropertyChangeEvent event) {
-	// unused
+        // unused
     }
 
     /**
@@ -131,8 +127,8 @@ public class AccessedObjectsListener implements ProfileListener {
      */
     public void report(ProfileReport profileReport) {
         // get the access detail, or return if there is none available
-	AccessedObjectsDetail detail = profileReport.getAccessedObjectsDetail();
-	if (detail == null) {
+        AccessedObjectsDetail detail = profileReport.getAccessedObjectsDetail();
+        if (detail == null) {
             return;
         }
 
@@ -149,18 +145,18 @@ public class AccessedObjectsListener implements ProfileListener {
                 txnId = new TransactionId(profileReport.getTransactionId());
             }
             // print out the detail for the failed transaction
-	    System.out.printf("Task type %s failed due to conflict.  Details:"
-			      + "%n  accessor id: %s, try count %d; objects "
-			      + "accessed ordered by first access:%n%s" 
-			      + "conflict type: %s%n",
-			      profileReport.getTask().getBaseTaskType(),
-			      txnId, profileReport.getRetryCount(),
-			      formatAccesses(detail.getAccessedObjects()),
-			      detail.getConflictType());
+            System.out.printf("Task type %s failed due to conflict.  Details:"
+                            + "%n  accessor id: %s, try count %d; objects "
+                            + "accessed ordered by first access:%n%s"
+                            + "conflict type: %s%n",
+                    profileReport.getTask().getBaseTaskType(),
+                    txnId, profileReport.getRetryCount(),
+                    formatAccesses(detail.getAccessedObjects()),
+                    detail.getConflictType());
 
             // see if the conflicting transaction is known, otherwise we've
             // shown all the detail we know
-            byte [] conflictingBytes = detail.getConflictingId();
+            byte[] conflictingBytes = detail.getConflictingId();
             if (conflictingBytes == null) {
                 System.out.printf("%n");
                 return;
@@ -174,15 +170,15 @@ public class AccessedObjectsListener implements ProfileListener {
                 // look to see if we know about the conflicting transaction,
                 // and add the new detail to the backlog
                 AccessedObjectsDetail conflictingDetail =
-                    backlogMap.get(conflictingId);
+                        backlogMap.get(conflictingId);
 
                 // if we found the conflicting detail, display it and return
                 if (conflictingDetail != null) {
                     System.out.printf("Conflicting transaction id: %s, objects"
-                                      + " accessed, ordered by first access:"
-                                      + "%n%s%n", conflictingId,
-                                      formatAccesses(conflictingDetail.
-                                                     getAccessedObjects()));
+                                    + " accessed, ordered by first access:"
+                                    + "%n%s%n", conflictingId,
+                            formatAccesses(conflictingDetail.
+                                    getAccessedObjects()));
 
                     return;
                 }
@@ -190,35 +186,33 @@ public class AccessedObjectsListener implements ProfileListener {
 
             // we don't know anything else, so just print out the id
             System.out.printf("ID of conflicting accessor %s%n%n",
-                              conflictingId);
-	}
+                    conflictingId);
+        }
     }
 
-    /** 
+    /**
      * Returns a formatted list of accesses with one access per line.
      *
      * @param accessedObjects a {@code List} of {@code AccessedObject}
-     * 
      * @return a formatted representation of the accessed objects
      */
     private String formatAccesses(
-	List<? extends AccessedObject> accessedObjects)
-    {
+            List<? extends AccessedObject> accessedObjects) {
         StringBuilder formatted = new StringBuilder();
         int count = 0;
 
-	for (AccessedObject object : accessedObjects) {
+        for (AccessedObject object : accessedObjects) {
             if (++count > accessesToShow) {
                 break;
             }
 
             try {
                 formatted.append(String.format("[source: %s] %-5s %s, " +
-                                               "description: %s%n",
-                                               object.getSource(),
-                                               object.getAccessType(),
-                                               object.getObjectId(),
-                                               object.getDescription()));
+                                "description: %s%n",
+                        object.getSource(),
+                        object.getAccessType(),
+                        object.getObjectId(),
+                        object.getDescription()));
             } catch (Throwable t) {
                 // calling toString() on the object id or the description
                 // may have failed, though in practice (in the current
@@ -226,50 +220,54 @@ public class AccessedObjectsListener implements ProfileListener {
                 // any trouble, so we can include some detail about
                 // both the access and the failure
                 formatted.append(String.format("[source %s] %-5s %s [%s." +
-                                               "toString() threw: %s]%n",
-                                               object.getSource(),
-                                               object.getAccessType(),
-                                               object.getObjectId(),
-                                               object.getDescription().
-                                               getClass(), t));
+                                "toString() threw: %s]%n",
+                        object.getSource(),
+                        object.getAccessType(),
+                        object.getObjectId(),
+                        object.getDescription().
+                                getClass(), t));
             }
         }
 
         // if we went over the max count then it means there was still
         // more to show, so add a message about the truncation
-	if (--count == accessesToShow) {
-	    formatted.
-                append(String.format("[%d further accesses truncated]%n",
-                                     accessedObjects.size() - accessesToShow));
+        if (--count == accessesToShow) {
+            formatted.
+                    append(String.format("[%d further accesses truncated]%n",
+                            accessedObjects.size() - accessesToShow));
         }
 
-	return formatted.toString();
+        return formatted.toString();
     }
 
     /**
      * {@inheritDoc}
      */
     public void shutdown() {
-	// unused
+        // unused
     }
 
-    /** 
+    /**
      * A private implementation of {@code LinkedHashMap} that is
      * bounded in size.
      */
-    private static class BoundedLinkedHashMap<K, V> 
-            extends LinkedHashMap<K, V> 
-    {
+    private static class BoundedLinkedHashMap<K, V>
+            extends LinkedHashMap<K, V> {
         private static final long serialVersionUID = 1;
 
         // the bounding size
         private final int maxSize;
-     
-	/** Creates an instance of {@code BoundedLinkedHashMap}. */
+
+        /**
+         * Creates an instance of {@code BoundedLinkedHashMap}.
+         */
         BoundedLinkedHashMap(int maxSize) {
             this.maxSize = maxSize;
         }
-        /** Overrides to bound to a fixed size. */
+
+        /**
+         * Overrides to bound to a fixed size.
+         */
         protected boolean removeEldestEntry(Entry<K, V> eldest) {
             return size() > maxSize;
         }

@@ -38,22 +38,22 @@ import com.sun.sgs.kernel.NodeType;
  * properties specified in this class as a system property.
  */
 public final class StandardProperties {
-    
+
     /**
      * This class should not be instantiated
      */
     private StandardProperties() {
-        
+
     }
 
     // the root of all the Darkstar properties
     private static final String NS = "com.sun.sgs.";
-    
+
     /**
      * A required key specifying the name of the application.
      */
     public static final String APP_NAME = NS + "app.name";
-    
+
     /**
      * A required key specifying the root directory for the application.
      */
@@ -82,7 +82,7 @@ public final class StandardProperties {
      * <code>NodeMappingService</code>.
      */
     public static final String NODE_MAPPING_SERVICE =
-        NS + "nodeMappingService";
+            NS + "nodeMappingService";
     /**
      * An optional key specifying a specific class to use for the
      * <code>TaskService</code>.
@@ -106,7 +106,7 @@ public final class StandardProperties {
      * <code>ClientSessionService</code>.
      */
     public static final String CLIENT_SESSION_SERVICE =
-        NS + "clientSessionService";
+            NS + "clientSessionService";
 
     /**
      * An optional key specifying a specific class to use for the
@@ -200,25 +200,25 @@ public final class StandardProperties {
          *
          * @param nodeType the current {@code NodeType}
          * @return {@code true} if the service should be started on the given
-         *         node type.
+         * node type.
          */
         public boolean shouldStart(NodeType nodeType) {
-            switch(nodeType) {
+            switch (nodeType) {
                 case singleNode:
                     return equals(SINGLE) ||
-                           equals(SINGLE_OR_CORE) ||
-                           equals(SINGLE_OR_APP) ||
-                           equals(ALL);
+                            equals(SINGLE_OR_CORE) ||
+                            equals(SINGLE_OR_APP) ||
+                            equals(ALL);
                 case coreServerNode:
                     return equals(CORE) ||
-                           equals(SINGLE_OR_CORE) ||
-                           equals(CORE_OR_APP) ||
-                           equals(ALL);
+                            equals(SINGLE_OR_CORE) ||
+                            equals(CORE_OR_APP) ||
+                            equals(ALL);
                 case appNode:
                     return equals(APP) ||
-                           equals(SINGLE_OR_APP) ||
-                           equals(CORE_OR_APP) ||
-                           equals(ALL);
+                            equals(SINGLE_OR_APP) ||
+                            equals(CORE_OR_APP) ||
+                            equals(ALL);
                 default:
                     return false;
             }
@@ -239,25 +239,41 @@ public final class StandardProperties {
      * {@code NodeType}.
      */
     public enum StandardService {
-        /** Enumeration for the Data Service. */
+        /**
+         * Enumeration for the Data Service.
+         */
         DataService,
-        /** Enumeration for the Watchdog Service. */
+        /**
+         * Enumeration for the Watchdog Service.
+         */
         WatchdogService,
-        /** Enumeration for the Node Mapping Service. */
+        /**
+         * Enumeration for the Node Mapping Service.
+         */
         NodeMappingService,
-        /** Enumeration for the Task Service. */
+        /**
+         * Enumeration for the Task Service.
+         */
         TaskService,
-        /** Enumeration for the Client Session Service. */
+        /**
+         * Enumeration for the Client Session Service.
+         */
         ClientSessionService,
-        /** Enumeration for the Channel Service. */
+        /**
+         * Enumeration for the Channel Service.
+         */
         ChannelService;
 
-        /** The last service that gets configured for an {@code appNode}. */
+        /**
+         * The last service that gets configured for an {@code appNode}.
+         */
         public static final StandardService LAST_APP_SERVICE = ChannelService;
 
-        /** The last service that gets configured for a {@code singleNode}. */
+        /**
+         * The last service that gets configured for a {@code singleNode}.
+         */
         public static final StandardService LAST_SINGLE_SERVICE =
-                                            ChannelService;
+                ChannelService;
 
         /**
          * The last service that gets configured for a
@@ -273,47 +289,47 @@ public final class StandardProperties {
      * an identity.
      */
     public static final String AUTHENTICATORS = NS + "app.authenticators";
-    
+
     /**
-     *  An optional property that specifies the type of node being started.
-     *  It must be set to a value in {@link NodeType} and defaults to
-     *  {@code singleNode}.  The value of this property may cause other
-     *  property settings to be overridden.
-     *  <p>
-     *  In particular, setting this property to {@code coreServerNode} causes
-     *  the following property to be set:
+     * An optional property that specifies the type of node being started.
+     * It must be set to a value in {@link NodeType} and defaults to
+     * {@code singleNode}.  The value of this property may cause other
+     * property settings to be overridden.
+     * <p>
+     * In particular, setting this property to {@code coreServerNode} causes
+     * the following property to be set:
      * <ul>
      * <li>
-     *   {@code com.sun.sgs.impl.service.data.DataServiceImpl.data.store.class}
-     *   set to {@code com.sun.sgs.impl.service.data.store.net.DataStoreClient}
-     *   to indicate the multi-node data service should be used
+     * {@code com.sun.sgs.impl.service.data.DataServiceImpl.data.store.class}
+     * set to {@code com.sun.sgs.impl.service.data.store.net.DataStoreClient}
+     * to indicate the multi-node data service should be used
      *
      * </ul>
      * <p>
      * The unit tests rely on the default not modifying any other properties.
      */
     public static final String NODE_TYPE = NS + "node.type";
-    
+
     /**
      * An optional property that specifies the default for the name of the host
      * running the servers associated with services.
      */
     public static final String SERVER_HOST = NS + "server.host";
-    
+
     /**
      * An optional system property (this is not a Darkstar property) which
      * enables remote JMX monitoring, and specifies the port JMX is listening
      * on.
      */
     public static final String SYSTEM_JMX_REMOTE_PORT =
-        "com.sun.management.jmxremote.port";
+            "com.sun.management.jmxremote.port";
 
     /**
      * The property for specifying the maximum length of time, in
      * milliseconds, for a client session to relocate to a new node.
      */
     public static final String SESSION_RELOCATION_TIMEOUT_PROPERTY =
-	"com.sun.sgs.impl.service.session.relocation.timeout";
+            "com.sun.sgs.impl.service.session.relocation.timeout";
 
     /**
      * The default session relocation timeout, in milliseconds.

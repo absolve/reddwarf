@@ -23,59 +23,73 @@ package com.sun.sgs.impl.service.nodemap;
 
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.auth.Identity;
+
 import java.io.Serializable;
 
 /**
- * The {@link NodeMappingServiceImpl} representation of a 
+ * The {@link NodeMappingServiceImpl} representation of a
  * id->node mapping.  This class is immutable.
- *
  */
 class IdentityMO implements ManagedObject, Serializable {
-    /** Serialization version. */
+    /**
+     * Serialization version.
+     */
     private static final long serialVersionUID = 1L;
-    
-    /** The identity */
+
+    /**
+     * The identity
+     */
     private final Identity id;
-    /** The node the identity is mapped to */
+    /**
+     * The node the identity is mapped to
+     */
     private final long nodeId;
-    
+
     /* The hashcode, lazily calculated (this is an immutable object). */
     private volatile int hashCode = 0;
 
     /**
      * Returns a new IdentityMO instance.
      *
-     * @param id  the identity
+     * @param id     the identity
      * @param nodeId the node the identity is mapped to
      */
     IdentityMO(Identity id, long nodeId) {
         this.id = id;
         this.nodeId = nodeId;
     }
-    
+
     /**
      * Returns the identity.
+     *
      * @return the identity
      */
     Identity getIdentity() {
         return id;
     }
-    
+
     /**
      * Returns the node.
+     *
      * @return the node
      */
     long getNodeId() {
         return nodeId;
     }
-    
-    /** {@inheritDoc} */
-    @Override public String toString() {
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
         return "IdentityMO[id:" + id + ", nodeId:" + nodeId + "]";
     }
-    
-    /** {@inheritDoc} */
-    @Override public boolean equals(Object obj) {
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         } else if (obj == null) {
@@ -86,9 +100,12 @@ class IdentityMO implements ManagedObject, Serializable {
         }
         return false;
     }
-    
-    /** {@inheritDoc} */
-    @Override public int hashCode() {
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
         // Recipe from Effective Java
         if (hashCode == 0) {
             int result = 17;

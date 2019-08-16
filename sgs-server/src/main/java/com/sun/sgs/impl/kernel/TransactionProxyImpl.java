@@ -22,7 +22,6 @@
 package com.sun.sgs.impl.kernel;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.service.Service;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
@@ -44,7 +43,7 @@ final class TransactionProxyImpl implements TransactionProxy {
      * current <code>Transaction</code>.
      */
     TransactionProxyImpl() {
-        
+
     }
 
     /**
@@ -60,7 +59,7 @@ final class TransactionProxyImpl implements TransactionProxy {
     public boolean inTransaction() {
         return ContextResolver.inTransaction();
     }
-    
+
     /**
      * {@inheritDoc}
      */

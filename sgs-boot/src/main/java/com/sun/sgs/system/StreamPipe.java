@@ -21,35 +21,35 @@
 
 package com.sun.sgs.system;
 
-import java.io.OutputStream;
-import java.io.InputStream;
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Reads input from a given {@code InputStream} and pipes it directly to a
  * given {@code OutputStream}.
  */
 public class StreamPipe implements Runnable {
-    
-    private static final Logger logger = 
+
+    private static final Logger logger =
             Logger.getLogger(StreamPipe.class.getName());
-    
+
     private final InputStream input;
     private final OutputStream output;
-    
+
     /**
      * Constructs a new {@code StreamPipe}.
-     * 
-     * @param input the input stream to read from
+     *
+     * @param input  the input stream to read from
      * @param output the output stream to write to
      */
     public StreamPipe(InputStream input, OutputStream output) {
         this.input = input;
         this.output = output;
     }
-    
+
     /**
      * Reads the output from the {@code InputStream} associated with this object
      * and outputs the results to the {@code OutputStream} associated with
@@ -65,7 +65,7 @@ public class StreamPipe implements Runnable {
             }
         } catch (IOException e) {
             logger.log(Level.FINEST, "Input closed", e);
-        } 
+        }
     }
 
 }

@@ -25,11 +25,11 @@
 
 package com.sun.sgs.nio.channels;
 
+import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
+
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
 
 /**
  * An organization of asynchronous channels for the purpose of resource
@@ -80,15 +80,17 @@ import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
  * all open channels in the group as if by invoking the
  * {@link AsynchronousChannel#close close} method. A group will typically
  * terminate quickly after the {@code shutdownNow} method has been invoked.
- * 
+ *
  * @see AsynchronousSocketChannel#open(AsynchronousChannelGroup)
  * @see AsynchronousServerSocketChannel#open(AsynchronousChannelGroup)
  * @see AsynchronousDatagramChannel#open(ProtocolFamily,
- *      AsynchronousChannelGroup)
+ * AsynchronousChannelGroup)
  */
 public abstract class AsynchronousChannelGroup {
 
-    /** The asynchronous channel provider for this group. */
+    /**
+     * The asynchronous channel provider for this group.
+     */
     private final AsynchronousChannelProvider provider;
 
     /**
@@ -116,7 +118,7 @@ public abstract class AsynchronousChannelGroup {
      * Creates an asynchronous channel group.
      * <p>
      * The new group is created by invoking the
-     * {@link 
+     * {@link
      * AsynchronousChannelProvider#openAsynchronousChannelGroup(ExecutorService)
      * openAsynchronousChannelGroup} method of the system-wide default
      * {@link AsynchronousChannelProvider} object.
@@ -135,16 +137,15 @@ public abstract class AsynchronousChannelGroup {
      * in starvation and may be unsuitable for such implementations. It is
      * recommended that the executor be used exclusively for the resulting
      * asynchronous channel group.
-     * 
+     *
      * @param executor the executor service
      * @return a new asynchronous channel group
      * @throws IOException if an I/O error occurs
      */
     public static AsynchronousChannelGroup open(ExecutorService executor)
-        throws IOException
-    {
+            throws IOException {
         return AsynchronousChannelProvider.provider().
-                    openAsynchronousChannelGroup(executor);
+                openAsynchronousChannelGroup(executor);
     }
 
     /**
@@ -170,7 +171,7 @@ public abstract class AsynchronousChannelGroup {
      * asynchronous channels in the group are closed and all resources have
      * been released. This method has no effect if the group is already
      * shutdown.
-     * 
+     *
      * @return this group
      */
     public abstract AsynchronousChannelGroup shutdown();
@@ -187,27 +188,27 @@ public abstract class AsynchronousChannelGroup {
      * The group is likely to terminate <em>quickly</em> after invoking this
      * method but there is no guarantee that the group has terminated on
      * completion of this method.
-     * 
+     *
      * @return this group
      * @throws IOException if an I/O error occurs
      */
     public abstract AsynchronousChannelGroup shutdownNow()
-        throws IOException;
+            throws IOException;
 
     /**
      * Awaits termination of the group.
      * <p>
      * This method blocks until all channels in the group have been closed
      * and all resources associated with the group have been released.
-     * 
+     *
      * @param timeout the maximum time to wait
-     * @param unit the time unit of the timeout argument
+     * @param unit    the time unit of the timeout argument
      * @return {@code true} if the group has terminated; {@code false} if
-     *         the timeout elapsed before termination
+     * the timeout elapsed before termination
      * @throws InterruptedException if interrupted while waiting
      */
     public abstract boolean awaitTermination(long timeout, TimeUnit unit)
-        throws InterruptedException;
+            throws InterruptedException;
 
     /**
      * Set the uncaught exception handler for the default group.
@@ -219,9 +220,9 @@ public abstract class AsynchronousChannelGroup {
      * <p>
      * [TBD - need to define interaction with normal uncaught exception
      * handling mechanism]
-     * 
+     *
      * @param eh the object to use as the default uncaught exception
-     *        handler, or {@code null} for no default handler
+     *           handler, or {@code null} for no default handler
      * @throws SecurityException [TBD]
      */
     public static void
@@ -231,13 +232,13 @@ public abstract class AsynchronousChannelGroup {
 
     /**
      * Returns the uncaught exception handler for the default group.
-     * 
+     *
      * @return the uncaught exception handler for the default group, or
-     *         {@code null} if there is no default handler
+     * {@code null} if there is no default handler
      */
     public static Thread.UncaughtExceptionHandler
     getDefaultUncaughtExceptionHandler() {
         return AsynchronousChannelProvider.provider()
-                                            .getUncaughtExceptionHandler();
+                .getUncaughtExceptionHandler();
     }
 }

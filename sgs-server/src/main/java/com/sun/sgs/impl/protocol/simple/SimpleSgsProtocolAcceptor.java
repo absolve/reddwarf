@@ -47,13 +47,14 @@ import com.sun.sgs.protocol.simple.SimpleSgsProtocol;
 import com.sun.sgs.service.TransactionProxy;
 import com.sun.sgs.transport.ConnectionHandler;
 import com.sun.sgs.transport.Transport;
+
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.security.auth.login.LoginException;
 
 /**
  * A protocol acceptor for connections that speak the {@link
@@ -63,285 +64,336 @@ import javax.security.auth.login.LoginException;
  * <dl style="margin-left: 1em">
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #TRANSPORT_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #DEFAULT_TRANSPORT}
+ * {@value #TRANSPORT_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #DEFAULT_TRANSPORT}
  *
  * <dd style="padding-top: .5em">Specifies the transport. The
- *      specified transport must support {@link Delivery#RELIABLE}.<p>
+ * specified transport must support {@link Delivery#RELIABLE}.<p>
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #PROTOCOL_VERSION_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #DEFAULT_PROTOCOL_VERSION}
+ * {@value #PROTOCOL_VERSION_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #DEFAULT_PROTOCOL_VERSION}
  *
  * <dd style="padding-top: .5em">Specifies the <code>SimpleSgsProtocol</code>
- *	version for this acceptor's connections. Valid values for the protocol
- *	version are <b><code>0x05</code></b> which supports client session
- *	relocation, and <b><code>0x04</code></b>, which does not
- *	support client session relocation but is compatible with clients
- *	using the older protocol version.  Protocol version
- *	<b><code>0x05</code></b> is incompatible with clients using
- *	protocol version <b><code>0x04</code></b>.<p>
+ * version for this acceptor's connections. Valid values for the protocol
+ * version are <b><code>0x05</code></b> which supports client session
+ * relocation, and <b><code>0x04</code></b>, which does not
+ * support client session relocation but is compatible with clients
+ * using the older protocol version.  Protocol version
+ * <b><code>0x05</code></b> is incompatible with clients using
+ * protocol version <b><code>0x04</code></b>.<p>
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #READ_BUFFER_SIZE_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #DEFAULT_READ_BUFFER_SIZE}<br>
- *      <i>Minimum:</i> {@value #MIN_READ_BUFFER_SIZE}<br>
+ * {@value #READ_BUFFER_SIZE_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #DEFAULT_READ_BUFFER_SIZE}<br>
+ * <i>Minimum:</i> {@value #MIN_READ_BUFFER_SIZE}<br>
  *
- * <dd style="padding-top: .5em"> 
- *	Specifies the read buffer size.<p>
- * 
+ * <dd style="padding-top: .5em">
+ * Specifies the read buffer size.<p>
+ *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #DISCONNECT_DELAY_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #DEFAULT_DISCONNECT_DELAY}<br>
- *      <i>Minimum:</i> {@value #MIN_DISCONNECT_DELAY}<br>
+ * {@value #DISCONNECT_DELAY_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #DEFAULT_DISCONNECT_DELAY}<br>
+ * <i>Minimum:</i> {@value #MIN_DISCONNECT_DELAY}<br>
  *
- * <dd style="padding-top: .5em"> 
- *	Specifies the disconnect delay (in milliseconds) for disconnecting
- *      sessions.<p>
+ * <dd style="padding-top: .5em">
+ * Specifies the disconnect delay (in milliseconds) for disconnecting
+ * sessions.<p>
  * </dl> <p>
  */
 public class SimpleSgsProtocolAcceptor
-    extends AbstractService
-    implements ProtocolAcceptor
-{
-    /** The package name. */
+        extends AbstractService
+        implements ProtocolAcceptor {
+    /**
+     * The package name.
+     */
     private static final String PKG_NAME = "com.sun.sgs.impl.protocol.simple";
-    
-    /** The logger for this class. */
+
+    /**
+     * The logger for this class.
+     */
     private static final LoggerWrapper staticLogger =
-	new LoggerWrapper(Logger.getLogger(PKG_NAME + ".acceptor"));
-    
-    /** The name of the version key. */
+            new LoggerWrapper(Logger.getLogger(PKG_NAME + ".acceptor"));
+
+    /**
+     * The name of the version key.
+     */
     private static final String VERSION_KEY = PKG_NAME + ".service.version";
 
-    /** The major version. */
+    /**
+     * The major version.
+     */
     private static final int MAJOR_VERSION = 1;
-    
-    /** The minor version. */
+
+    /**
+     * The minor version.
+     */
     private static final int MINOR_VERSION = 0;
 
-    /** The name of the read buffer size property. */
+    /**
+     * The name of the read buffer size property.
+     */
     public static final String READ_BUFFER_SIZE_PROPERTY =
-        PKG_NAME + ".read.buffer.size";
+            PKG_NAME + ".read.buffer.size";
 
-    /** The default read buffer size: {@value #DEFAULT_READ_BUFFER_SIZE}. */
+    /**
+     * The default read buffer size: {@value #DEFAULT_READ_BUFFER_SIZE}.
+     */
     public static final int DEFAULT_READ_BUFFER_SIZE = 128 * 1024;
-    
-    /** The minimum read buffer size value. */
+
+    /**
+     * The minimum read buffer size value.
+     */
     public static final int MIN_READ_BUFFER_SIZE = 8192;
-    
+
     /**
      * The transport property. The specified transport must support
      * RELIABLE delivery.
      */
     public static final String TRANSPORT_PROPERTY =
-        PKG_NAME + ".transport";
-    
-    /** The default transport. */
+            PKG_NAME + ".transport";
+
+    /**
+     * The default transport.
+     */
     public static final String DEFAULT_TRANSPORT =
-        "com.sun.sgs.impl.transport.tcp.TcpTransport";
+            "com.sun.sgs.impl.transport.tcp.TcpTransport";
 
-    /** The protocol version property.  Valid values are 4 and 5. */
+    /**
+     * The protocol version property.  Valid values are 4 and 5.
+     */
     public static final String PROTOCOL_VERSION_PROPERTY =
-	PKG_NAME + ".protocol.version";
+            PKG_NAME + ".protocol.version";
 
-    /** The protocol version 4. */
+    /**
+     * The protocol version 4.
+     */
     public static final int PROTOCOL4 = 4;
 
-    /** The default protocol version: {@value #DEFAULT_PROTOCOL_VERSION}. */
+    /**
+     * The default protocol version: {@value #DEFAULT_PROTOCOL_VERSION}.
+     */
     public static final int DEFAULT_PROTOCOL_VERSION = 5;
-            
-    /** The name of the disconnect delay property. */
+
+    /**
+     * The name of the disconnect delay property.
+     */
     public static final String DISCONNECT_DELAY_PROPERTY =
-	PKG_NAME + ".disconnect.delay";
-    
-    /** The time (in milliseconds) that a disconnecting connection is
+            PKG_NAME + ".disconnect.delay";
+
+    /**
+     * The time (in milliseconds) that a disconnecting connection is
      * allowed before this service forcibly disconnects it.
      */
     public static final long DEFAULT_DISCONNECT_DELAY = 1000;
-    
-    /** The minimum disconnect delay value. */
+
+    /**
+     * The minimum disconnect delay value.
+     */
     public static final long MIN_DISCONNECT_DELAY = 1000;
 
-    /** The identity manager. */
+    /**
+     * The identity manager.
+     */
     private final IdentityCoordinator identityManager;
 
-    /** The read buffer size for new connections. */
+    /**
+     * The read buffer size for new connections.
+     */
     protected final int readBufferSize;
-    
-    /** The transport. */
+
+    /**
+     * The transport.
+     */
     protected final Transport transport;
-    
-    /** The disconnect delay (in milliseconds) for disconnecting sessions. */
+
+    /**
+     * The disconnect delay (in milliseconds) for disconnecting sessions.
+     */
     private final long disconnectDelay;
 
-    /** The {@code SimpleSgsProtocol} version for the protocol impl. */
+    /**
+     * The {@code SimpleSgsProtocol} version for the protocol impl.
+     */
     private final int protocolVersion;
 
-    /** The protocol descriptor. */
+    /**
+     * The protocol descriptor.
+     */
     private ProtocolDescriptor protocolDesc;
-  
-    /** The map of disconnecting {@code ClientSessionHandler}s, keyed by
+
+    /**
+     * The map of disconnecting {@code ClientSessionHandler}s, keyed by
      * the time the connection should expire.
      */
     private final ConcurrentSkipListMap<Long, SessionProtocol>
-	disconnectingHandlersMap =
-	    new ConcurrentSkipListMap<Long, SessionProtocol>();
+            disconnectingHandlersMap =
+            new ConcurrentSkipListMap<Long, SessionProtocol>();
 
-    /** The handle for the task that monitors disconnecting client sessions. */
+    /**
+     * The handle for the task that monitors disconnecting client sessions.
+     */
     private final RecurringTaskHandle monitorDisconnectingSessionsTaskHandle;
 
     /**
      * Constructs an instance with the specified {@code properties},
      * {@code systemRegistry}, and {@code txnProxy}.
      *
-     * @param	properties the configuration properties
-     * @param	systemRegistry the system registry
-     * @param	txnProxy a transaction proxy
-     *
-     * @throws	Exception if a problem occurs
+     * @param    properties the configuration properties
+     * @param    systemRegistry the system registry
+     * @param    txnProxy a transaction proxy
+     * @throws Exception if a problem occurs
      */
     public SimpleSgsProtocolAcceptor(Properties properties,
-				     ComponentRegistry systemRegistry,
-				     TransactionProxy txnProxy)
-	throws Exception
-    {
-	this(properties, systemRegistry, txnProxy, staticLogger);
-	
+                                     ComponentRegistry systemRegistry,
+                                     TransactionProxy txnProxy)
+            throws Exception {
+        this(properties, systemRegistry, txnProxy, staticLogger);
+
     }
 
     /**
      * Constructs an instance with the specified {@code properties},
      * {@code systemRegistry}, {@code txnProxy}, and {@code logger}.
      *
-     * @param	properties the configuration properties
-     * @param	systemRegistry the system registry
-     * @param	txnProxy a transaction proxy
-     * @param	logger a logger for this instance
-     *
-     * @throws	Exception if a problem occurs
+     * @param    properties the configuration properties
+     * @param    systemRegistry the system registry
+     * @param    txnProxy a transaction proxy
+     * @param    logger a logger for this instance
+     * @throws Exception if a problem occurs
      */
     protected SimpleSgsProtocolAcceptor(Properties properties,
-					ComponentRegistry systemRegistry,
-					TransactionProxy txnProxy,
-					LoggerWrapper logger)
-	throws Exception
-    {
-	super(properties, systemRegistry, txnProxy, logger);
+                                        ComponentRegistry systemRegistry,
+                                        TransactionProxy txnProxy,
+                                        LoggerWrapper logger)
+            throws Exception {
+        super(properties, systemRegistry, txnProxy, logger);
         logger.log(Level.CONFIG, "Creating SimpleSgsProtocolAcceptor");
 
-	PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
-	try {
+        PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
+        try {
             readBufferSize = wrappedProps.getIntProperty(
-                READ_BUFFER_SIZE_PROPERTY, DEFAULT_READ_BUFFER_SIZE,
-                MIN_READ_BUFFER_SIZE, Integer.MAX_VALUE);
-	    disconnectDelay = wrappedProps.getLongProperty(
-		DISCONNECT_DELAY_PROPERTY, DEFAULT_DISCONNECT_DELAY,
-		MIN_DISCONNECT_DELAY, Long.MAX_VALUE);
-	    identityManager =
-		systemRegistry.getComponent(IdentityCoordinator.class);
-               
-            transport =
-                wrappedProps.getClassInstanceProperty(
-		    TRANSPORT_PROPERTY, DEFAULT_TRANSPORT, Transport.class,
-		    new Class[] {Properties.class}, properties);
+                    READ_BUFFER_SIZE_PROPERTY, DEFAULT_READ_BUFFER_SIZE,
+                    MIN_READ_BUFFER_SIZE, Integer.MAX_VALUE);
+            disconnectDelay = wrappedProps.getLongProperty(
+                    DISCONNECT_DELAY_PROPERTY, DEFAULT_DISCONNECT_DELAY,
+                    MIN_DISCONNECT_DELAY, Long.MAX_VALUE);
+            identityManager =
+                    systemRegistry.getComponent(IdentityCoordinator.class);
 
-	    protocolVersion =
-		wrappedProps.getIntProperty(
-		PROTOCOL_VERSION_PROPERTY, DEFAULT_PROTOCOL_VERSION,
-		PROTOCOL4, SimpleSgsProtocol.VERSION);
+            transport =
+                    wrappedProps.getClassInstanceProperty(
+                            TRANSPORT_PROPERTY, DEFAULT_TRANSPORT, Transport.class,
+                            new Class[]{Properties.class}, properties);
+
+            protocolVersion =
+                    wrappedProps.getIntProperty(
+                            PROTOCOL_VERSION_PROPERTY, DEFAULT_PROTOCOL_VERSION,
+                            PROTOCOL4, SimpleSgsProtocol.VERSION);
 
             if (!transport.getDelivery().equals(Delivery.RELIABLE)) {
                 transport.shutdown();
                 throw new IllegalArgumentException(
-		    "transport must support RELIABLE delivery");
+                        "transport must support RELIABLE delivery");
             }
-	    /*
-	     * Set up recurring task to monitor disconnecting client sessions.
-	     */
-	    monitorDisconnectingSessionsTaskHandle =
-		taskScheduler.scheduleRecurringTask(
- 		    new MonitorDisconnectingSessionsTask(),
-		    taskOwner, System.currentTimeMillis(),
-		    disconnectDelay);
-	    monitorDisconnectingSessionsTaskHandle.start();
-	    
-	    /*
-	     * Check service version.
-	     */
-	    transactionScheduler.runTask(
-		new AbstractKernelRunnable("CheckServiceVersion") {
-		    public void run() {
-			checkServiceVersion(
-			    VERSION_KEY, MAJOR_VERSION, MINOR_VERSION);
-		    } },  taskOwner);
+            /*
+             * Set up recurring task to monitor disconnecting client sessions.
+             */
+            monitorDisconnectingSessionsTaskHandle =
+                    taskScheduler.scheduleRecurringTask(
+                            new MonitorDisconnectingSessionsTask(),
+                            taskOwner, System.currentTimeMillis(),
+                            disconnectDelay);
+            monitorDisconnectingSessionsTaskHandle.start();
+
+            /*
+             * Check service version.
+             */
+            transactionScheduler.runTask(
+                    new AbstractKernelRunnable("CheckServiceVersion") {
+                        public void run() {
+                            checkServiceVersion(
+                                    VERSION_KEY, MAJOR_VERSION, MINOR_VERSION);
+                        }
+                    }, taskOwner);
 
             logger.log(Level.CONFIG,
-                       "Created SimpleSgsProtocolAcceptor with properties:" +
-		       "\n  " + PROTOCOL_VERSION_PROPERTY + "=" +
-		       protocolVersion +
-                       "\n  " + DISCONNECT_DELAY_PROPERTY + "=" +
-                       disconnectDelay +
-                       "\n  " + READ_BUFFER_SIZE_PROPERTY + "=" +
-                       readBufferSize +
-                       "\n  " + TRANSPORT_PROPERTY + "=" +
-                       transport.getClass().getName());
-	    
-	} catch (RuntimeException e) {
-	    if (logger.isLoggable(Level.CONFIG)) {
-		logger.logThrow(
-		    Level.CONFIG, e,
-		    "Failed to create SimpleSgsProtocolAcceptor");
-	    }
-	    throw e;
-	}
+                    "Created SimpleSgsProtocolAcceptor with properties:" +
+                            "\n  " + PROTOCOL_VERSION_PROPERTY + "=" +
+                            protocolVersion +
+                            "\n  " + DISCONNECT_DELAY_PROPERTY + "=" +
+                            disconnectDelay +
+                            "\n  " + READ_BUFFER_SIZE_PROPERTY + "=" +
+                            readBufferSize +
+                            "\n  " + TRANSPORT_PROPERTY + "=" +
+                            transport.getClass().getName());
+
+        } catch (RuntimeException e) {
+            if (logger.isLoggable(Level.CONFIG)) {
+                logger.logThrow(
+                        Level.CONFIG, e,
+                        "Failed to create SimpleSgsProtocolAcceptor");
+            }
+            throw e;
+        }
     }
-    
+
     /* -- Implement AbstractService -- */
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     protected void handleServiceVersionMismatch(
-	Version oldVersion, Version currentVersion)
-    {
-	throw new IllegalStateException(
-	    "unable to convert version:" + oldVersion +
-	    " to current version:" + currentVersion);
+            Version oldVersion, Version currentVersion) {
+        throw new IllegalStateException(
+                "unable to convert version:" + oldVersion +
+                        " to current version:" + currentVersion);
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void doReady() {
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void doShutdown() {
         transport.shutdown();
-        monitorDisconnectingSessionsTaskHandle.cancel(); 
-	disconnectingHandlersMap.clear();
+        monitorDisconnectingSessionsTaskHandle.cancel();
+        disconnectingHandlersMap.clear();
     }
 
     /* -- Implement ProtocolAcceptor -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public synchronized ProtocolDescriptor getDescriptor() {
-	if (protocolDesc == null) {
+        if (protocolDesc == null) {
             protocolDesc =
-		new SimpleSgsProtocolDescriptor(transport.getDescriptor());
-	}
+                    new SimpleSgsProtocolDescriptor(transport.getDescriptor());
+        }
         return protocolDesc;
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void accept(ProtocolListener protocolListener) throws IOException {
         transport.accept(new ConnectionHandlerImpl(protocolListener));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void close() {
-	shutdown();
+        shutdown();
     }
 
     /**
@@ -357,44 +409,46 @@ public class SimpleSgsProtocolAcceptor
             }
             this.protocolListener = protocolListener;
         }
-        
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void newConnection(AsynchronousByteChannel byteChannel)
-            throws Exception
-        {
-	    if (protocolVersion == PROTOCOL4) {
-		new SimpleSgsProtocolImpl(
-		    protocolListener, SimpleSgsProtocolAcceptor.this,
-		    byteChannel, readBufferSize);
-	    } else /* latest SimpleSgsProtocol version */ {
-		new SimpleSgsRelocationProtocolImpl(
-		    protocolListener, SimpleSgsProtocolAcceptor.this,
-		    byteChannel, readBufferSize);
-	    }
+                throws Exception {
+            if (protocolVersion == PROTOCOL4) {
+                new SimpleSgsProtocolImpl(
+                        protocolListener, SimpleSgsProtocolAcceptor.this,
+                        byteChannel, readBufferSize);
+            } else /* latest SimpleSgsProtocol version */ {
+                new SimpleSgsRelocationProtocolImpl(
+                        protocolListener, SimpleSgsProtocolAcceptor.this,
+                        byteChannel, readBufferSize);
+            }
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void shutdown() {
             logger.log(Level.SEVERE, "transport unexpectly shutdown");
             close();
         }
     }
-    
+
     /**
      * Returns the authenticated identity for the specified {@code name} and
      * {@code password}.
      *
-     * @param	name a name
-     * @param	password a password
-     * @return	the authenticated identity
-     * @throws	LoginException if a problem occurs authenticating the name and
-     *		password 
+     * @param    name a name
+     * @param    password a password
+     * @return the authenticated identity
+     * @throws LoginException if a problem occurs authenticating the name and
+     * password
      */
     public Identity authenticate(String name, String password)
-	throws LoginException
-    {
-	return identityManager.authenticateIdentity(
-	    new NamePasswordCredentials(name, password.toCharArray()));
+            throws LoginException {
+        return identityManager.authenticateIdentity(
+                new NamePasswordCredentials(name, password.toCharArray()));
     }
 
     /**
@@ -404,22 +458,22 @@ public class SimpleSgsProtocolAcceptor
      * delay and will be forcibly terminated if the client hasn't already
      * closed the connection.
      *
-     * @param	protocol a {@code SessionProtocol} that is disconnecting
+     * @param    protocol a {@code SessionProtocol} that is disconnecting
      */
     public void monitorDisconnection(SessionProtocol protocol) {
-	disconnectingHandlersMap.put(
-	    System.currentTimeMillis() + disconnectDelay,  protocol);
+        disconnectingHandlersMap.put(
+                System.currentTimeMillis() + disconnectDelay, protocol);
     }
-    
+
     /**
      * Schedules a non-durable, non-transactional {@code task}.
      *
-     * @param	task a non-durable, non-transactional task
+     * @param    task a non-durable, non-transactional task
      */
     public void scheduleNonTransactionalTask(KernelRunnable task) {
         taskScheduler.scheduleTask(task, taskOwner);
     }
-    
+
     /* -- Private methods and classes -- */
 
     /**
@@ -429,29 +483,32 @@ public class SimpleSgsProtocolAcceptor
      * connection is forcibly closed.
      */
     private class MonitorDisconnectingSessionsTask
-	extends AbstractKernelRunnable
-    {
-	/** Constructs and instance. */
-	MonitorDisconnectingSessionsTask() {
-	    super(null);
-	}
-	
-	/** {@inheritDoc} */
-	public void run() {
-	    long now = System.currentTimeMillis();
-	    if (!disconnectingHandlersMap.isEmpty() &&
-		disconnectingHandlersMap.firstKey() < now) {
+            extends AbstractKernelRunnable {
+        /**
+         * Constructs and instance.
+         */
+        MonitorDisconnectingSessionsTask() {
+            super(null);
+        }
 
-		Map<Long, SessionProtocol> expiredSessions = 
-		    disconnectingHandlersMap.headMap(now);
-		for (SessionProtocol protocol : expiredSessions.values()) {
-		    try {
-			protocol.close();
-		    } catch (IOException e) {
-		    }
-		}
-		expiredSessions.clear();
-	    }
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public void run() {
+            long now = System.currentTimeMillis();
+            if (!disconnectingHandlersMap.isEmpty() &&
+                    disconnectingHandlersMap.firstKey() < now) {
+
+                Map<Long, SessionProtocol> expiredSessions =
+                        disconnectingHandlersMap.headMap(now);
+                for (SessionProtocol protocol : expiredSessions.values()) {
+                    try {
+                        protocol.close();
+                    } catch (IOException e) {
+                    }
+                }
+                expiredSessions.clear();
+            }
+        }
     }
 }

@@ -23,34 +23,35 @@ package com.sun.sgs.impl.service.nodemap.policy;
 
 import com.sun.sgs.impl.service.nodemap.NoNodesAvailableException;
 import com.sun.sgs.impl.service.nodemap.NodeAssignPolicy;
+
 import java.util.Properties;
 
 /**
- *  The simpliest node policy possible: always assign to the local requesting
- *  node.  Round robin assignment is used when the server is making the 
- *  request due to node failure.
+ * The simpliest node policy possible: always assign to the local requesting
+ * node.  Round robin assignment is used when the server is making the
+ * request due to node failure.
  */
 public class LocalNodePolicy extends RoundRobinPolicy {
-    
-    /** 
+
+    /**
      * Creates a new instance of the LocalNodePolicy, which always assigns
      * an identity to the node which requested an assignment be made.
+     *
      * @param props service properties
      */
     public LocalNodePolicy(Properties props) {
         super(props);
     }
-    
-    /** 
-     * {@inheritDoc} 
+
+    /**
+     * {@inheritDoc}
      * <p>
      * This implementation simply assigns to the node making the request.
      * Round robin assignment is used if the server is making the request
      * (due to reassigning identities from a failed node).
      */
     public long chooseNode(long requestingNode)
-        throws NoNodesAvailableException 
-    {
+            throws NoNodesAvailableException {
         if (requestingNode == NodeAssignPolicy.SERVER_NODE) {
 
             // A node has failed, we need to pick a new one from the live nodes.

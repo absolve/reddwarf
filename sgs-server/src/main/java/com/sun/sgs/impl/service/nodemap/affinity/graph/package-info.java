@@ -27,7 +27,7 @@
  * {@link com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge
  * weighted edges} which represent associations between identities.
  * <p>
- * Each node constructs a 
+ * Each node constructs a
  * {@link com.sun.sgs.impl.service.nodemap.affinity.graph.GraphListener} which
  * consumes task information about how identities are associated.  One such
  * association could be identities accessing the same objects.

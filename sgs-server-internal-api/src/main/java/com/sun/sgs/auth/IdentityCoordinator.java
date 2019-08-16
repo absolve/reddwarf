@@ -45,20 +45,17 @@ import javax.security.auth.login.LoginException;
  * called, because before this point the underlying context is not
  * valid and available to the <code>IdentityCoordinator</code>.
  */
-public interface IdentityCoordinator
-{
+public interface IdentityCoordinator {
 
     /**
      * Authenticates the given credentials.
      *
      * @param credentials the <code>IdentityCredentials</code> to authenticate
-     *
      * @return an authenticated <code>Identity</code> that has not been
-     *         notified of login
-     *
+     * notified of login
      * @throws LoginException if authentication fails
      */
     Identity authenticateIdentity(IdentityCredentials credentials)
-        throws LoginException;
+            throws LoginException;
 
 }

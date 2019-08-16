@@ -21,19 +21,20 @@
 
 package com.sun.sgs.impl.service.nodemap.affinity;
 
+import com.sun.sgs.auth.Identity;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
-import com.sun.sgs.auth.Identity;
 import edu.uci.ics.jung.graph.Graph;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
 /**
- *  Utility methods for "goodness" measurements of found groups.
+ * Utility methods for "goodness" measurements of found groups.
  */
 public final class AffinityGroupGoodness {
-    
+
     /**
      * A private constructor:  we do not want instances of this class to
      * be constructed, as it contains only static utility methods.
@@ -56,13 +57,12 @@ public final class AffinityGroupGoodness {
      * <p>
      * Note that modularity can only be calculated on a complete graph.
      *
-     * @param graph the graph which was divided into communities
+     * @param graph  the graph which was divided into communities
      * @param groups the communities found in the graph
      * @return the modularity of the groups found in the graph
      */
     public static double calcModularity(Graph<LabelVertex, WeightedEdge> graph,
-            Collection<AffinityGroup> groups)
-    {
+                                        Collection<AffinityGroup> groups) {
         // NOTE: this algorithm might need to be optimized if we use it for
         // more than goodness testing.
         // m is the sum of edge weights for all edges in the graph
@@ -107,7 +107,7 @@ public final class AffinityGroupGoodness {
             // Look at each of the pairs in the community to find the number
             // of edges within
             for (int i = 0; i < size - 1; i++) {
-                LabelVertex  v1 = groupList.get(i);
+                LabelVertex v1 = groupList.get(i);
                 for (int j = i + 1; j < size; j++) {
                     LabelVertex v2 = groupList.get(j);
                     // Calculate the adjacency info for v1 and v2;  each edge
@@ -146,14 +146,14 @@ public final class AffinityGroupGoodness {
      * Because Jaccard's index uses computed groups, rather than a graph,
      * it can be useful when the graphs are distributed or incomplete.
      * <p>
+     *
      * @param sample1 the first sample
      * @param sample2 the second sample
      * @return the Jaccard index, a value between {@code 0.0} and {@code 1.0},
-     *    with higher values indicating more similarity
+     * with higher values indicating more similarity
      */
     public static double calcJaccard(Collection<AffinityGroup> sample1,
-                                     Collection<AffinityGroup> sample2)
-    {
+                                     Collection<AffinityGroup> sample2) {
         // a is number of pairs of identities in same affinity group
         //    in both samples
         // b is number of pairs that are in the same affinity gruop
@@ -206,16 +206,16 @@ public final class AffinityGroupGoodness {
     /**
      * Returns {@code true} if two identities are in the same
      * {@code AffinityGroup} in a given affinity group collection.
-     * @param id1 the first identity
-     * @param id2 the second identity
+     *
+     * @param id1    the first identity
+     * @param id2    the second identity
      * @param sample the affinity group collection
      * @return {@code true} if {@code id1} and {@code id2} are in the
-     *        same affinity group in the {@code sample} collection of affinity
-     *        groups
+     * same affinity group in the {@code sample} collection of affinity
+     * groups
      */
     private static boolean inSameGroup(Identity id1, Identity id2,
-                                       Collection<AffinityGroup> sample)
-    {
+                                       Collection<AffinityGroup> sample) {
         // Note:  this method doesn't assume that affinity groups will
         // contain disjoint members - it is legal for an Identity to
         // be found in two groups.

@@ -32,7 +32,6 @@ import com.sun.sgs.profile.ProfileOperation;
 
 /**
  * The Statistics MBean object for the node mapping service.
- * 
  */
 class NodeMappingServiceStats implements NodeMappingServiceMXBean {
 
@@ -42,56 +41,68 @@ class NodeMappingServiceStats implements NodeMappingServiceMXBean {
     final ProfileOperation getIdentitiesOp;
     final ProfileOperation getNodeOp;
     final ProfileOperation setStatusOp;
-    
+
     NodeMappingServiceStats(ProfileCollector collector) {
         ProfileConsumer consumer =
-            collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX + 
-                                  "NodeMappingService");
+                collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX +
+                        "NodeMappingService");
 
         ProfileLevel level = ProfileLevel.MAX;
         ProfileDataType type = ProfileDataType.TASK_AND_AGGREGATE;
 
         addNodeMappingListenerOp = (AggregateProfileOperation)
-            consumer.createOperation("addNodeMappingListener", type, level);
+                consumer.createOperation("addNodeMappingListener", type, level);
         addIdentityRelocationListenerOp = (AggregateProfileOperation)
-            consumer.createOperation("addIdentityRelocationListener", 
-                                     type, level);
+                consumer.createOperation("addIdentityRelocationListener",
+                        type, level);
         assignNodeOp =
-            consumer.createOperation("assignNode", type, level);
-        getIdentitiesOp = 
-            consumer.createOperation("getIdentities", type, level);
+                consumer.createOperation("assignNode", type, level);
+        getIdentitiesOp =
+                consumer.createOperation("getIdentities", type, level);
         getNodeOp =
-            consumer.createOperation("getNode", type, level);
+                consumer.createOperation("getNode", type, level);
         setStatusOp =
-            consumer.createOperation("setStatus", type, level);
+                consumer.createOperation("setStatus", type, level);
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getAddNodeMappingListenerCalls() {
         return addNodeMappingListenerOp.getCount();
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getAddIdentityRelocationListenerCalls() {
         return addIdentityRelocationListenerOp.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getAssignNodeCalls() {
         return ((AggregateProfileOperation) assignNodeOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getGetIdentitiesCalls() {
         return ((AggregateProfileOperation) getIdentitiesOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getGetNodeCalls() {
         return ((AggregateProfileOperation) getNodeOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getSetStatusCalls() {
         return ((AggregateProfileOperation) setStatusOp).getCount();
     }

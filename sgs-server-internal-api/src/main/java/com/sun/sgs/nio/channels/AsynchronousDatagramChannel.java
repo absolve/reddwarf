@@ -25,6 +25,8 @@
 
 package com.sun.sgs.nio.channels;
 
+import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
@@ -35,8 +37,6 @@ import java.nio.channels.UnresolvedAddressException;
 import java.nio.channels.UnsupportedAddressTypeException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
-import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
 
 /**
  * An asynchronous channel for datagram-oriented sockets.
@@ -106,34 +106,32 @@ import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
  * <pre>
  *   final AsynchronousDatagramChannel dc = AsynchronousDatagramChannel.open()
  *       .bind(new InetSocketAddress(4000));
- * 
+ *
  *   // print the source address of all packets that we receive
- *   dc.receive(buffer, buffer, 
+ *   dc.receive(buffer, buffer,
  *     new CompletionHandler&lt;SocketAddress,ByteBuffer&gt;() {
  *       public void completed(IoFuture&lt;SocketAddress,ByteBuffer&gt; result)
  *       {
  *           try {
  *                SocketAddress sa = result.getNow();
  *                System.out.println(sa);
- * 
+ *
  *                ByteBuffer buffer = result.attachment();
  *                buffer.clear();
- *                dc.receive(buffer, buffer, this); 
+ *                dc.receive(buffer, buffer, this);
  *            } catch (ExecutionException x) { ... }
  *       }
  *   });
  * </pre>
  */
 public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
-    implements AsynchronousByteChannel, NetworkChannel, MulticastChannel
-{
+        implements AsynchronousByteChannel, NetworkChannel, MulticastChannel {
     /**
      * Initializes a new instance of this class.
-     * 
+     *
      * @param provider the asynchronous channel provider for this channel
      */
-    protected AsynchronousDatagramChannel(AsynchronousChannelProvider provider)
-    {
+    protected AsynchronousDatagramChannel(AsynchronousChannelProvider provider) {
         super(provider);
     }
 
@@ -150,20 +148,19 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * datagram channel is to be used for Internet Protocol multicasting
      * then this parameter should correspond to the address type of the
      * multicast groups that this channel will join.
-     * 
-     * @param pf the protocol family, or null to use the default protocol family
+     *
+     * @param pf    the protocol family, or null to use the default protocol family
      * @param group the group to which the newly constructed channel should
-     *        be bound, or null for the default group
+     *              be bound, or null for the default group
      * @return a new asynchronous datagram channel
      * @throws ShutdownChannelGroupException if the specified group is
-     *         shutdown
-     * @throws IOException if an I/O error occurs
+     *                                       shutdown
+     * @throws IOException                   if an I/O error occurs
      */
     public static AsynchronousDatagramChannel
-    open(ProtocolFamily pf, AsynchronousChannelGroup group) throws IOException
-    {
+    open(ProtocolFamily pf, AsynchronousChannelGroup group) throws IOException {
         return AsynchronousChannelProvider.provider()
-                        .openAsynchronousDatagramChannel(pf, group);
+                .openAsynchronousDatagramChannel(pf, group);
     }
 
     /**
@@ -175,6 +172,7 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * <pre>
      *     open((ProtocolFamily)null, (AsynchronousChannelGroup)null);
      * </pre>
+     *
      * @return a new asynchronous datagram channel
      * @throws IOException if an I/O error occurs
      */
@@ -184,30 +182,29 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @throws SecurityException if a security manager exists and its
-     *         {@code checkListen} method doesn't allow the operation
+     *                           {@code checkListen} method doesn't allow the operation
      */
     public abstract AsynchronousDatagramChannel bind(SocketAddress local)
-        throws IOException;
+            throws IOException;
 
     /**
      * {@inheritDoc}
      */
-    public abstract
-    AsynchronousDatagramChannel setOption(SocketOption name, Object value)
-        throws IOException;
+    public abstract AsynchronousDatagramChannel setOption(SocketOption name, Object value)
+            throws IOException;
 
     /**
      * Returns the remote address to which this channel is connected, or
      * null if the channel is not connected.
-     * 
+     *
      * @return the remote address; null if the channel is not open or the
-     *         channel's socket is not connected
+     * channel's socket is not connected
      * @throws IOException if an I/O error occurs
      */
     public abstract SocketAddress getConnectedAddress()
-    throws IOException;
+            throws IOException;
 
     /**
      * Tells whether or not a read is pending for this channel.
@@ -215,22 +212,22 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * The result of this method is a snapshot of the channel state. It may
      * be invalid when the caller goes to examine the result and should not
      * be used for purposes of coordination.
-     * 
+     *
      * @return true, if and only if, a read is pending for this channel but
-     *         has not yet completed.
+     * has not yet completed.
      * @see ReadPendingException
      */
     public abstract boolean isReadPending();
-    
+
     /**
      * Tells whether or not a write is pending for this channel.
      * <p>
      * The result of this method is a snapshot of the channel state. It may
      * be invalid when the caller goes to examine the result and should not
      * be used for purposes of coordination.
-     * 
+     *
      * @return true, if and only if, a write is pending for this channel but
-     *         has not yet completed.
+     * has not yet completed.
      * @see WritePendingException
      */
     public abstract boolean isWritePending();
@@ -260,29 +257,28 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * This method may be invoked at any time and may thus affect read or
      * write operations that are already in progress at the moment that the
      * socket is connected.
-     * 
-     * @param <A> the attachment type
-     * @param remote the remote address to which this channel is to be
-     *        connected
+     *
+     * @param <A>        the attachment type
+     * @param remote     the remote address to which this channel is to be
+     *                   connected
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
-     * 
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ConnectionPendingException if a connection operation is
-     *         already in progress on this channel
-     * @throws UnresolvedAddressException if the given remote address is not
-     *         fully resolved
-     * @throws UnsupportedAddressTypeException if the type of the given
-     *         remote address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and it does not permit access to the given remote address
+     * @throws ConnectionPendingException         if a connection operation is
+     *                                            already in progress on this channel
+     * @throws UnresolvedAddressException         if the given remote address is not
+     *                                            fully resolved
+     * @throws UnsupportedAddressTypeException    if the type of the given
+     *                                            remote address is not supported
+     * @throws SecurityException                  if a security manager has been installed
+     *                                            and it does not permit access to the given remote address
      */
     public abstract <A> IoFuture<Void, A> connect(SocketAddress remote,
-        A attachment,
-        CompletionHandler<Void, ? super A> handler);
+                                                  A attachment,
+                                                  CompletionHandler<Void, ? super A> handler);
 
     /**
      * Connects this channel.
@@ -298,29 +294,27 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * method returns {@code null} upon successful completion.
      * <p>
      * This method is equivalent to invoking
-     * {@link #connect(SocketAddress,Object,CompletionHandler)} with an
+     * {@link #connect(SocketAddress, Object, CompletionHandler)} with an
      * attachment of {@code null}.
-     * 
-     * @param <A> the attachment type
-     * @param remote the remote address to which this channel is to be
-     *        connected
+     *
+     * @param <A>     the attachment type
+     * @param remote  the remote address to which this channel is to be
+     *                connected
      * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                {@code null}
      * @return an {@code IoFuture} object representing the pending result
-     * 
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ConnectionPendingException if a connection operation is
-     *         already in progress on this channel
-     * @throws UnresolvedAddressException if the given remote address is not
-     *         fully resolved
-     * @throws UnsupportedAddressTypeException if the type of the given
-     *         remote address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and it does not permit access to the given remote address
+     * @throws ConnectionPendingException         if a connection operation is
+     *                                            already in progress on this channel
+     * @throws UnresolvedAddressException         if the given remote address is not
+     *                                            fully resolved
+     * @throws UnsupportedAddressTypeException    if the type of the given
+     *                                            remote address is not supported
+     * @throws SecurityException                  if a security manager has been installed
+     *                                            and it does not permit access to the given remote address
      */
     public final <A> IoFuture<Void, A> connect(SocketAddress remote,
-        CompletionHandler<Void, ? super A> handler)
-    {
+                                               CompletionHandler<Void, ? super A> handler) {
         return connect(remote, null, handler);
     }
 
@@ -341,17 +335,17 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * If this channel's is not connected then the operation completes
      * succesfully (meaning that the completion handler is invoked, and the
      * {@code IoFuture}'s {@code get} method returns {@code null}).
-     * 
-     * @param <A> the attachment type
+     *
+     * @param <A>        the attachment type
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
      */
     public abstract <A> IoFuture<Void, A> disconnect(A attachment,
-        CompletionHandler<Void, ? super A> handler);
+                                                     CompletionHandler<Void, ? super A> handler);
 
     /**
      * Disconnects this channel.
@@ -364,18 +358,17 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * returns {@code null} upon successful completion.
      * <p>
      * This method is equivalent to invoking
-     * {@link #disconnect(Object,CompletionHandler)} with an attachment of
+     * {@link #disconnect(Object, CompletionHandler)} with an attachment of
      * {@code null}.
-     * 
-     * @param <A> the attachment type
+     *
+     * @param <A>     the attachment type
      * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
      */
-    public final <A> IoFuture<Void, A> 
-            disconnect(CompletionHandler<Void, ? super A> handler)
-    {
+    public final <A> IoFuture<Void, A>
+    disconnect(CompletionHandler<Void, ? super A> handler) {
         return disconnect(null, handler);
     }
 
@@ -388,9 +381,9 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * source address of the datagram upon successful completion.
      * <p>
      * The datagram is transferred into the given byte buffer starting at
-     * its current position, as if by a regular {@link 
-     *  AsynchronousByteChannel#read(ByteBuffer, Object, 
-     *  CompletionHandler) read}
+     * its current position, as if by a regular {@link
+     * AsynchronousByteChannel#read(ByteBuffer, Object,
+     * CompletionHandler) read}
      * operation. If there are fewer bytes remaining in the buffer than are
      * required to hold the datagram then the remainder of the datagram is
      * silently discarded.
@@ -406,25 +399,25 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * check can be avoided by first connecting the socket via the
      * {@link #connect(SocketAddress, Object, CompletionHandler) connect}
      * method.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which the datagram is to be transferred
-     * @param timeout the timeout, or {@code 0L} for no timeout
-     * @param unit the time unit of the {@code timeout} argument
+     *
+     * @param <A>        the attachment type
+     * @param dst        the buffer into which the datagram is to be transferred
+     * @param timeout    the timeout, or {@code 0L} for no timeout
+     * @param unit       the time unit of the {@code timeout} argument
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
      */
     public abstract <A> IoFuture<SocketAddress, A> receive(ByteBuffer dst,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<SocketAddress, ? super A> handler);
+                                                           long timeout,
+                                                           TimeUnit unit,
+                                                           A attachment,
+                                                           CompletionHandler<SocketAddress, ? super A> handler);
 
     /**
      * Receives a datagram via this channel.
@@ -437,22 +430,21 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * {@link #receive(ByteBuffer, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which the datagram is to be transferred
+     *
+     * @param <A>        the attachment type
+     * @param dst        the buffer into which the datagram is to be transferred
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
      */
     public final <A> IoFuture<SocketAddress, A> receive(ByteBuffer dst,
-        A attachment,
-        CompletionHandler<SocketAddress, ? super A> handler)
-    {
+                                                        A attachment,
+                                                        CompletionHandler<SocketAddress, ? super A> handler) {
         return receive(dst, 0L, TimeUnit.NANOSECONDS, attachment, handler);
     }
 
@@ -467,19 +459,18 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * {@link #receive(ByteBuffer, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}, and an attachment of {@code null}.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which the datagram is to be transferred
+     *
+     * @param <A>     the attachment type
+     * @param dst     the buffer into which the datagram is to be transferred
      * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
      */
     public final <A> IoFuture<SocketAddress, A> receive(ByteBuffer dst,
-        CompletionHandler<SocketAddress, ? super A> handler)
-    {
+                                                        CompletionHandler<SocketAddress, ? super A> handler) {
         return receive(dst, 0L, TimeUnit.NANOSECONDS, null, handler);
     }
 
@@ -497,8 +488,8 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * the datagram in the underlying output buffer.
      * <p>
      * The datagram is transferred from the byte buffer as if by a regular
-     * {@link AsynchronousByteChannel#write(ByteBuffer, 
-     *      Object, CompletionHandler) write}
+     * {@link AsynchronousByteChannel#write(ByteBuffer,
+     * Object, CompletionHandler) write}
      * operation.
      * <p>
      * If there is a security manager installed and the the channel is not
@@ -509,34 +500,34 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * connecting the socket via the
      * {@link #connect(SocketAddress, Object, CompletionHandler) connect}
      * method.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer containing the datagram to be sent
-     * @param target the address to which the datagram is to be sent
-     * @param timeout the timeout, or {@code 0L} for no timeout
-     * @param unit the time unit of the {@code timeout} argument
+     *
+     * @param <A>        the attachment type
+     * @param src        the buffer containing the datagram to be sent
+     * @param target     the address to which the datagram is to be sent
+     * @param timeout    the timeout, or {@code 0L} for no timeout
+     * @param unit       the time unit of the {@code timeout} argument
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a write operation is already in
-     *         progress on this channel
-     * @throws UnresolvedAddressException if the given remote address is not
-     *         fully resolved
-     * @throws UnsupportedAddressTypeException if the type of the given
-     *         remote address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and it does not permit datagrams to be sent to the given
-     *         address
+     * @throws WritePendingException              if a write operation is already in
+     *                                            progress on this channel
+     * @throws UnresolvedAddressException         if the given remote address is not
+     *                                            fully resolved
+     * @throws UnsupportedAddressTypeException    if the type of the given
+     *                                            remote address is not supported
+     * @throws SecurityException                  if a security manager has been installed
+     *                                            and it does not permit datagrams to be sent to the given
+     *                                            address
      */
     public abstract <A> IoFuture<Integer, A> send(ByteBuffer src,
-        SocketAddress target,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler);
+                                                  SocketAddress target,
+                                                  long timeout,
+                                                  TimeUnit unit,
+                                                  A attachment,
+                                                  CompletionHandler<Integer, ? super A> handler);
 
     /**
      * Sends a datagram via this channel.
@@ -551,34 +542,33 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * remaining in the buffer or zero if there was insufficient room for
      * the datagram in the underlying output buffer.
      * <p>
-     * This method is equivalent to invoking {@link #send(ByteBuffer, 
-     *  SocketAddress, long, TimeUnit, Object, CompletionHandler)}
+     * This method is equivalent to invoking {@link #send(ByteBuffer,
+     * SocketAddress, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer containing the datagram to be sent
-     * @param target the address to which the datagram is to be sent
+     *
+     * @param <A>        the attachment type
+     * @param src        the buffer containing the datagram to be sent
+     * @param target     the address to which the datagram is to be sent
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a write operation is already in
-     *         progress on this channel
-     * @throws UnresolvedAddressException if the given remote address is not
-     *         fully resolved
-     * @throws UnsupportedAddressTypeException if the type of the given
-     *         remote address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and it does not permit datagrams to be sent to the given
-     *         address
+     * @throws WritePendingException              if a write operation is already in
+     *                                            progress on this channel
+     * @throws UnresolvedAddressException         if the given remote address is not
+     *                                            fully resolved
+     * @throws UnsupportedAddressTypeException    if the type of the given
+     *                                            remote address is not supported
+     * @throws SecurityException                  if a security manager has been installed
+     *                                            and it does not permit datagrams to be sent to the given
+     *                                            address
      */
     public final <A> IoFuture<Integer, A> send(ByteBuffer src,
-        SocketAddress target,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                               SocketAddress target,
+                                               A attachment,
+                                               CompletionHandler<Integer, ? super A> handler) {
         return send(src, target, 0L, TimeUnit.NANOSECONDS, attachment, handler);
     }
 
@@ -595,31 +585,30 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * remaining in the buffer or zero if there was insufficient room for
      * the datagram in the underlying output buffer.
      * <p>
-     * This method is equivalent to invoking {@link #send(ByteBuffer, 
-     *   SocketAddress, long, TimeUnit, Object, CompletionHandler)}
+     * This method is equivalent to invoking {@link #send(ByteBuffer,
+     * SocketAddress, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}, and an attachment of {@code null}.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer containing the datagram to be sent
-     * @param target the address to which the datagram is to be sent
+     *
+     * @param <A>     the attachment type
+     * @param src     the buffer containing the datagram to be sent
+     * @param target  the address to which the datagram is to be sent
      * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a write operation is already in
-     *         progress on this channel
-     * @throws UnresolvedAddressException if the given remote address is not
-     *         fully resolved
-     * @throws UnsupportedAddressTypeException if the type of the given
-     *         remote address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and it does not permit datagrams to be sent to the given
-     *         address
+     * @throws WritePendingException              if a write operation is already in
+     *                                            progress on this channel
+     * @throws UnresolvedAddressException         if the given remote address is not
+     *                                            fully resolved
+     * @throws UnsupportedAddressTypeException    if the type of the given
+     *                                            remote address is not supported
+     * @throws SecurityException                  if a security manager has been installed
+     *                                            and it does not permit datagrams to be sent to the given
+     *                                            address
      */
     public final <A> IoFuture<Integer, A> send(ByteBuffer src,
-        SocketAddress target,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                               SocketAddress target,
+                                               CompletionHandler<Integer, ? super A> handler) {
         return send(src, target, 0L, TimeUnit.NANOSECONDS, null, handler);
     }
 
@@ -638,26 +627,26 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * {@link AsynchronousByteChannel} interface. If there are fewer bytes
      * remaining in the buffer than are required to hold the datagram then
      * the remainder of the datagram is silently discarded.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which the datagram is to be transferred
-     * @param timeout the timeout, or {@code 0L} for no timeout
-     * @param unit the time unit of the {@code timeout} argument
+     *
+     * @param <A>        the attachment type
+     * @param dst        the buffer into which the datagram is to be transferred
+     * @param timeout    the timeout, or {@code 0L} for no timeout
+     * @param unit       the time unit of the {@code timeout} argument
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not connected
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not connected
      */
     public abstract <A> IoFuture<Integer, A> read(ByteBuffer dst,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler);
+                                                  long timeout,
+                                                  TimeUnit unit,
+                                                  A attachment,
+                                                  CompletionHandler<Integer, ? super A> handler);
 
     /**
      * Receives a datagram via this channel.
@@ -670,23 +659,22 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * {@link #read(ByteBuffer, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which the datagram is to be transferred
+     *
+     * @param <A>        the attachment type
+     * @param dst        the buffer into which the datagram is to be transferred
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not connected
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not connected
      */
     public final <A> IoFuture<Integer, A> read(ByteBuffer dst,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                               A attachment,
+                                               CompletionHandler<Integer, ? super A> handler) {
         return read(dst, 0L, TimeUnit.NANOSECONDS, attachment, handler);
     }
 
@@ -701,20 +689,19 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * {@link #read(ByteBuffer, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}, and an attachment of {@code null}.
-     * 
-     * @param <A> the attachment type
-     * @param dst the buffer into which the datagram is to be transferred
+     *
+     * @param <A>     the attachment type
+     * @param dst     the buffer into which the datagram is to be transferred
      * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws ReadPendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not connected
+     * @throws ReadPendingException               if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not connected
      */
     public final <A> IoFuture<Integer, A> read(ByteBuffer dst,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                               CompletionHandler<Integer, ? super A> handler) {
         return read(dst, 0L, TimeUnit.NANOSECONDS, null, handler);
     }
 
@@ -733,33 +720,33 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * <p>
      * The datagram is transferred from the byte buffer as if by a regular
      * {@link AsynchronousByteChannel#write(
-     *     ByteBuffer, Object, CompletionHandler) write}
+     *ByteBuffer, Object, CompletionHandler) write}
      * operation.
      * <p>
      * This method may only be invoked if this channel is connected, in
      * which case it sends datagrams directly to the socket's peer.
      * Otherwise it behaves exactly as specified in the
      * {@link AsynchronousByteChannel} interface.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer containing the datagram to be sent
-     * @param timeout the timeout, or {@code 0L} for no timeout
-     * @param unit the time unit of the {@code timeout} argument
+     *
+     * @param <A>        the attachment type
+     * @param src        the buffer containing the datagram to be sent
+     * @param timeout    the timeout, or {@code 0L} for no timeout
+     * @param unit       the time unit of the {@code timeout} argument
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not connected
+     * @throws WritePendingException              if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not connected
      */
     public abstract <A> IoFuture<Integer, A> write(ByteBuffer src,
-        long timeout,
-        TimeUnit unit,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler);
+                                                   long timeout,
+                                                   TimeUnit unit,
+                                                   A attachment,
+                                                   CompletionHandler<Integer, ? super A> handler);
 
     /**
      * Writes a datagram to this channel.
@@ -777,23 +764,22 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * {@link #write(ByteBuffer, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer containing the datagram to be sent
+     *
+     * @param <A>        the attachment type
+     * @param src        the buffer containing the datagram to be sent
      * @param attachment the object to {@link IoFuture#attach attach} to the
-     *        returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                   returned {@code IoFuture} object; can be {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not connected
+     * @throws WritePendingException              if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not connected
      */
     public final <A> IoFuture<Integer, A> write(ByteBuffer src,
-        A attachment,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                                A attachment,
+                                                CompletionHandler<Integer, ? super A> handler) {
         return write(src, 0L, TimeUnit.NANOSECONDS, attachment, handler);
     }
 
@@ -813,20 +799,19 @@ public abstract class AsynchronousDatagramChannel extends AsynchronousChannel
      * This method is equivalent to invoking
      * {@link #write(ByteBuffer, long, TimeUnit, Object, CompletionHandler)}
      * with a timeout of {@code 0L}, and an attachment of {@code null}.
-     * 
-     * @param <A> the attachment type
-     * @param src the buffer containing the datagram to be sent
+     *
+     * @param <A>     the attachment type
+     * @param src     the buffer containing the datagram to be sent
      * @param handler the handler for consuming the result; can be
-     *        {@code null}
+     *                {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws WritePendingException if a read operation is already in
-     *         progress on this channel
-     * @throws NotYetConnectedException if this channel is not connected
+     * @throws WritePendingException              if a read operation is already in
+     *                                            progress on this channel
+     * @throws NotYetConnectedException           if this channel is not connected
      */
     public final <A> IoFuture<Integer, A> write(ByteBuffer src,
-        CompletionHandler<Integer, ? super A> handler)
-    {
+                                                CompletionHandler<Integer, ? super A> handler) {
         return write(src, 0L, TimeUnit.NANOSECONDS, null, handler);
     }
 

@@ -45,7 +45,7 @@ import java.io.Serializable;
  * <p>The delivery guarantee of a channel cannot be changed.  If different
  * delivery guarantees are needed, then different channels should be used
  * for communication.
- * 
+ *
  * @see AppContext#getChannelManager
  */
 public interface ChannelManager {
@@ -53,7 +53,7 @@ public interface ChannelManager {
     /**
      * Creates a new channel with the specified listener and delivery
      * guarantee, binds it to the specified name, and returns it.
-     * 
+     *
      * <p>If the specified {@code listener} is {@code null}, then any
      * messages sent on the returned channel by any client session will
      * be automatically forwarded, unfiltered, to all channel members.
@@ -61,7 +61,7 @@ public interface ChannelManager {
      * <p>If the specified {@code listener} is
      * non-{@code null}, then when any client session sends a
      * message on the returned channel, the specified listener's {@link
-     * ChannelListener#receivedMessage(Channel,ClientSession,ByteBuffer)
+     * ChannelListener#receivedMessage(Channel, ClientSession, ByteBuffer)
      * receivedMessage} method is invoked with the channel, client
      * session and the message.  The specified listener is not
      * invoked for messages that the server sends on the channel via
@@ -83,38 +83,34 @@ public interface ChannelManager {
      *
      * <p>Messages sent on the returned channel are delivered in a manner
      * that satisfies the minimum requirements of the specified delivery
-     * guarantee. 
+     * guarantee.
      *
-     * @param	name a name
-     * @param	listener a channel listener, or {@code null}
-     * @param	delivery a delivery guarantee
-     *
-     * @return	a new channel bound to the specified name
-     *
-     * @throws	IllegalArgumentException if the specified listener is
-     *		non-{@code null} and is not serializable
-     * @throws	ResourceUnavailableException if there are not enough
-     *		resources to create the channel
-     * @throws	NameExistsException if a channel is already bound to
-     *		the specified name
-     * @throws	TransactionException if the operation failed because of
-     * 		a problem with the current transaction
+     * @param    name a name
+     * @param    listener a channel listener, or {@code null}
+     * @param    delivery a delivery guarantee
+     * @return a new channel bound to the specified name
+     * @throws IllegalArgumentException if the specified listener is
+     * non-{@code null} and is not serializable
+     * @throws ResourceUnavailableException if there are not enough
+     * resources to create the channel
+     * @throws NameExistsException if a channel is already bound to
+     * the specified name
+     * @throws TransactionException if the operation failed because of
+     * a problem with the current transaction
      */
     Channel createChannel(String name,
-			  ChannelListener listener,
-			  Delivery delivery);
-    
+                          ChannelListener listener,
+                          Delivery delivery);
+
     /**
      * Returns an existing channel with the specified name.
      *
      * @param name a channel name
-     *
      * @return an existing channel bound to the specified name
-     *
      * @throws NameNotBoundException if a channel is not bound to the
-     * specified name
-     * @throws TransactionException if the operation failed because of
-     * a problem with the current transaction
+     *                               specified name
+     * @throws TransactionException  if the operation failed because of
+     *                               a problem with the current transaction
      */
     Channel getChannel(String name);
 }

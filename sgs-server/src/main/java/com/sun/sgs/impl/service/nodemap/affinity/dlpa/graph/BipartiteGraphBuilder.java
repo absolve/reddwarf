@@ -26,10 +26,8 @@ import com.sun.sgs.impl.kernel.StandardProperties;
 import com.sun.sgs.impl.service.nodemap.affinity.LPAAffinityGroupFinder;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagation;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagationServer;
-import
-   com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
-import
-    com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilderStats;
+import com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
+import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilderStats;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
 import com.sun.sgs.kernel.AccessedObject;
@@ -45,21 +43,12 @@ import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.graph.util.Graphs;
 import edu.uci.ics.jung.graph.util.Pair;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import javax.management.JMException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import javax.management.JMException;
 
 /**
  * A graph builder which builds a bipartite graph of identities and
@@ -68,14 +57,14 @@ import javax.management.JMException;
  * <p>
  * This graph builder folds the graph upon request.  The folded graph
  * does not contain parallel edges.
- * 
  */
-public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder 
-        implements DLPAGraphBuilder
-{
-    /** The graph of object accesses. */
+public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
+        implements DLPAGraphBuilder {
+    /**
+     * The graph of object accesses.
+     */
     private final CopyableGraph<Object, WeightedEdge>
-        bipartiteGraph = 
+            bipartiteGraph =
             new CopyableGraph<Object, WeightedEdge>();
 
     /**
@@ -87,7 +76,8 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
     private final Map<Identity, LabelVertex> identMap =
             new HashMap<Identity, LabelVertex>();
 
-    /** Our recorded cross-node accesses.  We keep track of this through
+    /**
+     * Our recorded cross-node accesses.  We keep track of this through
      * conflicts detected in data cache kept across nodes;  when a
      * local node is evicted from the cache because of a request from another
      * node for it, we are told of the eviction.
@@ -95,9 +85,10 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
      * for each node.
      */
     private final ConcurrentMap<Long, Map<Object, Long>>
-        conflictMap = new ConcurrentHashMap<Long, Map<Object, Long>>();
+            conflictMap = new ConcurrentHashMap<Long, Map<Object, Long>>();
 
-    /** The TimerTask which prunes our data structures over time.  As the data
+    /**
+     * The TimerTask which prunes our data structures over time.  As the data
      * structures above are modified, the pruneTask notes the ways they have
      * changed.  Groups of changes are chunked into periods, each the length
      * of the time snapshot (configured at construction time). We
@@ -105,34 +96,41 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
      */
     private final PruneTask pruneTask;
 
-    /** Our JMX exposed information. */
+    /**
+     * Our JMX exposed information.
+     */
     private final AffinityGraphBuilderStats stats;
 
     // The instantiated algorithm parts.
-    /** The core server node portion or null if not valid. */
+    /**
+     * The core server node portion or null if not valid.
+     */
     private final LabelPropagationServer lpaServer;
-    /** The app node portion or null if not valid. */
+    /**
+     * The app node portion or null if not valid.
+     */
     private final LabelPropagation lpa;
+
     /**
      * Constructs a new bipartite graph builder.
-     * @param properties the properties for configuring this builder
+     *
+     * @param properties     the properties for configuring this builder
      * @param systemRegistry the registry of available system components
-     * @param txnProxy the transaction proxy
+     * @param txnProxy       the transaction proxy
      * @throws Exception if an error occurs
      */
     public BipartiteGraphBuilder(Properties properties,
                                  ComponentRegistry systemRegistry,
                                  TransactionProxy txnProxy)
-        throws Exception
-    {
+            throws Exception {
         super(properties);
-        
+
         // Create the LPA algorithm pieces
         NodeType type =
-            NodeType.valueOf(
-                wrappedProps.getProperty(StandardProperties.NODE_TYPE));
+                NodeType.valueOf(
+                        wrappedProps.getProperty(StandardProperties.NODE_TYPE));
         ProfileCollector col =
-            systemRegistry.getComponent(ProfileCollector.class);
+                systemRegistry.getComponent(ProfileCollector.class);
         WatchdogService wdog = txnProxy.getService(WatchdogService.class);
         if (type == NodeType.coreServerNode) {
             lpaServer = new LabelPropagationServer(col, wdog, properties);
@@ -142,7 +140,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         } else if (type == NodeType.appNode) {
             lpaServer = null;
             DataService dataService = txnProxy.getService(DataService.class);
-            long nodeId = dataService.getLocalNodeId();       
+            long nodeId = dataService.getLocalNodeId();
             lpa = new LabelPropagation(this, wdog, nodeId, properties);
 
             // TODO: Register ourselves with the data servce as a listener
@@ -150,10 +148,10 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
 
             // Create our JMX MBean
             stats = new AffinityGraphBuilderStats(col,
-                        bipartiteGraph, periodCount, snapshot);
+                    bipartiteGraph, periodCount, snapshot);
             try {
                 col.registerMBean(stats,
-                                  AffinityGraphBuilderMXBean.MXBEAN_NAME);
+                        AffinityGraphBuilderMXBean.MXBEAN_NAME);
             } catch (JMException e) {
                 // Continue on if we couldn't register this bean, although
                 // it's probably a very bad sign
@@ -167,10 +165,11 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
                     "Cannot use DLPA algorithm on singe node");
         }
     }
-    
-    /** {@inheritDoc} */
-    public void updateGraph(Identity owner, AccessedObjectsDetail detail)
-    {
+
+    /**
+     * {@inheritDoc}
+     */
+    public void updateGraph(Identity owner, AccessedObjectsDetail detail) {
         checkForShutdownState();
         if (state == State.DISABLED) {
             return;
@@ -181,12 +180,12 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
 
         long startTime = System.currentTimeMillis();
         stats.updateCountInc();
-        
+
         synchronized (bipartiteGraph) {
             bipartiteGraph.addVertex(owner);
 
             // For each object accessed in this task...
-            for (AccessedObject obj : detail.getAccessedObjects()) {    
+            for (AccessedObject obj : detail.getAccessedObjects()) {
                 Object objId = obj.getObjectId();
                 bipartiteGraph.addVertex(objId);
                 // We use weighted edges to reduce the total number of edges
@@ -206,25 +205,29 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         stats.processingTimeInc(System.currentTimeMillis() - startTime);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LabelVertex getVertex(Identity id) {
         return identMap.get(id);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public UndirectedGraph<LabelVertex, WeightedEdge> getAffinityGraph() {
         long startTime = System.currentTimeMillis();
 
         // Copy our input graph
-        CopyableGraph<Object, WeightedEdge> graphCopy = 
-            new CopyableGraph<Object, WeightedEdge>(bipartiteGraph);
+        CopyableGraph<Object, WeightedEdge> graphCopy =
+                new CopyableGraph<Object, WeightedEdge>(bipartiteGraph);
         logger.log(Level.FINE, "Time for graph copy is : {0} msec",
                 System.currentTimeMillis() - startTime);
 
         // Our final, folded graph.  No parallel edges;  they have been
         // collapsed into a single weighted edge.
         UndirectedGraph<LabelVertex, WeightedEdge> foldedGraph =
-            new UndirectedSparseGraph<LabelVertex, WeightedEdge>();
+                new UndirectedSparseGraph<LabelVertex, WeightedEdge>();
 
         // Clear out our identity->vertex map to prepare for new data.
         identMap.clear();
@@ -269,7 +272,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
                     WeightedEdge edge = foldedGraph.findEdge(label1, label2);
                     if (edge == null) {
                         foldedGraph.addEdge(new WeightedEdge(minWeight),
-                                            label1, label2);
+                                label1, label2);
                     } else {
                         edge.addWeight(minWeight);
                     }
@@ -282,18 +285,22 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         return Graphs.unmodifiableUndirectedGraph(foldedGraph);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Map<Long, Map<Object, Long>> getConflictMap() {
         return conflictMap;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Map<Object, Map<Identity, Long>> getObjectUseMap() {
         Map<Object, Map<Identity, Long>> retMap =
-            new HashMap<Object, Map<Identity, Long>>();
+                new HashMap<Object, Map<Identity, Long>>();
         // Copy our input graph
         CopyableGraph<Object, WeightedEdge> graphCopy =
-            new CopyableGraph<Object, WeightedEdge>(bipartiteGraph);
+                new CopyableGraph<Object, WeightedEdge>(bipartiteGraph);
 
         for (Object vert : graphCopy.getVertices()) {
             if (!(vert instanceof Identity)) {
@@ -305,7 +312,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
                     } else {
                         // our graph is messed up
                         logger.log(Level.FINE, "unexpected vertex type {0}",
-                                                v1);
+                                v1);
                     }
                 }
                 retMap.put(vert, idMap);
@@ -314,17 +321,16 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         return retMap;
     }
 
-    /** 
+    /**
      * TBD: This will be the implementation of our conflict detection listener.
      *
-     * @param objId the object that was evicted
-     * @param nodeId the node that caused the eviction
+     * @param objId     the object that was evicted
+     * @param nodeId    the node that caused the eviction
      * @param forUpdate {@code true} if this eviction was for an update,
      *                  {@code false} if it was for read only access
      */
     public void noteConflictDetected(Object objId, long nodeId,
-                                     boolean forUpdate)
-    {
+                                     boolean forUpdate) {
         if (objId == null) {
             throw new NullPointerException("objId must not be null");
         }
@@ -344,12 +350,16 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         pruneTask.updateConflict(objId, nodeId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeNode(long nodeId) {
         conflictMap.remove(nodeId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void disable() {
         if (setDisabledState()) {
             if (lpaServer != null) {
@@ -358,7 +368,10 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
             // nothing special is done for client side
         }
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void enable() {
         if (setEnabledState()) {
             if (lpaServer != null) {
@@ -368,7 +381,9 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         if (setShutdownState()) {
             if (pruneTask != null) {
@@ -383,7 +398,9 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LPAAffinityGroupFinder getAffinityGroupFinder() {
         return lpaServer;
     }
@@ -393,7 +410,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
      *
      * @return the runnable which prunes the graph.
      * @throws UnsupportedOperationException if this builder does not support
-     *    graph pruning.
+     *                                       graph pruning.
      */
     public Runnable getPruneTask() {
         return pruneTask;
@@ -433,14 +450,15 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         // "count" requirement, we also remove the information from the first
         // enqueued info object.
         private final Deque<Map<WeightedEdge, Integer>>
-            periodEdgeIncrementsQueue =
+                periodEdgeIncrementsQueue =
                 new ArrayDeque<Map<WeightedEdge, Integer>>();
         private final Deque<Map<Long, Map<Object, Integer>>>
-            periodConflictQueue =
+                periodConflictQueue =
                 new ArrayDeque<Map<Long, Map<Object, Integer>>>();
 
         /**
          * Creates a PruneTask.
+         *
          * @param count the number of full snapshots we wish to
          *              retain as live data
          */
@@ -477,8 +495,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
             synchronized (bipartiteGraph) {
                 // For each modified edge in the graph, update weights
                 for (Map.Entry<WeightedEdge, Integer> entry :
-                     periodEdgeIncrements.entrySet())
-                {
+                        periodEdgeIncrements.entrySet()) {
                     WeightedEdge edge = entry.getKey();
                     int weight = entry.getValue();
                     if (edge.getWeight() == weight) {
@@ -497,21 +514,19 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
 
             // For each conflict, update values
             for (Map.Entry<Long, Map<Object, Integer>> entry :
-                 periodConflicts.entrySet())
-            {
+                    periodConflicts.entrySet()) {
                 Long nodeId = entry.getKey();
                 Map<Object, Long> objMap = conflictMap.get(nodeId);
                 // If the node went down, we might have removed the entry
                 if (objMap != null) {
                     synchronized (objMap) {
                         for (Map.Entry<Object, Integer> updateEntry :
-                              entry.getValue().entrySet())
-                        {
+                                entry.getValue().entrySet()) {
                             Object objId = updateEntry.getKey();
                             Integer periodVal = updateEntry.getValue();
                             Long objMapVal = objMap.get(objId);
                             long newVal =
-                                (objMapVal == null) ? 0 : objMapVal - periodVal;
+                                    (objMapVal == null) ? 0 : objMapVal - periodVal;
                             if (newVal <= 0) {
                                 objMap.remove(objId);
                             } else {
@@ -530,6 +545,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
         /**
          * Note that an edge's weight has been incremented.
          * Called by a single thread.
+         *
          * @param edge the edge
          */
         void incrementEdge(WeightedEdge edge) {
@@ -543,7 +559,8 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
 
         /**
          * Note that a data cache conflict has been detected.
-         * @param objId the objId of the object causing the conflict
+         *
+         * @param objId  the objId of the object causing the conflict
          * @param nodeId the node ID of the node we were in conflict with
          */
         void updateConflict(Object objId, long nodeId) {
@@ -555,7 +572,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
                     currentPeriodConflicts.put(nodeId, periodObjMap);
                 }
                 int periodValue = periodObjMap.containsKey(objId) ?
-                                  periodObjMap.get(objId) : 0;
+                        periodObjMap.get(objId) : 0;
                 periodValue++;
                 periodObjMap.put(objId, periodValue);
             }
@@ -579,14 +596,15 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
      * A version of undirected sparse multigraph which has a copy
      * constructor.
      *
-     * @param <V>  the vertex type
-     * @param <E>  the edge type
+     * @param <V> the vertex type
+     * @param <E> the edge type
      */
-    private static class CopyableGraph<V, E> 
-            extends UndirectedSparseGraph<V, E>
-    {
+    private static class CopyableGraph<V, E>
+            extends UndirectedSparseGraph<V, E> {
 
-        /** Serialization version. */
+        /**
+         * Serialization version.
+         */
         private static final long serialVersionUID = 1L;
 
         /**
@@ -598,6 +616,7 @@ public class BipartiteGraphBuilder extends AbstractAffinityGraphBuilder
 
         /**
          * Creates a copy of {@code other}.
+         *
          * @param other the graph to copy
          */
         public CopyableGraph(CopyableGraph<V, E> other) {

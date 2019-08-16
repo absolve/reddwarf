@@ -38,26 +38,26 @@ import com.sun.sgs.auth.Identity;
  * <p>
  * The implementations for the methods of this interface should be
  * idempotent because they may be invoked multiple times if the implementation
- * throws an exception which implements {@link ExceptionRetryStatus} and 
+ * throws an exception which implements {@link ExceptionRetryStatus} and
  * {@code shouldRetry} returns {@code true}.
- * 
+ *
  * @see NodeMappingService#addNodeMappingListener(NodeMappingListener)
  */
 public interface NodeMappingListener {
     /**
      * Notifies this listener that an identity has been added to this node.
      *
-     * @param id the added identity
-     * @param oldNode the last node the identity was assigned to, or 
+     * @param id      the added identity
+     * @param oldNode the last node the identity was assigned to, or
      *                {@code null} if this is the identity's first assignment
      */
     void mappingAdded(Identity id, Node oldNode);
-    
+
     /**
      * Notifies this listener that an identity has been removed from this node.
      *
-     * @param id the removed identity
-     * @param newNode the new node assignment for the identity, or {@code null} 
+     * @param id      the removed identity
+     * @param newNode the new node assignment for the identity, or {@code null}
      *                if the identity has been removed from the system
      */
     void mappingRemoved(Identity id, Node newNode);

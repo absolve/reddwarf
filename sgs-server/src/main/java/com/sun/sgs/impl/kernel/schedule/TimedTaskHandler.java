@@ -22,6 +22,7 @@
 package com.sun.sgs.impl.kernel.schedule;
 
 import com.sun.sgs.kernel.schedule.ScheduledTask;
+
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -68,14 +69,13 @@ class TimedTaskHandler {
      * rejected and the method returns <code>false</code>.
      *
      * @param task the <code>ScheduledTask</code> to run in the future
-     *
      * @return <code>true</code> if the task is accepted to run delayed,
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     boolean runDelayed(ScheduledTask task) {
         // see if this is far enough in the future that it's worth handling
         if (task.getStartTime() < (System.currentTimeMillis() +
-                                   FUTURE_THRESHOLD)) {
+                FUTURE_THRESHOLD)) {
             return false;
         }
 
@@ -113,10 +113,14 @@ class TimedTaskHandler {
     private class TimerTaskImpl extends TimerTask {
         private final ScheduledTask task;
         private boolean cancelled = false;
+
         TimerTaskImpl(ScheduledTask task) {
             this.task = task;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public synchronized boolean cancel() {
             if (!cancelled) {
                 cancelled = true;
@@ -124,11 +128,17 @@ class TimedTaskHandler {
             }
             return false;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public long scheduledExecutionTime() {
             return task.getStartTime();
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public synchronized void run() {
             if (!cancelled) {
                 listener.timedTaskReady(task);

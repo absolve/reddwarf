@@ -37,14 +37,8 @@ import com.sun.sgs.impl.service.nodemap.affinity.LPADriver;
 import com.sun.sgs.impl.service.watchdog.WatchdogServiceImpl;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.NodeType;
-import com.sun.sgs.service.ClientSessionService;
-import com.sun.sgs.service.DataService;
-import com.sun.sgs.service.NodeMappingService;
-import com.sun.sgs.service.Service;
-import com.sun.sgs.service.TaskService;
-import com.sun.sgs.service.TransactionProxy;
-import com.sun.sgs.service.WatchdogService;
-import static com.sun.sgs.test.util.UtilProperties.createProperties;
+import com.sun.sgs.service.*;
+
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -54,37 +48,50 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.sun.sgs.test.util.UtilProperties.createProperties;
+
 /**
  * A node, used for testing.  The node is created using the kernel.
  * Multiple nodes can be created within a single VM.
- *
  */
 public class SgsTestNode {
     // Reflective stuff.
 
-    /** Kernel class */
+    /**
+     * Kernel class
+     */
     private static Class<?> kernelClass;
 
-    /** kernel constructor */
+    /**
+     * kernel constructor
+     */
     private static Constructor<?> kernelCtor;
-    /** kernel shutdown */
+    /**
+     * kernel shutdown
+     */
     private static Method kernelShutdownMethod;
-    /** transaction proxy */
+    /**
+     * transaction proxy
+     */
     private static Field kernelProxy;
-    /** system registry */
+    /**
+     * system registry
+     */
     private static Field kernelReg;
-    /** shutdown controller */
+    /**
+     * shutdown controller
+     */
     private static Field kernelShutdownCtrl;
 
     static {
         try {
             kernelClass =
-                Class.forName("com.sun.sgs.impl.kernel.Kernel");
-            kernelCtor =  
-                kernelClass.getDeclaredConstructor(Properties.class);
+                    Class.forName("com.sun.sgs.impl.kernel.Kernel");
+            kernelCtor =
+                    kernelClass.getDeclaredConstructor(Properties.class);
             kernelCtor.setAccessible(true);
 
-            kernelShutdownMethod = 
+            kernelShutdownMethod =
                     kernelClass.getDeclaredMethod("shutdown");
             kernelShutdownMethod.setAccessible(true);
 
@@ -93,7 +100,7 @@ public class SgsTestNode {
 
             kernelReg = kernelClass.getDeclaredField("systemRegistry");
             kernelReg.setAccessible(true);
-            
+
             kernelShutdownCtrl = kernelClass.getDeclaredField("shutdownCtrl");
             kernelShutdownCtrl.setAccessible(true);
         } catch (Exception e) {
@@ -101,67 +108,86 @@ public class SgsTestNode {
         }
     }
 
-    /** The default initial unique port for this test suite. */
+    /**
+     * The default initial unique port for this test suite.
+     */
     private final static int DEFAULT_PORT = 20000;
-    
-    /** The property that can be used to select an initial port. */
+
+    /**
+     * The property that can be used to select an initial port.
+     */
     private final static String PORT_PROPERTY = "test.sgs.port";
-    
-    /** The next unique port to use for this test suite. */
+
+    /**
+     * The next unique port to use for this test suite.
+     */
     private static AtomicInteger nextUniquePort;
-    
+
     static {
         Integer systemPort = Integer.getInteger(PORT_PROPERTY);
-        int port = systemPort == null ? DEFAULT_PORT 
-                                      : systemPort.intValue();
+        int port = systemPort == null ? DEFAULT_PORT
+                : systemPort.intValue();
         nextUniquePort = new AtomicInteger(port);
     }
-    
-    
-    /** The app name. */
+
+
+    /**
+     * The app name.
+     */
     private final String appName;
 
-    /** The server node, or null. */
+    /**
+     * The server node, or null.
+     */
     private final SgsTestNode serverNode;
 
-    /** The service properties. */
+    /**
+     * The service properties.
+     */
     public final Properties props;
 
-    /** The name of the DB directory. */
+    /**
+     * The name of the DB directory.
+     */
     private final String dbDirectory;
 
     private final Object kernel;
     private final TransactionProxy txnProxy;
     private final ComponentRegistry systemRegistry;
 
-    /** Services. */
+    /**
+     * Services.
+     */
     private final DataService dataService;
     private final WatchdogService watchdogService;
     private final NodeMappingService nodeMappingService;
     private final TaskService taskService;
     private final ClientSessionService sessionService;
     private final ChannelManager channelService;
-    
-    /** Shutdown controller. */
+
+    /**
+     * Shutdown controller.
+     */
     private final KernelShutdownController shutdownCtrl;
 
-    /** The listen port for the client session service. */
+    /**
+     * The listen port for the client session service.
+     */
     private int appPort;
 
     /**
      * Creates the first SgsTestNode instance in this VM.  This thread's
      * owner will be set to the owner which created this {@code SgsTestNode}.
      *
-     * @param appName the application name
+     * @param appName       the application name
      * @param listenerClass the class of the listener object, or null if a
-     *                     simple dummy listener should be used
-     * @param properties serverProperties to be used, or {@code null} for 
-     *                     defaults
+     *                      simple dummy listener should be used
+     * @param properties    serverProperties to be used, or {@code null} for
+     *                      defaults
      */
     public SgsTestNode(String appName,
                        Class<?> listenerClass,
-                       Properties properties) throws Exception
-    {
+                       Properties properties) throws Exception {
         this(appName, null, listenerClass, properties, true);
     }
 
@@ -170,19 +196,18 @@ public class SgsTestNode {
      * Creates the first SgsTestNode instance in this VM.  This thread's
      * owner will be set to the owner which created this {@code SgsTestNode}.
      *
-     * @param appName the application name
+     * @param appName       the application name
      * @param listenerClass the class of the listener object, or null if a
-     *                     simple dummy listener should be used
-     * @param properties serverProperties to be used, or {@code null} for 
-     *                     defaults
-     ** @param clean if {@code true}, make sure the data store directory is 
-     *                     fresh
+     *                      simple dummy listener should be used
+     * @param properties    serverProperties to be used, or {@code null} for
+     *                      defaults
+     *                      * @param clean if {@code true}, make sure the data store directory is
+     *                      fresh
      */
     public SgsTestNode(String appName,
                        Class<?> listenerClass,
                        Properties properties,
-                       boolean clean) throws Exception
-    {
+                       boolean clean) throws Exception {
         this(appName, null, listenerClass, properties, clean);
     }
 
@@ -190,57 +215,54 @@ public class SgsTestNode {
      * Creates additional SgsTestNode instances in this VM. This node will be
      * part of the same cluster as the node specified in the firstNode parameter.
      *
-     * @param firstNode  the first {@code SgsTestNode} created in this VM
+     * @param firstNode     the first {@code SgsTestNode} created in this VM
      * @param listenerClass the class of the listener object, or null if a
-     *                     simple dummy listener should be used
-     * @param properties serverProperties to be used, or {@code null} for 
-     *                     defaults which will cause an exception to be
-     *                     thrown if the standard services have been
-     *                     replaced by custom implementations
+     *                      simple dummy listener should be used
+     * @param properties    serverProperties to be used, or {@code null} for
+     *                      defaults which will cause an exception to be
+     *                      thrown if the standard services have been
+     *                      replaced by custom implementations
      */
     public SgsTestNode(SgsTestNode firstNode,
                        Class<?> listenerClass,
-                       Properties properties) throws Exception
-    {
-        this (firstNode.appName, firstNode, listenerClass, properties, false);
+                       Properties properties) throws Exception {
+        this(firstNode.appName, firstNode, listenerClass, properties, false);
     }
 
     /**
      * Creates a new instance of SgsTestNode.
-     *   
-     * 
-     * @param appName the application name
-     * @param serverNode  the instance which created the servers,
-     *                    {@code null} if this instance should create them.
-     *                    If {@code null}, this thread's owner is set to the
-     *                    owner which creates this {@code SgsTestNode}
+     *
+     * @param appName       the application name
+     * @param serverNode    the instance which created the servers,
+     *                      {@code null} if this instance should create them.
+     *                      If {@code null}, this thread's owner is set to the
+     *                      owner which creates this {@code SgsTestNode}
      * @param listenerClass the class of the listener object, or null if a
-     *                     simple dummy listener should be used
-     * @param properties serverProperties to be used, or {@code null} for 
-     *                     defaults which will cause an exception to be
-     *                     thrown if the standard services have been
-     *                     replaced by custom implementations
-     * @param clean if {@code true}, make sure the data store directory is 
-     *                     fresh
+     *                      simple dummy listener should be used
+     * @param properties    serverProperties to be used, or {@code null} for
+     *                      defaults which will cause an exception to be
+     *                      thrown if the standard services have been
+     *                      replaced by custom implementations
+     * @param clean         if {@code true}, make sure the data store directory is
+     *                      fresh
      */
-    public SgsTestNode(String appName, 
-                SgsTestNode serverNode,
-                Class<?> listenerClass,
-                Properties properties,
-                boolean clean) 
-        throws Exception
-    {
+    public SgsTestNode(String appName,
+                       SgsTestNode serverNode,
+                       Class<?> listenerClass,
+                       Properties properties,
+                       boolean clean)
+            throws Exception {
         this.appName = appName;
-	this.serverNode = serverNode;
-	
+        this.serverNode = serverNode;
+
         if (properties == null) {
-	    props = getDefaultProperties(appName, serverNode, listenerClass);
+            props = getDefaultProperties(appName, serverNode, listenerClass);
         } else {
             props = properties;
         }
 
         String createMBeanServer =
-           props.getProperty(ProfileCollectorImpl.CREATE_MBEAN_SERVER_PROPERTY);
+                props.getProperty(ProfileCollectorImpl.CREATE_MBEAN_SERVER_PROPERTY);
         if (createMBeanServer == null) {
             // User did not specify whether we should create an MBean server,
             // rather than use the default platform one.  Because this class
@@ -248,11 +270,11 @@ public class SgsTestNode {
             // always create a new MBean server, avoiding problems with
             // MBeans already being registered in a test.
             props.setProperty(ProfileCollectorImpl.CREATE_MBEAN_SERVER_PROPERTY,
-                             "true");
+                    "true");
         }
-	dbDirectory = 
-	    props.getProperty("com.sun.sgs.impl.service.data.store.DataStoreImpl.directory");
-        assert(dbDirectory != null);
+        dbDirectory =
+                props.getProperty("com.sun.sgs.impl.service.data.store.DataStoreImpl.directory");
+        assert (dbDirectory != null);
         if (clean) {
             deleteDirectory(dbDirectory);
             createDirectory(dbDirectory);
@@ -277,10 +299,10 @@ public class SgsTestNode {
         if (sessionService != null) {
             String portProp =
                     props.getProperty(
-                       com.sun.sgs.impl.transport.tcp.TcpTransport.LISTEN_PORT_PROPERTY);
+                            com.sun.sgs.impl.transport.tcp.TcpTransport.LISTEN_PORT_PROPERTY);
             appPort = portProp == null ?
-                            com.sun.sgs.impl.transport.tcp.TcpTransport.DEFAULT_PORT :
-                            Integer.parseInt(portProp);
+                    com.sun.sgs.impl.transport.tcp.TcpTransport.DEFAULT_PORT :
+                    Integer.parseInt(portProp);
         }
     }
 
@@ -289,11 +311,11 @@ public class SgsTestNode {
      * is configured for this node.
      */
     private <T extends Service> T getService(Class<T> type) {
-	try {
-	    return txnProxy.getService(type);
-	} catch (MissingResourceException e) {
-	    return null;
-	}
+        try {
+            return txnProxy.getService(type);
+        } catch (MissingResourceException e) {
+            return null;
+        }
     }
 
     /**
@@ -316,16 +338,20 @@ public class SgsTestNode {
      */
     public static class DummyAppListener implements AppListener, Serializable {
 
-	private final static long serialVersionUID = 1L;
+        private final static long serialVersionUID = 1L;
 
-        /** {@inheritDoc} */
-	public ClientSessionListener loggedIn(ClientSession session) {
+        /**
+         * {@inheritDoc}
+         */
+        public ClientSessionListener loggedIn(ClientSession session) {
             return null;
-	}
+        }
 
-        /** {@inheritDoc} */
-	public void initialize(Properties props) {
-	}
+        /**
+         * {@inheritDoc}
+         */
+        public void initialize(Properties props) {
+        }
     }
 
     /**
@@ -346,53 +372,53 @@ public class SgsTestNode {
      * Returns the data service.
      */
     public DataService getDataService() {
-	return dataService;
+        return dataService;
     }
 
     /**
      * Returns the watchdog service.
      */
     public WatchdogService getWatchdogService() {
-	return watchdogService;
+        return watchdogService;
     }
 
     /**
      * Returns the node mapping service.
      */
     public NodeMappingService getNodeMappingService() {
-	return nodeMappingService;
+        return nodeMappingService;
     }
 
     /**
      * Returns the node mapping server.
      */
     NodeMappingServerImpl getNodeMappingServer()
-	throws Exception
-    {
-        Field serverImplField = 
-            NodeMappingServiceImpl.class.getDeclaredField("serverImpl");
+            throws Exception {
+        Field serverImplField =
+                NodeMappingServiceImpl.class.getDeclaredField("serverImpl");
         serverImplField.setAccessible(true);
-	return (NodeMappingServerImpl) serverImplField.get(nodeMappingService);
+        return (NodeMappingServerImpl) serverImplField.get(nodeMappingService);
     }
-    
+
     /**
      * Returns the task service.
      */
     public TaskService getTaskService() {
-	return taskService;
+        return taskService;
     }
+
     /**
      * Returns the client session service.
      */
     public ClientSessionService getClientSessionService() {
-	return sessionService;
+        return sessionService;
     }
 
     /**
      * Returns the channel service.
      */
     public ChannelManager getChannelService() {
-	return channelService;
+        return channelService;
     }
 
     /**
@@ -413,38 +439,37 @@ public class SgsTestNode {
      * Returns the default properties for a server node, useful for
      * adding additional properties as required.
      */
-    public static Properties getDefaultProperties(String appName, 
-                                           SgsTestNode serverNode,
-                                           Class<?> listenerClass) 
-        throws Exception
-    {
+    public static Properties getDefaultProperties(String appName,
+                                                  SgsTestNode serverNode,
+                                                  Class<?> listenerClass)
+            throws Exception {
         // The SgsTestNode currently starts single node (in a network config
         // for the data store) or an app node.  If a core server node is
         // desired, it's best to set the property explicitly.
         boolean isServerNode = serverNode == null;
-        String nodeType = 
-            isServerNode ? 
-            NodeType.singleNode.toString() : 
-            NodeType.appNode.toString();
+        String nodeType =
+                isServerNode ?
+                        NodeType.singleNode.toString() :
+                        NodeType.appNode.toString();
 
         int requestedDataPort =
-            isServerNode ?
-            getNextUniquePort() :
-            getDataServerPort((DataServiceImpl) serverNode.getDataService());
+                isServerNode ?
+                        getNextUniquePort() :
+                        getDataServerPort((DataServiceImpl) serverNode.getDataService());
 
         int requestedWatchdogPort =
-            isServerNode ?
-            getNextUniquePort() :
-            ((WatchdogServiceImpl) serverNode.getWatchdogService()).
-	    	getServer().getPort();
+                isServerNode ?
+                        getNextUniquePort() :
+                        ((WatchdogServiceImpl) serverNode.getWatchdogService()).
+                                getServer().getPort();
 
         int requestedNodeMapPort =
-            isServerNode ?
-            getNextUniquePort() :
-            getNodeMapServerPort(serverNode.getNodeMappingServer());
+                isServerNode ?
+                        getNextUniquePort() :
+                        getNodeMapServerPort(serverNode.getNodeMappingServer());
 
         String dir = System.getProperty("java.io.tmpdir") +
-                                File.separator + appName;
+                File.separator + appName;
 
         // The node mapping service requires at least one full stack
         // to run properly (it will not assign identities to a node
@@ -454,42 +479,42 @@ public class SgsTestNode {
         if (listenerClass == null) {
             listenerClass = DummyAppListener.class;
         }
-        
+
         Properties retProps = createProperties(
-            StandardProperties.APP_NAME, appName,
-            StandardProperties.APP_ROOT, dir,
-            StandardProperties.NODE_TYPE, nodeType,
-            StandardProperties.SERVER_HOST, "localhost",
-            com.sun.sgs.impl.transport.tcp.TcpTransport.LISTEN_PORT_PROPERTY,
+                StandardProperties.APP_NAME, appName,
+                StandardProperties.APP_ROOT, dir,
+                StandardProperties.NODE_TYPE, nodeType,
+                StandardProperties.SERVER_HOST, "localhost",
+                com.sun.sgs.impl.transport.tcp.TcpTransport.LISTEN_PORT_PROPERTY,
                 String.valueOf(getNextUniquePort()),
-            StandardProperties.APP_LISTENER, listenerClass.getName(),
-            "com.sun.sgs.impl.service.data.store.DataStoreImpl.directory",
+                StandardProperties.APP_LISTENER, listenerClass.getName(),
+                "com.sun.sgs.impl.service.data.store.DataStoreImpl.directory",
                 dir + ".db",
-            "com.sun.sgs.impl.service.data.store.net.server.port", 
+                "com.sun.sgs.impl.service.data.store.net.server.port",
                 String.valueOf(requestedDataPort),
-            "com.sun.sgs.impl.service.data.DataServiceImpl.data.store.class",
+                "com.sun.sgs.impl.service.data.DataServiceImpl.data.store.class",
                 "com.sun.sgs.impl.service.data.store.net.DataStoreClient",
-            "com.sun.sgs.impl.service.watchdog.server.port",
+                "com.sun.sgs.impl.service.watchdog.server.port",
                 String.valueOf(requestedWatchdogPort),
-	    "com.sun.sgs.impl.service.channel.server.port",
-	        String.valueOf(getNextUniquePort()),
-	    "com.sun.sgs.impl.service.session.server.port",
-	        String.valueOf(getNextUniquePort()),
-	    "com.sun.sgs.impl.service.nodemap.client.port",
-	        String.valueOf(getNextUniquePort()),
-	    "com.sun.sgs.impl.service.watchdog.client.port",
-	        String.valueOf(getNextUniquePort()),
-            "com.sun.sgs.impl.service.watchdog.server.renew.interval", "1500",
-            "com.sun.sgs.impl.service.nodemap.server.port",
+                "com.sun.sgs.impl.service.channel.server.port",
+                String.valueOf(getNextUniquePort()),
+                "com.sun.sgs.impl.service.session.server.port",
+                String.valueOf(getNextUniquePort()),
+                "com.sun.sgs.impl.service.nodemap.client.port",
+                String.valueOf(getNextUniquePort()),
+                "com.sun.sgs.impl.service.watchdog.client.port",
+                String.valueOf(getNextUniquePort()),
+                "com.sun.sgs.impl.service.watchdog.server.renew.interval", "1500",
+                "com.sun.sgs.impl.service.nodemap.server.port",
                 String.valueOf(requestedNodeMapPort),
-            LPADriver.GRAPH_CLASS_PROPERTY, "None",
-            "com.sun.sgs.impl.service.nodemap.remove.expire.time", "1000",
-            "com.sun.sgs.impl.service.task.continue.threshold", "10"
+                LPADriver.GRAPH_CLASS_PROPERTY, "None",
+                "com.sun.sgs.impl.service.nodemap.remove.expire.time", "1000",
+                "com.sun.sgs.impl.service.task.continue.threshold", "10"
         );
 
         return retProps;
     }
-    
+
     /**
      * Returns the nodeId for this test node.
      */
@@ -501,9 +526,9 @@ public class SgsTestNode {
      * Returns a bound app port.
      */
     public int getAppPort() {
-	return appPort;
+        return appPort;
     }
-    
+
     /**
      * Returns a unique port number.  Note that the ports are only unique
      * within the current process.
@@ -512,18 +537,22 @@ public class SgsTestNode {
         return nextUniquePort.getAndIncrement();
     }
 
-    /** Creates the specified directory, if it does not already exist. */
+    /**
+     * Creates the specified directory, if it does not already exist.
+     */
     private static void createDirectory(String directory) {
         File dir = new File(directory);
         if (!dir.exists()) {
             if (!dir.mkdir()) {
                 throw new RuntimeException(
-                    "Problem creating directory: " + dir);
+                        "Problem creating directory: " + dir);
             }
         }
     }
 
-    /** Deletes the specified directory, if it exists. */
+    /**
+     * Deletes the specified directory, if it exists.
+     */
     private static void deleteDirectory(String directory) {
         File dir = new File(directory);
         if (dir.exists()) {
@@ -534,7 +563,7 @@ public class SgsTestNode {
             }
             if (!dir.delete()) {
                 throw new RuntimeException(
-                    "Failed to delete directory: " + dir);
+                        "Failed to delete directory: " + dir);
             }
         }
     }
@@ -542,17 +571,16 @@ public class SgsTestNode {
     /**
      * Returns the bound port for the data server.
      */
-    public static int getDataServerPort(DataServiceImpl service) 
-        throws Exception
-    {
+    public static int getDataServerPort(DataServiceImpl service)
+            throws Exception {
         Field storeField = DataServiceImpl.class.getDeclaredField("store");
         storeField.setAccessible(true);
-	DataStoreProfileProducer profileWrapper =
-	    (DataStoreProfileProducer) storeField.get(service);
+        DataStoreProfileProducer profileWrapper =
+                (DataStoreProfileProducer) storeField.get(service);
         DataStoreClient dsClient =
-	    (DataStoreClient) profileWrapper.getDataStore();
+                (DataStoreClient) profileWrapper.getDataStore();
         Field serverPortField =
-	    DataStoreClient.class.getDeclaredField("serverPort");
+                DataStoreClient.class.getDeclaredField("serverPort");
         serverPortField.setAccessible(true);
         return (Integer) serverPortField.get(dsClient);
     }
@@ -561,11 +589,10 @@ public class SgsTestNode {
      * Returns the bound port for the node mapping server.
      */
     private static int getNodeMapServerPort(NodeMappingServerImpl nodemapServer)
-	throws Exception
-    {
-        Method getPortMethod = 
+            throws Exception {
+        Method getPortMethod =
                 NodeMappingServerImpl.class.getDeclaredMethod("getPort");
         getPortMethod.setAccessible(true);
-	return (Integer) getPortMethod.invoke(nodemapServer);
+        return (Integer) getPortMethod.invoke(nodemapServer);
     }
 }

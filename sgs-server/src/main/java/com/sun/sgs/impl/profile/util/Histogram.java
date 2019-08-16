@@ -45,13 +45,13 @@ public interface Histogram {
      * collected samples.
      */
     void clear();
-    
+
     /**
      * Returns the number of samples represented by this histogram.
      *
      * @return the number of samples represented by this hisogram
      */
-    int size();    
+    int size();
 
     /**
      * Returns a text-based representation of this histogram.
@@ -67,8 +67,7 @@ public interface Histogram {
      * values on each of the bins.
      *
      * @param binLabel the label to be appended to the name of each of
-     *        the bins.
-     * 
+     *                 the bins.
      * @return a text based representation of this histogram
      */
     String toString(String binLabel);

@@ -59,8 +59,8 @@ class ComponentRegistryImpl implements ComponentRegistry {
                 // if this isn't the first match, it's an error
                 if (matchingComponent != null) {
                     throw new MissingResourceException("More than one " +
-                                                       "matching component",
-                                                       type.getName(), null);
+                            "matching component",
+                            type.getName(), null);
                 }
                 matchingComponent = component;
             }
@@ -69,7 +69,7 @@ class ComponentRegistryImpl implements ComponentRegistry {
         // if no matches were found, it's an error
         if (matchingComponent == null) {
             throw new MissingResourceException("No matching components",
-                                               type.getName(), null);
+                    type.getName(), null);
         }
 
         return type.cast(matchingComponent);

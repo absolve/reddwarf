@@ -23,5 +23,7 @@
  * --
  */
 
-/** Provides interfaces for the protocol layer. */
+/**
+ * Provides interfaces for the protocol layer.
+ */
 package com.sun.sgs.protocol;

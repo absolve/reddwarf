@@ -28,7 +28,6 @@ package com.sun.sgs.service;
 import com.sun.sgs.app.TaskManager;
 import com.sun.sgs.app.TaskRejectedException;
 import com.sun.sgs.app.TransactionException;
-
 import com.sun.sgs.kernel.KernelRunnable;
 
 
@@ -54,14 +53,13 @@ public interface TaskService extends TaskManager, Service {
      * The task will not be persisted by the <code>TaskService</code>, and
      * therefore is not guaranteed to run.
      *
-     * @param task the <code>KernelTask</code> to run
+     * @param task          the <code>KernelTask</code> to run
      * @param transactional <code>true</code> if the given task should be run
      *                      in a transaction, <code>false</code> otherwise
-     *
      * @throws TaskRejectedException if the backing scheduler refuses to
      *                               accept the task
-     * @throws TransactionException if the operation failed because of a
-     *		                        problem with the current transaction
+     * @throws TransactionException  if the operation failed because of a
+     *                               problem with the current transaction
      */
     void scheduleNonDurableTask(KernelRunnable task, boolean transactional);
 
@@ -72,17 +70,16 @@ public interface TaskService extends TaskManager, Service {
      * As described in <code>TaskManager</code>, the delay is from the
      * time of this call, not from the time that the transaction commits.
      *
-     * @param task the <code>KernelTask</code> to run
-     * @param delay the number of milliseconds to delay before running the task
+     * @param task          the <code>KernelTask</code> to run
+     * @param delay         the number of milliseconds to delay before running the task
      * @param transactional <code>true</code> if the given task should be run
      *                      in a transaction, <code>false</code> otherwise
-     *
      * @throws TaskRejectedException if the backing scheduler refuses to
      *                               accept the task
-     * @throws TransactionException if the operation failed because of a
-     *		                        problem with the current transaction
+     * @throws TransactionException  if the operation failed because of a
+     *                               problem with the current transaction
      */
-    void scheduleNonDurableTask(KernelRunnable task, long delay, 
+    void scheduleNonDurableTask(KernelRunnable task, long delay,
                                 boolean transactional);
 
 }

@@ -46,6 +46,7 @@ public class DummyKernelRunnable implements KernelRunnable {
     /**
      * Does nothing.
      */
-    public void run() throws Exception {}
+    public void run() throws Exception {
+    }
 
 }

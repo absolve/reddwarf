@@ -36,12 +36,13 @@ import com.sun.sgs.kernel.TransactionScheduler;
 import com.sun.sgs.test.util.SgsTestNode;
 import com.sun.sgs.tools.test.FilteredNameRunner;
 import com.sun.sgs.tools.test.IntegrationTest;
-import java.util.Properties;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Properties;
 
 /**
  * Test for the {@code NowOrLaterRetryPolicy} class when it is plugged in to
@@ -55,26 +56,32 @@ public class TestNowOrLaterRetryPolicyIntegration {
     private TransactionScheduler txnScheduler;
     private Identity taskOwner;
 
-    /** Per-test initialization */
-    @Before public void startup() throws Exception {
+    /**
+     * Per-test initialization
+     */
+    @Before
+    public void startup() throws Exception {
         Properties properties =
-            SgsTestNode.getDefaultProperties("TestNowOrLaterRetryPolicyIntegration",
-					     null, null);
+                SgsTestNode.getDefaultProperties("TestNowOrLaterRetryPolicyIntegration",
+                        null, null);
         properties.setProperty(StandardProperties.NODE_TYPE,
-                               NodeType.coreServerNode.name());
+                NodeType.coreServerNode.name());
         properties.setProperty("com.sun.sgs.impl.kernel.scheduler.retry",
-                               NowOrLaterRetryPolicy.class.getName());
+                NowOrLaterRetryPolicy.class.getName());
         properties.setProperty(NowOrLaterRetryPolicy.RETRY_BACKOFF_THRESHOLD_PROPERTY,
-                               "5");
+                "5");
         serverNode = new SgsTestNode("TestNowOrLaterRetryPolicyIntegration",
-                                     null, properties);
+                null, properties);
         txnScheduler = (TransactionScheduler) serverNode.
                 getSystemRegistry().getComponent(TransactionScheduler.class);
         taskOwner = serverNode.getProxy().getCurrentOwner();
     }
 
-    /** Per-test shutdown */
-    @After public void shutdown() throws Exception {
+    /**
+     * Per-test shutdown
+     */
+    @After
+    public void shutdown() throws Exception {
         if (serverNode != null)
             serverNode.shutdown(true);
     }
@@ -118,19 +125,23 @@ public class TestNowOrLaterRetryPolicyIntegration {
     private class CountTestRunner implements KernelRunnable {
         private int count;
         private boolean retryable;
+
         CountTestRunner(int initialCount, boolean retryable) {
             this.count = initialCount;
             this.retryable = retryable;
         }
+
         public String getBaseTaskType() {
             return CountTestRunner.class.getName();
         }
+
         public void run() throws Exception {
             count--;
             if (count > 0) {
                 throw new RetryableException(retryable);
             }
         }
+
         public int getCount() {
             return count;
         }
@@ -140,12 +151,15 @@ public class TestNowOrLaterRetryPolicyIntegration {
         private boolean finished = false;
         private int runCount = 0;
         private long sleep = 0;
+
         LongTransactionRunner(long sleep) {
             this.sleep = sleep;
         }
+
         public String getBaseTaskType() {
             return LongTransactionRunner.class.getName();
         }
+
         public void run() throws Exception {
             runCount++;
             if (runCount > 10) {
@@ -155,9 +169,11 @@ public class TestNowOrLaterRetryPolicyIntegration {
             serverNode.getProxy().getCurrentTransaction();
             finished = true;
         }
+
         public boolean isFinished() {
             return finished;
         }
+
         public int getRunCount() {
             return runCount;
         }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="sgs-server" />
+        <module name="sgs-server-internal-api" />
+        <module name="sgs-tutorial-server" />
+        <module name="sgs-stop" />
+        <module name="sgs-boot" />
+        <module name="sgs-server-javadoc" />
+        <module name="sgs-server-api" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="sgs-boot" options="-Xlint" />
+      <module name="sgs-server" options="-Xlint" />
+      <module name="sgs-server-api" options="-Xlint" />
+      <module name="sgs-server-internal-api" options="-Xlint" />
+      <module name="sgs-server-javadoc" options="-Xlint" />
+      <module name="sgs-stop" options="-Xlint" />
+      <module name="sgs-tutorial-server" options="-Xlint" />
+    </option>
+  </component>
+</project>

@@ -43,7 +43,7 @@ import java.util.concurrent.Future;
  * initiating the operation. The attachment method is used to retrieve it.
  * The {@link IoFuture#attachment attachment} may later be discarded by
  * {@link IoFuture#attach attaching} {@code null}.
- * 
+ *
  * @param <R> the result type
  * @param <A> the attachment type
  */
@@ -56,11 +56,11 @@ public interface IoFuture<R, A> extends Future<R> {
      * to retrieve the result of a completed operation. It is equivalent to
      * invoking the {@link Future#get() get} method to retrieve the result
      * except that the method does not wait for the result.
-     * 
+     *
      * @return the completed result
-     * @throws ExecutionException if the operation threw an exception
+     * @throws ExecutionException    if the operation threw an exception
      * @throws CancellationException if the operation was
-     *         {@link #cancel(boolean) cancelled}
+     *                               {@link #cancel(boolean) cancelled}
      * @throws IllegalStateException if the operation has not completed
      */
     R getNow() throws ExecutionException;
@@ -85,20 +85,20 @@ public interface IoFuture<R, A> extends Future<R> {
      * <p>
      * This method otherwise behaves exactly as specified by the
      * {@link Future} interface.
-     * 
+     *
      * @param mayInterruptIfRunning {@code true} if the operation can be
-     *        cancelled forcefully (possibily by closing the channel),
-     *        {@code false} otherwise
-     * @return  {@code false} if the operation could not be cancelled,
-     *         {@code true} if the operation has been cancelled
+     *                              cancelled forcefully (possibily by closing the channel),
+     *                              {@code false} otherwise
+     * @return {@code false} if the operation could not be cancelled,
+     * {@code true} if the operation has been cancelled
      */
     boolean cancel(boolean mayInterruptIfRunning);
 
     /**
      * Retrieves the current attachment.
-     * 
+     *
      * @return the object currently attached to this channel future or
-     *         {@code null} if there is no attachment
+     * {@code null} if there is no attachment
      */
     A attachment();
 
@@ -110,10 +110,10 @@ public interface IoFuture<R, A> extends Future<R> {
      * attached at a time; invoking this method causes any previous
      * attachment to be discarded. The current attachment may be discarded
      * by attaching {@code null}.
-     * 
+     *
      * @param ob the object to be attached; may be {@code null}
      * @return the previously-attached object, if any, otherwise
-     *         {@code null}
+     * {@code null}
      */
     A attach(A ob);
 }

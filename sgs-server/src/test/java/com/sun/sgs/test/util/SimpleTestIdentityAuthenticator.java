@@ -24,20 +24,20 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCredentials;
 import com.sun.sgs.impl.auth.NamePasswordCredentials;
+
+import javax.security.auth.login.LoginException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import javax.security.auth.login.LoginException;
 
 /**
- *  A simple identity authenticator for testing.
- *
+ * A simple identity authenticator for testing.
  */
 public class SimpleTestIdentityAuthenticator implements IdentityAuthenticator {
     // All the identities in the system, on all nodes
-    public static final SystemIdentities allIdentities = 
+    public static final SystemIdentities allIdentities =
             new SystemIdentities();
 
     /**
@@ -50,25 +50,24 @@ public class SimpleTestIdentityAuthenticator implements IdentityAuthenticator {
     /**
      * {@inheritDoc}
      */
-    public Identity authenticateIdentity(IdentityCredentials credentials) 
-        throws LoginException 
-    {
+    public Identity authenticateIdentity(IdentityCredentials credentials)
+            throws LoginException {
         DummyIdentity identity = new DummyIdentity(credentials);
         SimpleTestIdentityAuthenticator.allIdentities.put(identity.getName());
-	return identity;
+        return identity;
     }
 
     /**
      * {@inheritDoc}
      */
     public String[] getSupportedCredentialTypes() {
-        return new String [] { NamePasswordCredentials.TYPE_IDENTIFIER };
+        return new String[]{NamePasswordCredentials.TYPE_IDENTIFIER};
     }
 
     public static class SystemIdentities {
         // All the identities in the system, on all nodes
         private final Map<String, IdentityInfo> identities =
-            Collections.synchronizedMap(new HashMap<String, IdentityInfo>());
+                Collections.synchronizedMap(new HashMap<String, IdentityInfo>());
 
         public void put(String name) {
             identities.put(name, new IdentityInfo());
@@ -105,7 +104,7 @@ public class SimpleTestIdentityAuthenticator implements IdentityAuthenticator {
                 return info.loggedIn;
             }
         }
-	
+
         public boolean getNotifyLoggedOut(String name) {
             IdentityInfo info = identities.get(name);
             if (info == null) {
@@ -129,7 +128,6 @@ public class SimpleTestIdentityAuthenticator implements IdentityAuthenticator {
             private boolean loggedOut = false;
         }
     }
-	
 
 
     /**
@@ -154,20 +152,20 @@ public class SimpleTestIdentityAuthenticator implements IdentityAuthenticator {
         }
 
         public void notifyLoggedIn() {
-	    //System.err.println("notifyLoggedIn: " + name);
-	    SimpleTestIdentityAuthenticator.allIdentities.setLoggedIn(name);
-	}
+            //System.err.println("notifyLoggedIn: " + name);
+            SimpleTestIdentityAuthenticator.allIdentities.setLoggedIn(name);
+        }
 
         public void notifyLoggedOut() {
-	    //System.err.println("notifyLoggedOut: " + name);
-	    SimpleTestIdentityAuthenticator.allIdentities.setLoggedOut(name);
-	}
+            //System.err.println("notifyLoggedOut: " + name);
+            SimpleTestIdentityAuthenticator.allIdentities.setLoggedOut(name);
+        }
 
         @Override
         public boolean equals(Object o) {
             if (this == o)
                 return true;
-            if (! (o instanceof DummyIdentity))
+            if (!(o instanceof DummyIdentity))
                 return false;
             return ((DummyIdentity) o).name.equals(name);
         }
@@ -176,7 +174,7 @@ public class SimpleTestIdentityAuthenticator implements IdentityAuthenticator {
         public int hashCode() {
             return name.hashCode();
         }
-	
+
         @Override
         public String toString() {
             return DummyIdentity.class.getName() + "[" + name + "]";

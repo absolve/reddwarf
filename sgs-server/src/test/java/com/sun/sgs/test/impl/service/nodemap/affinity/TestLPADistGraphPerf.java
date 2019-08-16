@@ -23,11 +23,7 @@ package com.sun.sgs.test.impl.service.nodemap.affinity;
 
 import com.sun.sgs.impl.kernel.StandardProperties;
 import com.sun.sgs.impl.service.nodemap.NodeMappingServiceImpl;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderStats;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupGoodness;
-import com.sun.sgs.impl.service.nodemap.affinity.LPADriver;
-import com.sun.sgs.impl.service.nodemap.affinity.RelocatingAffinityGroup;
+import com.sun.sgs.impl.service.nodemap.affinity.*;
 import com.sun.sgs.impl.service.nodemap.affinity.dgb.DistGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.dgb.DistGraphBuilderServerImpl;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
@@ -49,27 +45,22 @@ import com.sun.sgs.test.util.UtilReflection;
 import com.sun.sgs.tools.test.IntegrationTest;
 import com.sun.sgs.tools.test.ParameterizedFilteredNameRunner;
 import edu.uci.ics.jung.graph.UndirectedGraph;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.lang.reflect.Field;
+import java.util.*;
+
 import static org.junit.Assert.assertNotNull;
 
 /**
  * Test of single node performance of label propagation.
  * This is useful for modifying parameters before integrating
  * into the distributed version of the algorithm.
- *
  */
 
 @IntegrationTest
@@ -80,21 +71,23 @@ public class TestLPADistGraphPerf {
     private static final int RUNS = 500;
 
     private static Field finderField;
+
     static {
         try {
             finderField =
-                UtilReflection.getField(NodeMappingServiceImpl.class, "finder");
+                    UtilReflection.getField(NodeMappingServiceImpl.class, "finder");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     // Number of threads, set with data below for each run
     private int numThreads;
 
     @Parameterized.Parameters
     public static Collection data() {
         return Arrays.asList(new Object[][]
-            {{1}, {2}, {4}, {8}, {16}});
+                {{1}, {2}, {4}, {8}, {16}});
     }
 
     private SgsTestNode serverNode;
@@ -111,14 +104,14 @@ public class TestLPADistGraphPerf {
         if (serverNode == null) {
             serverPort = SgsTestNode.getNextUniquePort();
             p.setProperty(StandardProperties.NODE_TYPE,
-                          NodeType.coreServerNode.toString());
+                    NodeType.coreServerNode.toString());
         }
         p.setProperty(DistGraphBuilderServerImpl.SERVER_PORT_PROPERTY,
                 String.valueOf(serverPort));
         p.setProperty(LPADriver.GRAPH_CLASS_PROPERTY,
-                      DistGraphBuilder.class.getName());
+                DistGraphBuilder.class.getName());
         p.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads",
-                    String.valueOf(numThreads));
+                String.valueOf(numThreads));
         p.setProperty(LPADriver.UPDATE_FREQ_PROPERTY, "3600"); // one hour
         return p;
     }
@@ -138,11 +131,11 @@ public class TestLPADistGraphPerf {
     public void warmupZach() throws Exception {
         for (int i = 0; i < WARMUP_RUNS; i++) {
             LPADriver driver = (LPADriver)
-                finderField.get(
+                    finderField.get(
                             serverNode.getNodeMappingService());
             Set<RelocatingAffinityGroup> groups =
-                driver.getGraphBuilder().
-                    getAffinityGroupFinder().findAffinityGroups();
+                    driver.getGraphBuilder().
+                            getAffinityGroupFinder().findAffinityGroups();
         }
 
         // There's no graph, so we expect an exception to be thrown
@@ -161,11 +154,11 @@ public class TestLPADistGraphPerf {
 
             // Send updates to each of the node's graph listeners
             LPADriver driver1 = (LPADriver)
-                finderField.get(node1.getNodeMappingService());
+                    finderField.get(node1.getNodeMappingService());
             LPADriver driver2 = (LPADriver)
-                finderField.get(node2.getNodeMappingService());
+                    finderField.get(node2.getNodeMappingService());
             LPADriver driver3 = (LPADriver)
-                finderField.get(node3.getNodeMappingService());
+                    finderField.get(node3.getNodeMappingService());
 
             DummyIdentity[] idents = new DummyIdentity[35];
             // Create identities for zach karate club
@@ -179,7 +172,7 @@ public class TestLPADistGraphPerf {
                 idents[i] = new DummyIdentity(String.valueOf(i));
                 nms.assignNode(this.getClass(), idents[i]);
             }
-            
+
             // Node 1 uses.
             AffinityGraphBuilder builder1 = driver1.getGraphBuilder();
             AccessedObjectsDetailTest detail = new AccessedObjectsDetailTest();
@@ -385,7 +378,7 @@ public class TestLPADistGraphPerf {
                     new ZachBuilder().getAffinityGraph();
             System.out.println("MODEL GRAPH IS " + graphModel);
             LPADriver driver = (LPADriver)
-                finderField.get(serverNode.getNodeMappingService());
+                    finderField.get(serverNode.getNodeMappingService());
             GraphListener serverListener = driver.getGraphListener();
             AffinityGraphBuilder builder = driver.getGraphBuilder();
             // The graph can only be found on the server side.  Let's make
@@ -401,10 +394,10 @@ public class TestLPADistGraphPerf {
             Assert.assertEquals(34, graph.getVertexCount());
             Assert.assertEquals(78, graph.getEdgeCount());
             ProfileCollector col =
-                serverNode.getSystemRegistry().
-                    getComponent(ProfileCollector.class);
+                    serverNode.getSystemRegistry().
+                            getComponent(ProfileCollector.class);
             AffinityGroupFinderMXBean bean = (AffinityGroupFinderMXBean)
-                col.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
+                    col.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
             assertNotNull(bean);
             bean.clear();
 
@@ -416,27 +409,27 @@ public class TestLPADistGraphPerf {
             double minMod = 1.0;
             for (int i = 0; i < RUNS; i++) {
                 Set<AffinityGroup> groups =
-                    Objects.uncheckedCast(
-                        builder.getAffinityGroupFinder().findAffinityGroups());    
+                        Objects.uncheckedCast(
+                                builder.getAffinityGroupFinder().findAffinityGroups());
                 double mod =
-                    AffinityGroupGoodness.calcModularity(graphModel, groups);
+                        AffinityGroupGoodness.calcModularity(graphModel, groups);
 
                 avgMod = avgMod + mod;
                 maxMod = Math.max(maxMod, mod);
                 minMod = Math.min(minMod, mod);
             }
             System.out.printf("DIST (%d runs, %d threads): " +
-                      "avg time : %4.2f ms, " +
-                      " time range [%d - %d ms] " +
-                      " avg iters : %4.2f, avg modularity: %.4f, " +
-                      " modularity range [%.4f - %.4f] %n",
-                      RUNS, numThreads,
-                      bean.getAvgRunTime(),
-                      bean.getMinRunTime(),
-                      bean.getMaxRunTime(),
-                      bean.getAvgIterations(),
-                      avgMod/(double) RUNS,
-                      minMod, maxMod);
+                            "avg time : %4.2f ms, " +
+                            " time range [%d - %d ms] " +
+                            " avg iters : %4.2f, avg modularity: %.4f, " +
+                            " modularity range [%.4f - %.4f] %n",
+                    RUNS, numThreads,
+                    bean.getAvgRunTime(),
+                    bean.getMinRunTime(),
+                    bean.getMaxRunTime(),
+                    bean.getAvgIterations(),
+                    avgMod / (double) RUNS,
+                    minMod, maxMod);
         } finally {
             if (node1 != null) {
                 node1.shutdown(false);
@@ -455,23 +448,23 @@ public class TestLPADistGraphPerf {
     private SgsTestNode createNode() throws Exception {
         Properties p =
                 SgsTestNode.getDefaultProperties("PerfTest", serverNode, null);
-            p.setProperty(DistGraphBuilderServerImpl.SERVER_PORT_PROPERTY,
-                    String.valueOf(serverPort));
-            p.setProperty(LPADriver.GRAPH_CLASS_PROPERTY,
-                          DistGraphBuilder.class.getName());
-            p.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads",
-                        String.valueOf(numThreads));
-            return new SgsTestNode(serverNode, null, p);
+        p.setProperty(DistGraphBuilderServerImpl.SERVER_PORT_PROPERTY,
+                String.valueOf(serverPort));
+        p.setProperty(LPADriver.GRAPH_CLASS_PROPERTY,
+                DistGraphBuilder.class.getName());
+        p.put("com.sun.sgs.impl.service.nodemap.affinity.numThreads",
+                String.valueOf(numThreads));
+        return new SgsTestNode(serverNode, null, p);
     }
+
     /**
      * Private implementation of {@code AccessedObjectsDetail}.
      * It allows adding and getting accessed objects only.
      */
     private static class AccessedObjectsDetailTest
-        implements AccessedObjectsDetail
-    {
+            implements AccessedObjectsDetail {
         private final LinkedHashSet<AccessedObject> accessList =
-             new LinkedHashSet<AccessedObject>();
+                new LinkedHashSet<AccessedObject>();
 
         void addAccess(Object obj) {
             accessList.add(new AccessedObjectImpl(obj));
@@ -498,26 +491,39 @@ public class TestLPADistGraphPerf {
     private static class AccessedObjectImpl implements AccessedObject {
         private final Object objId;
 
-        /** Creates an instance of {@code AccessedObjectImpl}. */
+        /**
+         * Creates an instance of {@code AccessedObjectImpl}.
+         */
         AccessedObjectImpl(Object objId) {
             this.objId = objId;
         }
 
         /* Implement AccessedObject. */
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public Object getObjectId() {
             return objId;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public AccessType getAccessType() {
             throw new UnsupportedOperationException("Not supported.");
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public Object getDescription() {
             throw new UnsupportedOperationException("Not supported.");
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public String getSource() {
             throw new UnsupportedOperationException("Not supported.");
         }

@@ -26,7 +26,6 @@
 package com.sun.sgs.kernel;
 
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.auth.Identity;
 
 
@@ -41,12 +40,10 @@ public interface PriorityScheduler {
      * Reserves the ability to run the given task. The scheduler will make
      * a best effort to honor the requested priority.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task     the {@code KernelRunnable} to execute
+     * @param owner    the entity on who's behalf this task is run
      * @param priority the requested {@code Priority}
-     *
      * @return a {@code TaskReservation} for the task
-     *
      * @throws TaskRejectedException if a reservation cannot be made
      */
     TaskReservation reserveTask(KernelRunnable task, Identity owner,
@@ -57,10 +54,9 @@ public interface PriorityScheduler {
      * scheduler implementation. The scheduler will make a best effort
      * to honor the requested priority.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task     the {@code KernelRunnable} to execute
+     * @param owner    the entity on who's behalf this task is run
      * @param priority the requested {@code Priority}
-     *
      * @throws TaskRejectedException if the given task is not accepted
      */
     void scheduleTask(KernelRunnable task, Identity owner, Priority priority);

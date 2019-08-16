@@ -67,10 +67,10 @@ public interface SchedulerRetryPolicy {
      *
      * @param task the task that has been aborted
      * @return the {@code SchedulerRetryAction} that the scheduler should
-     *         take with respect to retrying the given task
+     * take with respect to retrying the given task
      * @throws IllegalArgumentException if {@code task} is {@code null}
-     * @throws IllegalStateException if the given {@code task}'s most recent
-     *                               failure is {@code null}
+     * @throws IllegalStateException    if the given {@code task}'s most recent
+     *                                  failure is {@code null}
      */
     SchedulerRetryAction getRetryAction(ScheduledTask task);
 

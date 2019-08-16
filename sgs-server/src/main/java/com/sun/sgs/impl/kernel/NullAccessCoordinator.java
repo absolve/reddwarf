@@ -23,9 +23,9 @@ package com.sun.sgs.impl.kernel;
 
 import com.sun.sgs.impl.profile.ProfileCollectorHandle;
 import com.sun.sgs.kernel.AccessReporter;
-import com.sun.sgs.kernel.AccessReporter.AccessType;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
+
 import java.util.Properties;
 
 /**
@@ -34,74 +34,90 @@ import java.util.Properties;
  * its arguments.
  */
 public class NullAccessCoordinator
-    implements AccessCoordinatorHandle, AccessReporter<Object>
-{
-    /** Creates an instance of this class. */
-    public NullAccessCoordinator() { }
+        implements AccessCoordinatorHandle, AccessReporter<Object> {
+    /**
+     * Creates an instance of this class.
+     */
+    public NullAccessCoordinator() {
+    }
 
     /**
      * Creates an instance of this class, accepting the standard arguments for
      * access coordinators, which are ignored.
      *
-     * @param	properties the configuration properties
-     * @param	txnProxy the transaction proxy
-     * @param	profileCollectorHandle the profile collector handle
+     * @param    properties the configuration properties
+     * @param    txnProxy the transaction proxy
+     * @param    profileCollectorHandle the profile collector handle
      */
     public NullAccessCoordinator(
-	Properties properties,
-	TransactionProxy txnProxy,
-	ProfileCollectorHandle profileCollectorHandle)
-    {
+            Properties properties,
+            TransactionProxy txnProxy,
+            ProfileCollectorHandle profileCollectorHandle) {
     }
 
     /* -- Implement AccessCoordinatorHandle -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public <T> AccessReporter<T> registerAccessSource(
-	String sourceName, Class<T> objectIdType)
-    {
-	return (AccessReporter<T>) this;
+            String sourceName, Class<T> objectIdType) {
+        return (AccessReporter<T>) this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Transaction getConflictingTransaction(Transaction txn) {
-	return null;
+        return null;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void notifyNewTransaction(
-	Transaction txn, long requestedStartTime, int tryCount) {
+            Transaction txn, long requestedStartTime, int tryCount) {
     }
 
     /* -- Implement AccessReporter -- */
 
-    /** {@inheritDoc} */
-    public void reportObjectAccess(Object objectId, AccessType type) { }
-
-    /** {@inheritDoc} */
-    public void reportObjectAccess(
-	Transaction txn, Object objectId, AccessType type)
-    {
+    /**
+     * {@inheritDoc}
+     */
+    public void reportObjectAccess(Object objectId, AccessType type) {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void reportObjectAccess(
-	Object objectId, AccessType type, Object description)
-    {
+            Transaction txn, Object objectId, AccessType type) {
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void reportObjectAccess(
-	Transaction txn, Object objectId, AccessType type, Object description)
-    {
+            Object objectId, AccessType type, Object description) {
     }
 
-    /** {@inheritDoc} */
-    public void setObjectDescription(Object objectId, Object description) { }
+    /**
+     * {@inheritDoc}
+     */
+    public void reportObjectAccess(
+            Transaction txn, Object objectId, AccessType type, Object description) {
+    }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
+    public void setObjectDescription(Object objectId, Object description) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void setObjectDescription(
-	Transaction txn, Object objectId, Object description)
-    {
+            Transaction txn, Object objectId, Object description) {
     }
 }

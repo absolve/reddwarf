@@ -30,8 +30,7 @@ import java.io.Serializable;
  * This is a basic implementation of <code>Identity</code> that maps a name
  * to the identity.
  */
-public class IdentityImpl implements Identity, Serializable
-{
+public class IdentityImpl implements Identity, Serializable {
     private static final long serialVersionUID = 1L;
 
     // the name of this identity
@@ -54,6 +53,7 @@ public class IdentityImpl implements Identity, Serializable
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -61,6 +61,7 @@ public class IdentityImpl implements Identity, Serializable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void notifyLoggedIn() {
 
     }
@@ -68,6 +69,7 @@ public class IdentityImpl implements Identity, Serializable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void notifyLoggedOut() {
 
     }
@@ -75,6 +77,7 @@ public class IdentityImpl implements Identity, Serializable
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(Object o) {
         if ((o == null) || (!(o instanceof IdentityImpl))) {
             return false;
@@ -85,6 +88,7 @@ public class IdentityImpl implements Identity, Serializable
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode() {
         return name.hashCode();
     }
@@ -92,7 +96,8 @@ public class IdentityImpl implements Identity, Serializable
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString() {
-	return getClass().getName() + "[" + name + "]";
+        return getClass().getName() + "[" + name + "]";
     }
 }

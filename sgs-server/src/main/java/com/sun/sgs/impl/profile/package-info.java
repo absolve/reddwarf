@@ -20,7 +20,7 @@
  */
 
 /**
- * Provides an implementation for some interfaces in 
+ * Provides an implementation for some interfaces in
  * {@link com.sun.sgs.profile}.
  */
 package com.sun.sgs.impl.profile;

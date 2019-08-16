@@ -37,10 +37,10 @@ public abstract class AbstractKernelRunnable implements KernelRunnable {
      * {@code name} is non-{@code null}, then it is included in the
      * {@code toString} method to identify the instance.
      *
-     * @param	name a name for the instance
+     * @param    name a name for the instance
      */
     public AbstractKernelRunnable(String name) {
-	this.name = name;
+        this.name = name;
     }
 
     /**
@@ -56,7 +56,7 @@ public abstract class AbstractKernelRunnable implements KernelRunnable {
      * {@inheritDoc}
      */
     public String toString() {
-	String nameString = name != null ? "[" + name + "]" : "";
-	return getClass().getName() + nameString;
+        String nameString = name != null ? "[" + name + "]" : "";
+        return getClass().getName() + nameString;
     }
 }

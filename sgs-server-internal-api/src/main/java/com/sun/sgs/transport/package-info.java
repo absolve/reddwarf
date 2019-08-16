@@ -23,5 +23,7 @@
  * --
  */
 
-/** Provides interfaces for the transport layer. */
+/**
+ * Provides interfaces for the transport layer.
+ */
 package com.sun.sgs.transport;

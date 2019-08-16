@@ -21,20 +21,14 @@
 
 package com.sun.sgs.system;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.jar.JarFile;
-import java.util.Scanner;
 
 /**
  * Bootstraps and launches a Project Darkstar server.
@@ -48,23 +42,23 @@ public final class Boot {
      * This class should not be instantiated.
      */
     private Boot() {
-        
+
     }
 
     /**
      * Main-line method that bootstraps startup of a Project Darkstar server.
      * <p>
      * If a single argument is given on the command line, the value of
-     * the argument is assumed to be a filename.  This file is used to 
+     * the argument is assumed to be a filename.  This file is used to
      * specify a set of configuration properties required in order to locate
      * the required components to startup an application in a Project
-     * Darkstar container.  If no argument is given on the command line, 
-     * the filename is assumed to be at the location specified by the system 
+     * Darkstar container.  If no argument is given on the command line,
+     * the filename is assumed to be at the location specified by the system
      * resource {@value BootEnvironment#SGS_BOOT}.
      * <p>
      * The properties included in the configuration file must conform to
      * the rules allowed by {@link SubstitutionProperties}.
-     * 
+     *
      * @param args optional filename of configuration file
      * @throws Exception if there is any problem booting up
      */
@@ -73,7 +67,7 @@ public final class Boot {
             logger.log(Level.SEVERE, "Invalid number of arguments");
             throw new IllegalArgumentException("Invalid number of arguments");
         }
-        
+
         //load properties from configuration file
         SubstitutionProperties properties = null;
         if (args.length == 0) {
@@ -81,13 +75,13 @@ public final class Boot {
         } else {
             properties = BootEnvironment.loadProperties(args[0]);
         }
-        
+
         //get the java executable and verify version
         String javaHome = properties.getProperty(BootEnvironment.JAVA_HOME);
         if (System.getProperty("java.home").equals(javaHome) &&
                 System.getProperty("java.version").startsWith("1.5.")) {
             logger.log(Level.SEVERE,
-                       "Project Darkstar Server requires Java 6 or higher");
+                    "Project Darkstar Server requires Java 6 or higher");
             throw new IllegalStateException(
                     "Project Darkstar Server requires Java 6 or higher");
         }
@@ -102,9 +96,9 @@ public final class Boot {
         executeCmd.add(bootClassPath(properties, extGraph));
         executeCmd.add("-Djava.library.path=" + bootNativePath(properties));
         executeCmd.add("-Djava.util.logging.config.class=" +
-                       BootEnvironment.DEFAULT_SGS_LOGGING_CLASS);
-        executeCmd.add("-Djava.util.logging.config.file=" + 
-                       properties.getProperty(BootEnvironment.SGS_LOGGING));
+                BootEnvironment.DEFAULT_SGS_LOGGING_CLASS);
+        executeCmd.add("-Djava.util.logging.config.file=" +
+                properties.getProperty(BootEnvironment.SGS_LOGGING));
         String extPropertiesFile = extGraph.getPropertiesFile();
         if (extPropertiesFile != null) {
             executeCmd.add("-Dcom.sun.sgs.ext.properties=" + extPropertiesFile);
@@ -112,31 +106,27 @@ public final class Boot {
 
         // command-line properties for JMX management
         executeCmd.add("-Dcom.sun.management.jmxremote.port=" +
-                       properties.getProperty(BootEnvironment.JMX_PORT));
+                properties.getProperty(BootEnvironment.JMX_PORT));
         if (!properties.
-            getProperty(BootEnvironment.DISABLE_JMX_SECURITY).equals("false"))
-        {
+                getProperty(BootEnvironment.DISABLE_JMX_SECURITY).equals("false")) {
             executeCmd.add("-Dcom.sun.management.jmxremote.authenticate=false");
             executeCmd.add("-Dcom.sun.management.jmxremote.ssl=false");
         }
 
-        for (String i : bootCommandLineProps(properties)) {
-            executeCmd.add(i);
-        }
-        for (String j : bootJavaOpts(properties)) {
-            executeCmd.add(j);
-        }
+        executeCmd.addAll(bootCommandLineProps(properties));
+        executeCmd.addAll(bootJavaOpts(properties));
+
         executeCmd.add(BootEnvironment.KERNEL_CLASS);
         executeCmd.add(properties.getProperty(BootEnvironment.SGS_PROPERTIES));
         logger.log(Level.CONFIG, "Execute path = " + executeCmd);
-        
-        //build the process
+
+        //build the process   创建进程
         ProcessBuilder pb = new ProcessBuilder(executeCmd);
         pb.directory(
                 new File(properties.getProperty(BootEnvironment.SGS_HOME)));
         pb.redirectErrorStream(true);
-        
-        //get the output stream
+
+        //get the output stream  获取输出
         OutputStream output = System.out;
         String logFile = properties.getProperty(BootEnvironment.SGS_OUTPUT);
         if (logFile != null) {
@@ -145,16 +135,16 @@ public final class Boot {
                 //for the log file
                 File log = new File(logFile);
                 File parentDir = log.getParentFile();
-                if (parentDir != null && 
+                if (parentDir != null &&
                         !parentDir.exists() &&
                         !parentDir.mkdirs()) {
-                    logger.log(Level.SEVERE, 
-                               "Unable to create log directory : " +
-                               parentDir);
-                    throw new IOException("Unable to create log directory : " + 
-                                          parentDir);
+                    logger.log(Level.SEVERE,
+                            "Unable to create log directory : " +
+                                    parentDir);
+                    throw new IOException("Unable to create log directory : " +
+                            parentDir);
                 }
-                
+
                 //create a stream for the log file
                 output = new BufferedOutputStream(
                         new FileOutputStream(logFile));
@@ -165,30 +155,34 @@ public final class Boot {
             }
         }
 
+        //添加程序退出的处理
         // install a handler to cleanup when the process is killed directly
         Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    if (sgsProcess != null) {
-                        sgsProcess.destroy();
-                        closeStream(sgsProcess.getOutputStream());
-                        closeStream(sgsProcess.getInputStream());
-                        closeStream(sgsProcess.getErrorStream());
-                    }
+            public void run() {
+                if (sgsProcess != null) {
+                    sgsProcess.destroy();
+                    closeStream(sgsProcess.getOutputStream());
+                    closeStream(sgsProcess.getInputStream());
+                    closeStream(sgsProcess.getErrorStream());
                 }
-                private void closeStream(Closeable c) {
-                    try {
-                        c.close();
-                    } catch (IOException ioe) { }
+            }
+
+            private void closeStream(Closeable c) {
+                try {
+                    c.close();
+                } catch (IOException ioe) {
                 }
-            });
-        
+            }
+        });
+
         //run the process
         try {
             sgsProcess = pb.start();
+            //获取进程打印信息
             new Thread(new StreamPipe(sgsProcess.getInputStream(),
-                                      output)).start();
-            sgsProcess.waitFor();
-        } catch (IOException e) {
+                    output)).start();
+            sgsProcess.waitFor(); //等待进程退出
+        } catch (IOException e) {  //io异常
             logger.log(Level.SEVERE, "Unable to start process", e);
             throw e;
         } catch (InterruptedException i) {
@@ -200,19 +194,19 @@ public final class Boot {
             output.close();
         }
     }
-    
+
     /**
      * Constructs a classpath to be used when running the Project Darkstar
      * kernel.  The classpath consists of any jar files that live directly
      * in the {@code $SGS_HOME/lib}
      * directory.  It also recursively includes jar files from the
      * {@code $SGS_DEPLOY} and {@code SGS_EXT} directories. <p>
-     * 
+     * <p>
      * Additionally, files included in the path from the {@code $SGS_HOME/lib}
      * directory are filtered based on the value of {@code $BDB_TYPE}.
      * <ul>
      * <li>If the value of {@code $BDB_TYPE} is equal to {@code db}, any jar
-     * files in {@code $SGS_HOME/lib} that begin with "je-" are excluded 
+     * files in {@code $SGS_HOME/lib} that begin with "je-" are excluded
      * from the path.</li>
      * <li>If the value of {@code $BDB_TYPE} is equal to {@code je}, any jar
      * files in {@code $SGS_HOME/lib} that begin with "db-" are excluded
@@ -221,8 +215,8 @@ public final class Boot {
      * files in {@code SGS_HOME/lib} that being with "db-" OR "je-" are
      * excluded from the path.</li>
      * </ul>
-     * 
-     * @param env environment with SGS_HOME set
+     *
+     * @param env      environment with SGS_HOME set
      * @param extGraph collection for the extension jar files
      * @return classpath to use to run the kernel
      */
@@ -232,14 +226,14 @@ public final class Boot {
         if (sgsHome == null) {
             return "";
         }
-        
+
         //locate SGS_HOME directory
         File sgsHomeDir = new File(sgsHome);
         if (!sgsHomeDir.isDirectory()) {
             return "";
         }
         StringBuilder buf = new StringBuilder();
-        
+
         //determine BDB_TYPE
         String bdbType = env.getProperty(BootEnvironment.BDB_TYPE);
         String filter = "^(db-|je-).*";
@@ -261,7 +255,7 @@ public final class Boot {
                 }
             }
         }
-        
+
         //recursively add jars from SGS_DEPLOY
         File sgsDeployDir = new File(
                 env.getProperty(BootEnvironment.SGS_DEPLOY));
@@ -269,21 +263,21 @@ public final class Boot {
         int appPropsFound = appJars(sgsDeployDir, jars);
         if (appPropsFound == 0) {
             logger.log(Level.WARNING, "No application jar found with a " +
-                       BootEnvironment.DEFAULT_APP_PROPERTIES +
-                       " configuration file in the " +
-                       sgsDeployDir + " directory");
+                    BootEnvironment.DEFAULT_APP_PROPERTIES +
+                    " configuration file in the " +
+                    sgsDeployDir + " directory");
         }
         if (appPropsFound > 1) {
             logger.log(Level.SEVERE, "Multiple application jars " +
-                       "found with a " +
-                       BootEnvironment.DEFAULT_APP_PROPERTIES +
-                       " configuration file in the " +
-                       sgsDeployDir + " directory");
+                    "found with a " +
+                    BootEnvironment.DEFAULT_APP_PROPERTIES +
+                    " configuration file in the " +
+                    sgsDeployDir + " directory");
             throw new IllegalStateException("Multiple application jars " +
-                       "found with a " +
-                       BootEnvironment.DEFAULT_APP_PROPERTIES +
-                       " configuration file in the " +
-                       sgsDeployDir + " directory");
+                    "found with a " +
+                    BootEnvironment.DEFAULT_APP_PROPERTIES +
+                    " configuration file in the " +
+                    sgsDeployDir + " directory");
         }
         for (File jar : jars) {
             if (buf.length() != 0) {
@@ -320,12 +314,12 @@ public final class Boot {
 
     /**
      * Constructs a path to be used as the {@code java.library.path}
-     * when running the Project Darkstar kernel.  The path combines the string 
+     * when running the Project Darkstar kernel.  The path combines the string
      * specified by the {@code $BDB_NATIVES } property with the string specified
      * by the {@code $CUSTOM_NATIVES} property.  Additionally, if the
      * {@code BDB_TYPE} property is not set to {@code db}, only
      * the {@code $CUSTOM_NATIVES} property is used for the path.
-     * 
+     *
      * @param env the environment
      * @return path to use as the {@code java.library.path} in the kernel
      */
@@ -334,7 +328,7 @@ public final class Boot {
         String bdb = env.getProperty(BootEnvironment.BDB_NATIVES);
         String custom = env.getProperty(BootEnvironment.CUSTOM_NATIVES);
         StringBuilder buf = new StringBuilder();
-        
+
         if (type.equals("db")) {
             buf.append(bdb);
             if (custom != null && !custom.equals("")) {
@@ -345,10 +339,10 @@ public final class Boot {
                 buf.append(custom);
             }
         }
-        
+
         return buf.toString();
     }
-    
+
     /**
      * Constructs a set of additional command line properties that are to
      * be used when running the Project Darkstar kernel.  Specifically, this
@@ -356,7 +350,7 @@ public final class Boot {
      * {@code com.sun.sgs.impl.service.data.store.db.environment.class} in
      * order to specify the bdb flavor that is being used.  It is dependent
      * on the value of the {@code $BDB_TYPE} environment property.
-     * 
+     *
      * <ul>
      * <li>If the value of {@code $BDB_TYPE} is equal to {@code db}, then
      * {@code com.sun.sgs.impl.service.data.store.db.bdb.BdbEnvironment} is
@@ -367,30 +361,30 @@ public final class Boot {
      * <li>If the value of {@code BDB_TYPE} is equal to anything else, no
      * value is specified.</li>
      * </ul>
-     * 
+     *
      * @param env the environment
      * @return additional set of properties to be passed to the command line
      */
     private static List<String> bootCommandLineProps(Properties env) {
         List<String> props = new ArrayList<String>();
-        
+
         String type = env.getProperty(BootEnvironment.BDB_TYPE);
-        String line = 
+        String line =
                 "-Dcom.sun.sgs.impl.service.data.store.db.environment.class";
-        
+
         if (type.equals("db")) {
             props.add(line + "=" +
-                      "com.sun.sgs.impl.service.data.store.db.bdb." +
-                      "BdbEnvironment");
+                    "com.sun.sgs.impl.service.data.store.db.bdb." +
+                    "BdbEnvironment");
         } else if (type.equals("je")) {
             props.add(line + "=" +
-                      "com.sun.sgs.impl.service.data.store.db.je." +
-                      "JeEnvironment");
-        } 
-        
+                    "com.sun.sgs.impl.service.data.store.db.je." +
+                    "JeEnvironment");
+        }
+
         return props;
     }
-    
+
     /**
      * Splits the {@code $JAVA_OPTS} configuration property into a list
      * of {@code String} objects consumable by a {@link ProcessBuilder}.
@@ -398,16 +392,16 @@ public final class Boot {
      * The split operation will break down the property specified by
      * {@code $JAVA_OPTS} into tokens delimited by whitespace.  Additionally,
      * quoted strings that include whitespace will be treated as a single token.
-     * 
+     *
      * @param env the environment
      * @return a list of {@code String} objects that represent the individual
-     *         components of the {@code JAVA_OPTS} configuration property
+     * components of the {@code JAVA_OPTS} configuration property
      * @throws IllegalArgumentException if the {@code JAVA_OPTS} configuration
-     *         property has an invalid format
+     *                                  property has an invalid format
      */
     private static List<String> bootJavaOpts(Properties env) {
         String javaOpts = env.getProperty(BootEnvironment.JAVA_OPTS, "");
-        
+
         Scanner s = new Scanner(javaOpts);
         List<String> realTokens = new ArrayList<String>();
         while (s.hasNext()) {
@@ -424,18 +418,18 @@ public final class Boot {
                 realTokens.add(s.next());
             }
         }
-        
+
         return realTokens;
     }
-    
+
     /**
      * Helper method that recursively searches the given directory and adds
      * any jar files found to the jars list.
-     * 
+     *
      * @param directory directory to search for jar files
-     * @param jars list of Files to add any jar files found
+     * @param jars      list of Files to add any jar files found
      * @return the number of jar files found that have a
-     *         {@link BootEnvironment.DEFAULT_APP_PROPERTIES} file in them
+     * {@link BootEnvironment.DEFAULT_APP_PROPERTIES} file in them
      */
     private static int appJars(File directory, List<File> jars) {
         int appPropsFound = 0;
@@ -452,9 +446,9 @@ public final class Boot {
                         }
                     } catch (IOException e) {
                         //not a jar file, log and ignore
-                        logger.log(Level.WARNING, "File " + 
-                                   f.getAbsolutePath() +
-                                   " is not a jar file");
+                        logger.log(Level.WARNING, "File " +
+                                f.getAbsolutePath() +
+                                " is not a jar file");
                     }
                 } else if (f.isDirectory()) {
                     appPropsFound += appJars(f, jars);
@@ -470,13 +464,12 @@ public final class Boot {
      * extension jar files, adding them to a list and separate graph of
      * discovered extensions.
      *
-     * @param directory the directory to search for jar files
-     * @param jarFileNames list of file names for the discovered, valid jars 
-     * @param graph a collection of discovered extension jar files
+     * @param directory    the directory to search for jar files
+     * @param jarFileNames list of file names for the discovered, valid jars
+     * @param graph        a collection of discovered extension jar files
      */
     private static void extJars(File directory, List<String> jarFileNames,
-                                ExtJarGraph graph)
-    {
+                                ExtJarGraph graph) {
         if (directory.isDirectory() && directory.canRead()) {
             for (File f : directory.listFiles()) {
                 if (f.isFile() && f.getName().endsWith(".jar")) {
@@ -486,7 +479,7 @@ public final class Boot {
                     } catch (IOException e) {
                         //not a jar file, log and ignore
                         logger.log(Level.WARNING, "Extension file " +
-                                   f.getAbsolutePath() + " is not a jar file");
+                                f.getAbsolutePath() + " is not a jar file");
                     }
                 } else if (f.isDirectory()) {
                     extJars(f, jarFileNames, graph);
@@ -494,5 +487,5 @@ public final class Boot {
             }
         }
     }
-    
+
 }

@@ -24,8 +24,7 @@ package com.sun.sgs.impl.service.nodemap.affinity.dgb;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.impl.kernel.StandardProperties;
 import com.sun.sgs.impl.service.nodemap.affinity.LPAAffinityGroupFinder;
-import
-   com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
+import com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
@@ -39,6 +38,7 @@ import com.sun.sgs.service.DataService;
 import com.sun.sgs.service.TransactionProxy;
 import com.sun.sgs.service.WatchdogService;
 import edu.uci.ics.jung.graph.UndirectedGraph;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.registry.LocateRegistry;
@@ -58,89 +58,105 @@ import java.util.logging.Level;
  * <dl style="margin-left: 1em">
  *
  * <dt>	<i>Property:</i> <code><b>
- *	com.sun.sgs.impl.service.nodemap.affinity.server.host
- *	</b></code><br>
- *	<i>Default:</i> the value of the {@code com.sun.sgs.server.host}
- *	property, if present, or {@code localhost} if this node is starting the
- *      server <br>
+ * com.sun.sgs.impl.service.nodemap.affinity.server.host
+ * </b></code><br>
+ * <i>Default:</i> the value of the {@code com.sun.sgs.server.host}
+ * property, if present, or {@code localhost} if this node is starting the
+ * server <br>
  *
  * <dd style="padding-top: .5em">The name of the host running the {@code
- *	NodeMappingServer}. <p>
+ * NodeMappingServer}. <p>
  *
  * <dt>	<i>Property:</i> <code><b>
- *	com.sun.sgs.impl.service.nodemap.affinity.server.port
- *	</b></code><br>
- *	<i>Default:</i> {@code 44537}
+ * com.sun.sgs.impl.service.nodemap.affinity.server.port
+ * </b></code><br>
+ * <i>Default:</i> {@code 44537}
  *
  * <dd style="padding-top: .5em">The network port for the {@code
- *	LabelPropagationServer}.  This value must be no less than {@code 0} and
- *      no greater than {@code 65535}. <p>
- * 
+ * LabelPropagationServer}.  This value must be no less than {@code 0} and
+ * no greater than {@code 65535}. <p>
+ *
  * <dt>	<i>Property:</i> <code><b>
- *	com.sun.sgs.impl.service.nodemap.affinity.snapshot.period
- *	</b></code><br>
- *	<i>Default:</i> {@code 300000} (5 minutes)<br>
+ * com.sun.sgs.impl.service.nodemap.affinity.snapshot.period
+ * </b></code><br>
+ * <i>Default:</i> {@code 300000} (5 minutes)<br>
  *
  * <dd style="padding-top: .5em">The amount of time, in milliseconds, for
- *      each snapshot of retained data.  Older snapshots are discarded as
- *      time goes on. A longer snapshot period gives us more history, but
- *      also longer compute times to use that history, as more data must
- *      be processed.<p>
+ * each snapshot of retained data.  Older snapshots are discarded as
+ * time goes on. A longer snapshot period gives us more history, but
+ * also longer compute times to use that history, as more data must
+ * be processed.<p>
  *
  * <dt>	<i>Property:</i> <code><b>
- *	com.sun.sgs.impl.service.nodemap.affinity.snapshot.count
- *	</b></code><br>
- *	<i>Default:</i> {@code 1}
+ * com.sun.sgs.impl.service.nodemap.affinity.snapshot.count
+ * </b></code><br>
+ * <i>Default:</i> {@code 1}
  *
  * <dd style="padding-top: .5em">The number of snapshots to retain.  A
- *       larger value means more history will be retained.  Using a smaller
- *       snapshot period with a larger count means more total history will be
- *       retained, with a smaller amount discarded at the start of each
- *       new snapshot.<p>
+ * larger value means more history will be retained.  Using a smaller
+ * snapshot period with a larger count means more total history will be
+ * retained, with a smaller amount discarded at the start of each
+ * new snapshot.<p>
  * </dl>
  */
-public class DistGraphBuilder extends AbstractAffinityGraphBuilder 
-        implements AffinityGraphBuilder
-{
-    /** The property name for the server host. */
+public class DistGraphBuilder extends AbstractAffinityGraphBuilder
+        implements AffinityGraphBuilder {
+    /**
+     * The property name for the server host.
+     */
     private static final String SERVER_HOST_PROPERTY =
             PROP_BASE + ".server.host";
 
-    /** The default number of IO task retries **/
+    /**
+     * The default number of IO task retries
+     **/
     private static final int DEFAULT_MAX_IO_ATTEMPTS = 5;
-    /** The default time interval to wait between IO task retries **/
+    /**
+     * The default time interval to wait between IO task retries
+     **/
     private static final int DEFAULT_RETRY_WAIT_TIME = 100;
 
-    /** The time (in milliseconds) to wait between retries for IO
+    /**
+     * The time (in milliseconds) to wait between retries for IO
      * operations.
      */
     private final int retryWaitTime;
 
-    /** The maximum number of retry attempts for IO operations. */
+    /**
+     * The maximum number of retry attempts for IO operations.
+     */
     private final int maxIoAttempts;
 
-    /** The remote server, or null if we're on the core server node. */
+    /**
+     * The remote server, or null if we're on the core server node.
+     */
     private final DistGraphBuilderServer server;
-    /** The server implementation, or null if we're on an app node. */
+    /**
+     * The server implementation, or null if we're on an app node.
+     */
     private final DistGraphBuilderServerImpl serverImpl;
 
-    /** The watchdog service. */
+    /**
+     * The watchdog service.
+     */
     private final WatchdogService watchdogService;
-    /** Our local node id. */
+    /**
+     * Our local node id.
+     */
     private final long localNodeId;
 
     /**
      * Creates the client side of a distributed graph builder.
-     * @param properties the properties for configuring this builder
+     *
+     * @param properties     the properties for configuring this builder
      * @param systemRegistry the registry of available system components
-     * @param txnProxy the transaction proxy
+     * @param txnProxy       the transaction proxy
      * @throws Exception if an error occurs
      */
     public DistGraphBuilder(Properties properties,
                             ComponentRegistry systemRegistry,
                             TransactionProxy txnProxy)
-        throws Exception
-    {
+            throws Exception {
         super(properties);
 
         watchdogService = txnProxy.getService(WatchdogService.class);
@@ -157,17 +173,17 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
 
         NodeType nodeType =
                 wrappedProps.getEnumProperty(StandardProperties.NODE_TYPE,
-                                             NodeType.class,
-                                             NodeType.singleNode);
+                        NodeType.class,
+                        NodeType.singleNode);
         if (nodeType == NodeType.coreServerNode) {
-            serverImpl = 
-                new DistGraphBuilderServerImpl(systemRegistry, txnProxy,
-                                               properties, localNodeId);
+            serverImpl =
+                    new DistGraphBuilderServerImpl(systemRegistry, txnProxy,
+                            properties, localNodeId);
             server = null;
         } else {
             String host = wrappedProps.getProperty(SERVER_HOST_PROPERTY,
-                            wrappedProps.getProperty(
-                                StandardProperties.SERVER_HOST));
+                    wrappedProps.getProperty(
+                            StandardProperties.SERVER_HOST));
             if (host == null) {
                 // None specified, use local host
                 host = InetAddress.getLocalHost().getHostName();
@@ -178,14 +194,15 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
             // Look up our server
             Registry registry = LocateRegistry.getRegistry(host, port);
             server = (DistGraphBuilderServer) registry.lookup(
-                             DistGraphBuilderServerImpl.SERVER_EXPORT_NAME);
+                    DistGraphBuilderServerImpl.SERVER_EXPORT_NAME);
             serverImpl = null;
         }
     }
 
-    /** {@inheritDoc} */
-    public void updateGraph(final Identity owner, AccessedObjectsDetail detail)
-    {
+    /**
+     * {@inheritDoc}
+     */
+    public void updateGraph(final Identity owner, AccessedObjectsDetail detail) {
         checkForShutdownState();
         if (state == State.DISABLED) {
             return;
@@ -196,9 +213,10 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
             ids[index++] = access.getObjectId();
         }
         runIoTask(new IoRunnable() {
-                    public void run() throws IOException {
-                        server.updateGraph(owner, ids);
-                    } }, localNodeId);
+            public void run() throws IOException {
+                server.updateGraph(owner, ids);
+            }
+        }, localNodeId);
     }
 
     /**
@@ -226,7 +244,9 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void enable() {
         if (setEnabledState()) {
             if (serverImpl != null) {
@@ -235,7 +255,9 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void disable() {
         if (setDisabledState()) {
             if (serverImpl != null) {
@@ -244,7 +266,9 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         if (setShutdownState()) {
             if (serverImpl != null) {
@@ -253,7 +277,9 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LPAAffinityGroupFinder getAffinityGroupFinder() {
         return serverImpl;
     }
@@ -272,7 +298,7 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
      * if the local node is alive.  We cannot use the AbstractService version
      * because we are not an AbstractService.  It may be useful to refactor
      * that method into a static method somewhere.
-     * 
+     *
      * @param ioTask a task with IO-related operations
      * @param nodeId the node that is the target of the IO operations
      */
@@ -290,7 +316,7 @@ public class DistGraphBuilder extends AbstractAffinityGraphBuilder
                 if (maxAttempts-- == 0) {
                     logger.logThrow(Level.WARNING, e,
                             "A communication error occured while running an" +
-                            "IO task. Reporting node {0} as failed.", nodeId);
+                                    "IO task. Reporting node {0} as failed.", nodeId);
 
                     // Report failure of remote node since are
                     // having trouble contacting it

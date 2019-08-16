@@ -29,18 +29,13 @@ import com.sun.sgs.impl.service.nodemap.NodeMappingServiceImpl;
 import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderStats;
 import com.sun.sgs.impl.service.nodemap.affinity.LPADriver;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagationServer;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.GraphListener;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
+import com.sun.sgs.impl.service.nodemap.affinity.graph.*;
 import com.sun.sgs.kernel.AccessReporter.AccessType;
 import com.sun.sgs.kernel.AccessedObject;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.NodeType;
 import com.sun.sgs.management.AffinityGroupFinderMXBean;
 import com.sun.sgs.profile.AccessedObjectsDetail;
-import com.sun.sgs.profile.AccessedObjectsDetail.ConflictType;
 import com.sun.sgs.profile.ProfileCollector;
 import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
 import com.sun.sgs.profile.ProfileReport;
@@ -48,20 +43,16 @@ import com.sun.sgs.test.util.SgsTestNode;
 import com.sun.sgs.test.util.UtilReflection;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.Pair;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * Common tests and support for all graph builder/LPA implementations.
@@ -71,26 +62,28 @@ public class GraphBuilderTests {
     protected static Constructor<?> profileReportImplConstructor;
     protected static Method setAccessedObjectsDetailMethod;
     protected static Field finderField;
+
     static {
         try {
             profileReportImplClass =
-                Class.forName("com.sun.sgs.impl.profile.ProfileReportImpl");
+                    Class.forName("com.sun.sgs.impl.profile.ProfileReportImpl");
             profileReportImplConstructor =
-                UtilReflection.getConstructor(profileReportImplClass,
-                    KernelRunnable.class, Identity.class,
-                    long.class, int.class);
+                    UtilReflection.getConstructor(profileReportImplClass,
+                            KernelRunnable.class, Identity.class,
+                            long.class, int.class);
             setAccessedObjectsDetailMethod =
-                UtilReflection.getMethod(profileReportImplClass,
-                    "setAccessedObjectsDetail", AccessedObjectsDetail.class);
+                    UtilReflection.getMethod(profileReportImplClass,
+                            "setAccessedObjectsDetail", AccessedObjectsDetail.class);
             finderField =
-                UtilReflection.getField(NodeMappingServiceImpl.class, "finder");
+                    UtilReflection.getField(NodeMappingServiceImpl.class, "finder");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
     // The name of our test application
     protected final String appName;
- 
+
     // The listener created for each test
     protected GraphListener listener;
     // The builder used by the listener
@@ -107,8 +100,10 @@ public class GraphBuilderTests {
     protected LPADriver groupDriver;
 
     protected int serverPort;
+
     /**
      * Create this test class.
+     *
      * @param appName the name of our application
      */
     public GraphBuilderTests(String appName) {
@@ -125,7 +120,7 @@ public class GraphBuilderTests {
         props = getProps(null, addProps);
         serverNode = new SgsTestNode(appName, null, props);
         groupDriver = (LPADriver)
-            finderField.get(serverNode.getNodeMappingService());
+                finderField.get(serverNode.getNodeMappingService());
         // Create a new app node
         props = getProps(serverNode, addProps);
         node = new SgsTestNode(serverNode, null, props);
@@ -140,14 +135,13 @@ public class GraphBuilderTests {
     }
 
     protected Properties getProps(SgsTestNode serverNode, Properties addProps)
-            throws Exception
-    {
+            throws Exception {
         Properties p =
                 SgsTestNode.getDefaultProperties(appName, serverNode, null);
         if (serverNode == null) {
             serverPort = SgsTestNode.getNextUniquePort();
             p.setProperty(StandardProperties.NODE_TYPE,
-                          NodeType.coreServerNode.toString());
+                    NodeType.coreServerNode.toString());
         }
         p.setProperty(LabelPropagationServer.SERVER_PORT_PROPERTY,
                 String.valueOf(serverPort));
@@ -170,7 +164,7 @@ public class GraphBuilderTests {
         for (Map.Entry<Object, Object> entry : addProps.entrySet()) {
             props.put(entry.getKey(), entry.getValue());
         }
-        node =  new SgsTestNode(serverNode, null, props);
+        node = new SgsTestNode(serverNode, null, props);
         graphDriver = (LPADriver)
                 finderField.get(node.getNodeMappingService());
         listener = graphDriver.getGraphListener();
@@ -281,11 +275,11 @@ public class GraphBuilderTests {
      * as some vertex in the graph vertices.  This is a helpful graph
      * consistency check because our LabelVertices implement equal, and
      * we want the graph vertices and edges to be the same (==).
+     *
      * @param edge
      */
-    private void validateEdgeEndpoints(WeightedEdge edge, 
-                                       Graph<LabelVertex, WeightedEdge> graph)
-    {
+    private void validateEdgeEndpoints(WeightedEdge edge,
+                                       Graph<LabelVertex, WeightedEdge> graph) {
         Assert.assertNotNull(edge);
         Assert.assertNotNull(graph);
         Collection<LabelVertex> allvertices = graph.getVertices();
@@ -699,7 +693,7 @@ public class GraphBuilderTests {
         listener.report(report);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testGraphBuilderBadCount() throws Exception {
         Properties p = new Properties();
         props = getProps(serverNode);
@@ -730,19 +724,19 @@ public class GraphBuilderTests {
         graphDriver.disable();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testShutdownDisable() {
         graphDriver.shutdown();
         graphDriver.disable();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testShutdownEnable() {
         graphDriver.shutdown();
         graphDriver.enable();
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testShutdownUpdateGraph() throws Exception {
         graphDriver.shutdown();
         AccessedObjectsDetailTest detail = new AccessedObjectsDetailTest();
@@ -751,7 +745,7 @@ public class GraphBuilderTests {
                 updateGraph(new IdentityImpl("something"), detail);
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testShutdownFindGroups() throws Exception {
         groupDriver.shutdown();
         groupDriver.getGraphBuilder().
@@ -799,7 +793,7 @@ public class GraphBuilderTests {
         Assert.assertEquals(3, graph.getVertexCount());
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testDriverBadValue() throws Exception {
         Properties addProps = new Properties();
         addProps.setProperty(LPADriver.UPDATE_FREQ_PROPERTY, "1");
@@ -833,9 +827,9 @@ public class GraphBuilderTests {
                 setProfileLevel(ProfileLevel.MAX);
         graphDriver.enable();
         Thread.sleep(5500);
-       
+
         AffinityGroupFinderStats stats = (AffinityGroupFinderStats)
-            col.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
+                col.getRegisteredMBean(AffinityGroupFinderMXBean.MXBEAN_NAME);
         Assert.assertNotNull(stats);
         Assert.assertTrue("stats should be updated", stats.getNumberRuns() > 0);
     }
@@ -843,15 +837,14 @@ public class GraphBuilderTests {
     /* Utility methods and classes. */
     protected ProfileReport makeReport(Identity id) throws Exception {
         return (ProfileReport) profileReportImplConstructor.newInstance(
-                    null, id, System.currentTimeMillis(), 1);
+                null, id, System.currentTimeMillis(), 1);
     }
 
     /**
      * Unwraps an InvocationTargetException to throw the root cause.
      */
     protected void unwrapException(InvocationTargetException e)
-            throws Exception
-    {
+            throws Exception {
         // Try to unwrap any nested exceptions - they will be wrapped
         // because the kernel instantiating via reflection
         Throwable cause = e.getCause();
@@ -864,15 +857,15 @@ public class GraphBuilderTests {
             throw e;
         }
     }
+
     /**
      * Private implementation of {@code AccessedObjectsDetail}.
      * It allows adding and getting accessed objects only.
      */
     protected static class AccessedObjectsDetailTest
-        implements AccessedObjectsDetail
-    {
+            implements AccessedObjectsDetail {
         private final LinkedHashSet<AccessedObject> accessList =
-             new LinkedHashSet<AccessedObject>();
+                new LinkedHashSet<AccessedObject>();
 
         void addAccess(Object obj) {
             accessList.add(new AccessedObjectImpl(obj));
@@ -899,26 +892,39 @@ public class GraphBuilderTests {
     private static class AccessedObjectImpl implements AccessedObject {
         private final Object objId;
 
-        /** Creates an instance of {@code AccessedObjectImpl}. */
+        /**
+         * Creates an instance of {@code AccessedObjectImpl}.
+         */
         AccessedObjectImpl(Object objId) {
             this.objId = objId;
         }
 
         /* Implement AccessedObject. */
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public Object getObjectId() {
             return objId;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public AccessType getAccessType() {
             throw new UnsupportedOperationException("Not supported.");
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public Object getDescription() {
             throw new UnsupportedOperationException("Not supported.");
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public String getSource() {
             throw new UnsupportedOperationException("Not supported.");
         }

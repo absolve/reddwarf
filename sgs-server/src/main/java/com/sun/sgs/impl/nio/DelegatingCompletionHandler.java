@@ -23,6 +23,7 @@ package com.sun.sgs.impl.nio;
 
 import com.sun.sgs.nio.channels.CompletionHandler;
 import com.sun.sgs.nio.channels.IoFuture;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -35,26 +36,26 @@ import java.util.concurrent.ExecutionException;
  * caller) futures and completion handlers, allowing subclasses supply the
  * desired behavior by customizing the three protected methods: {@link
  * #implStart}, {@link #implCompleted}, and {@link #done}. <p>
- *
+ * <p>
  * For example, suppose you wanted to implement a method like {@code
  * AsynchronousByteChannel.read} that delegated to an existing channel, but
  * printed a message before and after reading.  A simple implementation might
- * look like: 
+ * look like:
  * <pre>
  * public class PrintReader&lt;A&gt;
  *     extends DelegatingCompletionHandler&lt;Integer, A, Integer, A&gt;
  * {
  *     private final AsynchronousByteChannel channel;
  *     private final ByteBuffer dst;
- * 
+ *
  *     public static &lt;A&gt; IoFuture&lt;Integer, A&gt; read(
  *         AsynchronousByteChannel channel, ByteBuffer dst,
  *         A attachment, CompletionHandler&lt;Integer, A&gt; handler)
  *     {
- *         return new PrintReader&lt;A&gt;(channel, dst, 
+ *         return new PrintReader&lt;A&gt;(channel, dst,
  *                                         attachment, handler).start();
  *     }
- * 
+ *
  *     private PrintReader(AsynchronousByteChannel channel, ByteBuffer dst,
  *                  A attachment, CompletionHandler&lt;Integer, A&gt; handler)
  *     {
@@ -62,12 +63,12 @@ import java.util.concurrent.ExecutionException;
  *         this.channel = channel;
  *         this.dst = dst;
  *     }
- * 
+ *
  *     protected IoFuture&lt;Integer, A&gt; implStart() {
  *         System.err.println("Begin reading");
  *         return channel.read(dst, null);
  *     }
- * 
+ *
  *     protected IoFuture&lt;Integer, A&gt; implCompleted(
  *                                  IoFuture&lt;Integer, A&gt; result) {
  *         System.err.println("Done reading");
@@ -82,13 +83,16 @@ import java.util.concurrent.ExecutionException;
  * @param <IA> the attachment type for this handler
  */
 public abstract class DelegatingCompletionHandler<OR, OA, IR, IA>
-    extends IoFutureTask<OR, OA>
-    implements CompletionHandler<IR, IA>
-{
-    /** The associated outer handler. */
+        extends IoFutureTask<OR, OA>
+        implements CompletionHandler<IR, IA> {
+    /**
+     * The associated outer handler.
+     */
     private final CompletionHandler<OR, OA> outerHandler;
 
-    /** The lock to synchronize on when accessing innerFuture. */
+    /**
+     * The lock to synchronize on when accessing innerFuture.
+     */
     private final Object lock = new Object();
 
     /**
@@ -100,19 +104,18 @@ public abstract class DelegatingCompletionHandler<OR, OA, IR, IA>
     /**
      * Creates an instance for the specified attachment and handler.
      *
-     * @param	outerAttachment the attachment for the outer future; may be
-     *		{@code null}
-     * @param	outerHandler the handler to notify or {@code null}
+     * @param    outerAttachment the attachment for the outer future; may be
+     * {@code null}
+     * @param    outerHandler the handler to notify or {@code null}
      */
     public DelegatingCompletionHandler(
-	OA outerAttachment, CompletionHandler<OR, OA> outerHandler)
-    {
-	/*
-	 * We won't be calling {@code run} on this object anyway, so the
-	 * callable should not be called.
-	 */
-	super(new FailingCallable<OR>(), outerAttachment);
-	this.outerHandler = outerHandler;
+            OA outerAttachment, CompletionHandler<OR, OA> outerHandler) {
+        /*
+         * We won't be calling {@code run} on this object anyway, so the
+         * callable should not be called.
+         */
+        super(new FailingCallable<OR>(), outerAttachment);
+        this.outerHandler = outerHandler;
     }
 
     /* -- Implement CompletionHandler -- */
@@ -122,23 +125,23 @@ public abstract class DelegatingCompletionHandler<OR, OA, IR, IA>
      * {@link #implCompleted}, and calls {@link #setException} on the future if
      * that method throws an exception.
      *
-     * @param	innerResult the result of the inner computation
+     * @param    innerResult the result of the inner computation
      */
     public final void completed(IoFuture<IR, IA> innerResult) {
-	synchronized (lock) {
-	    if (!isDone()) {
-		try {
-		    innerFuture = implCompleted(innerResult);
-		    if (innerFuture == null) {
-			set(null);
-		    }
-		} catch (ExecutionException e) {
-		    setException(e.getCause());
-		} catch (Throwable t) {
-		    setException(t);
-		}
-	    }
-	}
+        synchronized (lock) {
+            if (!isDone()) {
+                try {
+                    innerFuture = implCompleted(innerResult);
+                    if (innerFuture == null) {
+                        set(null);
+                    }
+                } catch (ExecutionException e) {
+                    setException(e.getCause());
+                } catch (Throwable t) {
+                    setException(t);
+                }
+            }
+        }
     }
 
     /* -- Other public methods -- */
@@ -146,55 +149,55 @@ public abstract class DelegatingCompletionHandler<OR, OA, IR, IA>
     /**
      * This method should not be called.
      *
-     * @see	#start
+     * @see    #start
      */
     @Override
     public final void run() {
-	throw new UnsupportedOperationException(
-	    "The run method is not supported");
+        throw new UnsupportedOperationException(
+                "The run method is not supported");
     }
 
     /**
      * {@inheritDoc} <p>
-     *
+     * <p>
      * This implementation cancels the current future, if any.
      */
     @Override
     public final boolean cancel(boolean mayInterruptIfRunning) {
-	synchronized (lock) {
-	    if (isDone()) {
-		return false;
-	    }
-	    boolean success = (innerFuture == null)
-		? true : innerFuture.cancel(mayInterruptIfRunning);
-	    if (success) {
-		success = super.cancel(false);
-		assert success;
-	    }
-	    return success;
-	}
+        synchronized (lock) {
+            if (isDone()) {
+                return false;
+            }
+            boolean success = (innerFuture == null)
+                    ? true : innerFuture.cancel(mayInterruptIfRunning);
+            if (success) {
+                success = super.cancel(false);
+                assert success;
+            }
+            return success;
+        }
     }
 
     /**
      * Starts the computation and returns a future representing the result of
      * the computation.
      *
-     * @return	a future representing the result of the computation
+     * @return a future representing the result of the computation
      */
     public final IoFuture<OR, OA> start() {
-	synchronized (lock) {
-	    if (!isDone()) {
-		try {
-		    innerFuture = implStart();
-		    if (innerFuture == null) {
-			set(null);
-		    }
-		} catch (Throwable t) {
-		    setException(t);
-		}
-	    }
-	    return this;
-	}
+        synchronized (lock) {
+            if (!isDone()) {
+                try {
+                    innerFuture = implStart();
+                    if (innerFuture == null) {
+                        set(null);
+                    }
+                } catch (Throwable t) {
+                    setException(t);
+                }
+            }
+            return this;
+        }
     }
 
     /* -- Protected methods -- */
@@ -204,7 +207,7 @@ public abstract class DelegatingCompletionHandler<OR, OA, IR, IA>
      * computation or {@code null} to indicate that the computation is
      * completed.  Any exception thrown will terminate the computation.
      *
-     * @return	the future or {@code null}
+     * @return the future or {@code null}
      */
     protected abstract IoFuture<IR, IA> implStart();
 
@@ -215,41 +218,45 @@ public abstract class DelegatingCompletionHandler<OR, OA, IR, IA>
      * Any exception thrown will terminate the computation.  If an {@link
      * ExecutionException} is thrown, then its cause will be used.
      *
-     * @param	innerResult the result of the delegated computation
-     * @return	a future for managing continued compuation, or {@code null} to
-     *		specify that the computation is done
-     * @throws	Exception if the computation failed
+     * @param    innerResult the result of the delegated computation
+     * @return a future for managing continued compuation, or {@code null} to
+     * specify that the computation is done
+     * @throws Exception if the computation failed
      */
     protected abstract IoFuture<IR, IA> implCompleted(
-	IoFuture<IR, IA> innerResult)
-	throws Exception;
+            IoFuture<IR, IA> innerResult)
+            throws Exception;
 
     /**
      * Called when the computation is completed, which occurs when {@link
      * #implCompleted} returns {@code null} or throws an exception, or when the
      * outer future is cancelled. <p>
-     *
+     * <p>
      * This implementation runs the outer completion handler.  Subclasses that
      * override this method should make sure to call this method by calling
      * {@code super.done()}.
      */
     @Override
     protected void done() {
-	synchronized (lock) {
-	    innerFuture = null;
-	    if (outerHandler != null) {
-		outerHandler.completed(this);
-	    }
-	}
+        synchronized (lock) {
+            innerFuture = null;
+            if (outerHandler != null) {
+                outerHandler.completed(this);
+            }
+        }
     }
 
     /* -- Private methods and classes -- */
 
-    /** Implements a {@code Callable} that fails if called. */
+    /**
+     * Implements a {@code Callable} that fails if called.
+     */
     private static final class FailingCallable<V> implements Callable<V> {
-	FailingCallable() { }
-	public V call() {
-	    throw new AssertionError();
-	}
+        FailingCallable() {
+        }
+
+        public V call() {
+            throw new AssertionError();
+        }
     }
 }

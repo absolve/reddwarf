@@ -25,12 +25,12 @@
 
 package com.sun.sgs.nio.channels;
 
+import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
+
 import java.io.IOException;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.Channel;
 import java.util.concurrent.ExecutionException;
-
-import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
 
 /**
  * A channel that supports asynchronous operations.
@@ -66,7 +66,7 @@ import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
  * handlers. The completion handler is guaranteed to be invoked by either
  * the thread that initiated the operation or from a task executed by the
  * associated executor service.
- * 
+ *
  * <h3>Closing, Cancellation, Timeouts, and Concurrency</h3>
  * <p>
  * Invoking the close method on an asynchronous channel arranges for all
@@ -103,7 +103,9 @@ import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
  */
 public abstract class AsynchronousChannel implements Channel {
 
-    /** The provider that created this asynchronous channel. */
+    /**
+     * The provider that created this asynchronous channel.
+     */
     private final AsynchronousChannelProvider provider;
 
     /**

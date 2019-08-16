@@ -23,6 +23,7 @@ package com.sun.sgs.impl.kernel;
 
 import com.sun.sgs.kernel.NodeType;
 import com.sun.sgs.management.ConfigMXBean;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
@@ -46,9 +47,10 @@ public class ConfigManager implements ConfigMXBean {
     private long standardTxnTimeout;
     private String protocolDesc;
 
-    /** 
+    /**
      * Creates a config manager instance.
-     * @param props  properties
+     *
+     * @param props properties
      */
     public ConfigManager(Properties props) {
         String value = props.getProperty(StandardProperties.NODE_TYPE);
@@ -61,7 +63,7 @@ public class ConfigManager implements ConfigMXBean {
         } else {
             nodeType = NodeType.valueOf(value);
         }
-        
+
         appName = props.getProperty(StandardProperties.APP_NAME);
         appRoot = props.getProperty(StandardProperties.APP_ROOT);
         appListener = props.getProperty(StandardProperties.APP_LISTENER);
@@ -75,75 +77,93 @@ public class ConfigManager implements ConfigMXBean {
         hostName = name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public NodeType getNodeType() {
         return nodeType;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getAppName() {
         return appName;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getAppRoot() {
         return appRoot;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getAppListener() {
         return appListener;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getHostName() {
         return hostName;
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public String getServerHostName() {
         return serverHost;
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public int getJmxPort() {
         return jmxPort;
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public long getStandardTxnTimeout() {
         return standardTxnTimeout;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getProtocolDescriptor() {
-	return protocolDesc;
+        return protocolDesc;
     }
-    
+
     /**
      * Sets the standard timeout value.
-     * 
+     *
      * @param timeout the standard timeout
      */
     public void setStandardTxnTimeout(long timeout) {
         standardTxnTimeout = timeout;
     }
-    
+
     /**
      * Sets the jmxPort value.
-     * 
+     *
      * @param jmxPort the port JMX is listening on
      */
     public void setJmxPort(int jmxPort) {
         this.jmxPort = jmxPort;
     }
-    
+
     /**
      * Sets the protocol descriptor.
      *
-     * @param	desc the protocol descriptor
+     * @param    desc the protocol descriptor
      */
     public void setProtocolDescriptor(String desc) {
-	this.protocolDesc = desc;
+        this.protocolDesc = desc;
     }
 }

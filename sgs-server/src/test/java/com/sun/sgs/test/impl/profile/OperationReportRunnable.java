@@ -22,7 +22,9 @@ package com.sun.sgs.test.impl.profile;
 
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.profile.ProfileReport;
+
 import java.util.concurrent.Exchanger;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -44,11 +46,10 @@ class OperationReportRunnable implements Runnable {
     final Identity positiveOwner;
     final Exchanger<AssertionError> errorExchanger;
 
-    public OperationReportRunnable(String name, 
+    public OperationReportRunnable(String name,
                                    Identity negativeOwner,
-                                   Identity positiveOwner, 
-                                   Exchanger<AssertionError> errorExchanger) 
-    {
+                                   Identity positiveOwner,
+                                   Exchanger<AssertionError> errorExchanger) {
         super();
         this.name = name;
         this.negativeOwner = negativeOwner;

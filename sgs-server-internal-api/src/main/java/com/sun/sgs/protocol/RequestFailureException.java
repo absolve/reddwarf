@@ -36,54 +36,67 @@ package com.sun.sgs.protocol;
  * method returns the possibly-{@code null} cause of the failure.
  */
 public class RequestFailureException extends Exception {
-    
-    /** The serial version for this class. */
+
+    /**
+     * The serial version for this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The reason for the failure */
+    /**
+     * The reason for the failure
+     */
     private final FailureReason reason;
 
     /**
      * Reasons why a request fails.
      */
     public enum FailureReason {
-	/** The associated client session has not completed login. */
-	LOGIN_PENDING,
-	/** The client session is relocating to another node. */
-	RELOCATE_PENDING,
-	/** The client session is disconnecting from the local node. */
-	DISCONNECT_PENDING,
-	/** Other operational failure (see exception {@link
-	 * Throwable#getCause cause} for detail). */ 
-	OTHER
-    };
-    
+        /**
+         * The associated client session has not completed login.
+         */
+        LOGIN_PENDING,
+        /**
+         * The client session is relocating to another node.
+         */
+        RELOCATE_PENDING,
+        /**
+         * The client session is disconnecting from the local node.
+         */
+        DISCONNECT_PENDING,
+        /**
+         * Other operational failure (see exception {@link
+         * Throwable#getCause cause} for detail).
+         */
+        OTHER
+    }
+
+    ;
+
     /**
      * Constructs an instance with the specified detail {@code message}
      * and {@code reason}.
      *
-     * @param	message a detail message, or {@code null}
-     * @param	reason a reason why the request failed
+     * @param    message a detail message, or {@code null}
+     * @param    reason a reason why the request failed
      */
     public RequestFailureException(String message, FailureReason reason) {
-	super(message);
-	if (reason == null) {
-	    throw new NullPointerException("null reason");
-	}
-	this.reason = reason;
+        super(message);
+        if (reason == null) {
+            throw new NullPointerException("null reason");
+        }
+        this.reason = reason;
     }
-    
+
     /**
      * Constructs an instance with the specified detail {@code message}
      * and {@code cause}.
      *
-     * @param	message a detail message, or {@code null}
-     * @param	cause the cause of this exception, or {@code null}
+     * @param    message a detail message, or {@code null}
+     * @param    cause the cause of this exception, or {@code null}
      */
-    public RequestFailureException(String message, Throwable cause)
-    {
-	super(message, cause);
-	this.reason = FailureReason.OTHER;
+    public RequestFailureException(String message, Throwable cause) {
+        super(message, cause);
+        this.reason = FailureReason.OTHER;
     }
 
     /**
@@ -94,6 +107,6 @@ public class RequestFailureException extends Exception {
      * @return a failure reason
      */
     public FailureReason getReason() {
-	return reason;
+        return reason;
     }
 }

@@ -22,13 +22,7 @@
 package com.sun.sgs.impl.service.nodemap.affinity.dlpa;
 
 import com.sun.sgs.auth.Identity;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
-import com.sun.sgs.impl.service.nodemap.affinity.LPAAffinityGroupFinder;
-import
-   com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderFailedException;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderStats;
-import com.sun.sgs.impl.service.nodemap.affinity.BasicState;
-import com.sun.sgs.impl.service.nodemap.affinity.RelocatingAffinityGroup;
+import com.sun.sgs.impl.service.nodemap.affinity.*;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
 import com.sun.sgs.impl.util.Exporter;
@@ -39,24 +33,14 @@ import com.sun.sgs.profile.ProfileCollector;
 import com.sun.sgs.service.Node;
 import com.sun.sgs.service.NodeListener;
 import com.sun.sgs.service.WatchdogService;
+
+import javax.management.JMException;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.JMException;
 
 /**
  * The server portion of the distributed label propagation algorithm.
@@ -67,35 +51,48 @@ import javax.management.JMException;
  * each node when finished.
  */
 public class LabelPropagationServer extends BasicState
-        implements LPAAffinityGroupFinder, LPAServer
-{
-    /** Our property base name. */
+        implements LPAAffinityGroupFinder, LPAServer {
+    /**
+     * Our property base name.
+     */
     private static final String PROP_NAME =
             "com.sun.sgs.impl.service.nodemap.affinity";
-    /** Our class name. */
+    /**
+     * Our class name.
+     */
     private static final String CLASS_NAME =
             LabelPropagationServer.class.getName();
 
-    /** Our logger. */
+    /**
+     * Our logger.
+     */
     private static final LoggerWrapper logger =
             new LoggerWrapper(Logger.getLogger(PROP_NAME));
 
-    /** The property name for the server port. */
+    /**
+     * The property name for the server port.
+     */
     public static final String SERVER_PORT_PROPERTY =
             PROP_NAME + ".server.port";
-    
-    /** The default value of the server port. */
+
+    /**
+     * The default value of the server port.
+     */
     public static final int DEFAULT_SERVER_PORT = 44537;
 
-    /** The name we export ourselves under. */
+    /**
+     * The name we export ourselves under.
+     */
     public static final String SERVER_EXPORT_NAME = "LabelPropagationServer";
 
-    /** The time, in minutes, to wait for all nodes to
+    /**
+     * The time, in minutes, to wait for all nodes to
      * respond to asynchronous calls.
      */
     private static final int TIMEOUT = 1;  // minutes
 
-    /** The maximum number of iterations we will run.  Interesting to set high
+    /**
+     * The maximum number of iterations we will run.  Interesting to set high
      * for testing, but 5 has been shown to be adequate in most papers.
      * For distributed case, seem to always converge within 10, and setting
      * to 5 cuts off some of the highest modularity solutions (running
@@ -103,7 +100,9 @@ public class LabelPropagationServer extends BasicState
      */
     private static final int MAX_ITERATIONS = 10;
 
-    /** Prefix for io task related properties. */
+    /**
+     * Prefix for io task related properties.
+     */
     public static final String IO_TASK_PROPERTY_PREFIX =
             "com.sun.sgs.impl.util.io.task";
 
@@ -121,10 +120,14 @@ public class LabelPropagationServer extends BasicState
     public static final String IO_TASK_WAIT_TIME_PROPERTY =
             IO_TASK_PROPERTY_PREFIX + ".wait.time";
 
-    /** The default number of IO task retries. **/
+    /**
+     * The default number of IO task retries.
+     **/
     static final int DEFAULT_MAX_IO_ATTEMPTS = 5;
 
-    /** The default time interval to wait between IO task retries. **/
+    /**
+     * The default time interval to wait between IO task retries.
+     **/
     static final int DEFAULT_RETRY_WAIT_TIME = 100;
 
     /**
@@ -133,21 +136,28 @@ public class LabelPropagationServer extends BasicState
      */
     private final WatchdogService wdog;
 
-    /** The time (in milliseconds) to wait between retries for IO
-     * operations. */
+    /**
+     * The time (in milliseconds) to wait between retries for IO
+     * operations.
+     */
     private final int retryWaitTime;
 
-    /** The maximum number of retry attempts for IO operations. */
+    /**
+     * The maximum number of retry attempts for IO operations.
+     */
     private final int maxIoAttempts;
 
-    /** The exporter for this serve. */
+    /**
+     * The exporter for this serve.
+     */
     private final Exporter<LPAServer> exporter;
-    
+
     /* A map from node id to client proxy objects. */
     private final Map<Long, LPAClient> clientProxyMap =
             new ConcurrentHashMap<Long, LPAClient>();
 
-    /** A barrier that consists of the set of nodes we expect to hear back
+    /**
+     * A barrier that consists of the set of nodes we expect to hear back
      * from asynchronous calls.  Once this set is empty, we can move on to the
      * next step of the algorithm.  This data structure is required, rather
      * than a simple Barrier, because our calls must be idempotent.
@@ -169,10 +179,13 @@ public class LabelPropagationServer extends BasicState
      * and set in a single thread.
      */
     private int currentIteration;
-    /** True if we believe all nodes have converged. */
+    /**
+     * True if we believe all nodes have converged.
+     */
     private volatile boolean nodesConverged;
 
-    /** Set to true if something has gone wrong and the results from
+    /**
+     * Set to true if something has gone wrong and the results from
      * this algorithm run should be ignored.
      */
     private volatile boolean runFailed;
@@ -184,7 +197,8 @@ public class LabelPropagationServer extends BasicState
      */
     private volatile AffinityGroupFinderFailedException runException;
 
-    /** A thread pool.  Will create as many threads as needed, with a timeout
+    /**
+     * A thread pool.  Will create as many threads as needed, with a timeout
      * of 60 sec before unused threads are reaped.
      */
     private final ExecutorService executor = Executors.newCachedThreadPool(
@@ -193,37 +207,42 @@ public class LabelPropagationServer extends BasicState
     // TBD:  we need to have a state, and not allow a run when we're shutting
     //     down, or shutdown while we're running.  Will also need an
     //     enable/disable.
-    /** A lock to ensure we block a run of the algorithm if a current run
+    /**
+     * A lock to ensure we block a run of the algorithm if a current run
      * is still going.  TBD:  what behavior do we want?  Throw an exception?
      * "merge" the two run attempts - e.g. second run just returns the result
      * of the ongoing first one?  Abort the first one?
      */
     private final Object runningLock = new Object();
-    /** True if we're in the midst of an algorithm run.  Access while holding
+    /**
+     * True if we're in the midst of an algorithm run.  Access while holding
      * the runningLock.
      */
     private boolean running = false;
 
-    /**  The algorithm run number, used to ensure that LPAClients are reporting
+    /**
+     * The algorithm run number, used to ensure that LPAClients are reporting
      * results from the expected run.
      */
     private final AtomicLong runNumber = new AtomicLong();
 
-    /** Our JMX info. */
+    /**
+     * Our JMX info.
+     */
     private final AffinityGroupFinderStats stats;
-    
+
     /**
      * Constructs a new label propagation server. Only one should exist
      * within a Darkstar cluster.
-     * @param col the profile collector
-     * @param wdog the watchdog service, used for error reporting
+     *
+     * @param col        the profile collector
+     * @param wdog       the watchdog service, used for error reporting
      * @param properties the application properties
      * @throws IOException if an error occurs
      */
     public LabelPropagationServer(ProfileCollector col, WatchdogService wdog,
-            Properties properties)
-        throws IOException
-    {
+                                  Properties properties)
+            throws IOException {
         this.wdog = wdog;
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
         // Retry behavior
@@ -236,7 +255,7 @@ public class LabelPropagationServer extends BasicState
 
         // Register our node listener with the watchdog service.
         wdog.addNodeListener(new NodeFailListener());
-        
+
         int requestedPort = wrappedProps.getIntProperty(
                 SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT, 0, 65535);
         // Export ourself.
@@ -256,10 +275,11 @@ public class LabelPropagationServer extends BasicState
 
     // ---- Implement LPAAffinityGroupFinder --- //
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public NavigableSet<RelocatingAffinityGroup> findAffinityGroups()
-            throws AffinityGroupFinderFailedException
-    {
+            throws AffinityGroupFinderFailedException {
         checkForDisabledOrShutdownState();
         synchronized (runningLock) {
             while (running) {
@@ -267,7 +287,7 @@ public class LabelPropagationServer extends BasicState
                     runningLock.wait();
                 } catch (InterruptedException e) {
                     throw new AffinityGroupFinderFailedException(
-                               "Interrupted while waiting for current run", e);
+                            "Interrupted while waiting for current run", e);
                 }
             }
             running = true;
@@ -306,8 +326,8 @@ public class LabelPropagationServer extends BasicState
         // breaking this assumption.
         final Map<Long, LPAClient> clientProxyCopy =
                 Collections.unmodifiableMap(
-                    new HashMap<Long, LPAClient>(clientProxyMap));
-        
+                        new HashMap<Long, LPAClient>(clientProxyMap));
+
         runFailed = false;
         runException = null;
         nodesConverged = false;
@@ -323,7 +343,7 @@ public class LabelPropagationServer extends BasicState
         if (logger.isLoggable(Level.FINE)) {
             long time = System.currentTimeMillis() - startTime;
             logger.log(Level.FINE,
-                       "Algorithm prepare took {0} milliseconds", time);
+                    "Algorithm prepare took {0} milliseconds", time);
         }
 
         // Run the algorithm in multiple iterations, until it has runFailed
@@ -351,7 +371,7 @@ public class LabelPropagationServer extends BasicState
             logger.log(Level.FINE, "Algorithm took {0} milliseconds and {1} " +
                     "iterations", runTime, currentIteration);
             StringBuilder sb = new StringBuilder();
-            sb.append(" LPA found " +  retVal.size() + " groups ");
+            sb.append(" LPA found " + retVal.size() + " groups ");
 
             for (AffinityGroup group : retVal) {
                 sb.append(" id: " + group.getId() + ": members ");
@@ -385,51 +405,65 @@ public class LabelPropagationServer extends BasicState
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void disable() {
         if (setDisabledState()) {
             for (Map.Entry<Long, LPAClient> ce : clientProxyMap.entrySet()) {
                 runIoTask(new DisableTask(ce.getValue()),
-                    wdog, ce.getKey(), maxIoAttempts,
-                    retryWaitTime, CLASS_NAME);
+                        wdog, ce.getKey(), maxIoAttempts,
+                        retryWaitTime, CLASS_NAME);
             }
         }
     }
 
-    /**  Private task to disable a proxy. */
+    /**
+     * Private task to disable a proxy.
+     */
     private static class DisableTask implements IoRunnable {
         private final LPAClient proxy;
+
         DisableTask(LPAClient proxy) {
             this.proxy = proxy;
         }
+
         public void run() throws IOException {
             proxy.disable();
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void enable() {
         if (setEnabledState()) {
             for (Map.Entry<Long, LPAClient> ce : clientProxyMap.entrySet()) {
                 runIoTask(new EnableTask(ce.getValue()),
-                    wdog, ce.getKey(), maxIoAttempts,
-                    retryWaitTime, CLASS_NAME);
+                        wdog, ce.getKey(), maxIoAttempts,
+                        retryWaitTime, CLASS_NAME);
             }
         }
     }
 
-    /**  Private task to enable a proxy. */
+    /**
+     * Private task to enable a proxy.
+     */
     private static class EnableTask implements IoRunnable {
         private final LPAClient proxy;
+
         EnableTask(LPAClient proxy) {
             this.proxy = proxy;
         }
+
         public void run() throws IOException {
             proxy.enable();
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         if (setShutdownState()) {
             for (Map.Entry<Long, LPAClient> ce : clientProxyMap.entrySet()) {
@@ -448,7 +482,9 @@ public class LabelPropagationServer extends BasicState
 
     // --- Implement LPAServer --- //
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void readyToBegin(long nodeId, boolean failed) throws IOException {
         if (failed) {
             String msg = "node " + nodeId + " reports failure preparing";
@@ -461,14 +497,15 @@ public class LabelPropagationServer extends BasicState
         maybeCountDown(nodeId);
     }
 
-    /** {@inheritDoc} */
-    public void finishedIteration(long nodeId, boolean converged, 
+    /**
+     * {@inheritDoc}
+     */
+    public void finishedIteration(long nodeId, boolean converged,
                                   boolean failed, int iteration)
-            throws IOException
-    {
+            throws IOException {
         if (failed) {
             String msg = "node " + nodeId +
-                         " reports failure in iteration " + iteration;
+                    " reports failure in iteration " + iteration;
             if (runException == null) {
                 runException = new AffinityGroupFinderFailedException(msg);
             }
@@ -477,12 +514,12 @@ public class LabelPropagationServer extends BasicState
         }
         if (iteration != currentIteration) {
             String msg = "node " + nodeId +
-                         " reports unexpected iteration " + iteration;
+                    " reports unexpected iteration " + iteration;
             if (runException == null) {
                 runException = new AffinityGroupFinderFailedException(msg);
             }
             logger.log(Level.INFO, "unexpected iteration: {0} on node {1}, " +
-                    "expected {2}, marking run failed",
+                            "expected {2}, marking run failed",
                     iteration, nodeId, currentIteration);
             runFailed = true;
         }
@@ -491,13 +528,17 @@ public class LabelPropagationServer extends BasicState
         maybeCountDown(nodeId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LPAClient getLPAClientProxy(long nodeId) throws IOException {
         return clientProxyMap.get(nodeId);
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void register(long nodeId, LPAClient client) throws IOException {
         clientProxyMap.put(nodeId, client);
     }
@@ -511,13 +552,15 @@ public class LabelPropagationServer extends BasicState
             // nothing special
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         public void nodeHealthUpdate(Node node) {
             switch (node.getHealth()) {
-                case RED :
+                case RED:
                     removeNode(node.getId());
                     break;
-                default :
+                default:
                     // do nothing
                     break;
             }
@@ -526,6 +569,7 @@ public class LabelPropagationServer extends BasicState
 
     /**
      * Removes cached information about a failed node.
+     *
      * @param nodeId the Id of the failed node
      */
     private void removeNode(long nodeId) {
@@ -534,7 +578,7 @@ public class LabelPropagationServer extends BasicState
 
     /**
      * Tells each registred LPAClient to prepare for a run of the algorithm.
-     * 
+     *
      * @param clientProxies a map of node ids to LPAClient proxies
      */
     private void prepareAlgorithm(Map<Long, LPAClient> clientProxies) {
@@ -548,13 +592,14 @@ public class LabelPropagationServer extends BasicState
             long nodeId = ce.getKey();
             try {
                 boolean ok = runIoTask(new IoRunnable() {
-                    public void run() throws IOException {
-                        ce.getValue().prepareAlgorithm(runNum);
-                    } }, wdog, nodeId, maxIoAttempts, retryWaitTime,
-                         CLASS_NAME);
+                                           public void run() throws IOException {
+                                               ce.getValue().prepareAlgorithm(runNum);
+                                           }
+                                       }, wdog, nodeId, maxIoAttempts, retryWaitTime,
+                        CLASS_NAME);
                 if (!ok) {
                     String msg = "node " + nodeId +
-                                 " could not be contacted to prepare " + runNum;
+                            " could not be contacted to prepare " + runNum;
                     if (runException == null) {
                         runException =
                                 new AffinityGroupFinderFailedException(msg);
@@ -568,14 +613,14 @@ public class LabelPropagationServer extends BasicState
                 }
             } catch (Exception e) {
                 String msg = "node " + nodeId +
-                             " exception while preparing " + runNum;
+                        " exception while preparing " + runNum;
                 if (runException == null) {
-                    runException = 
+                    runException =
                             new AffinityGroupFinderFailedException(msg, e);
                 }
                 logger.logThrow(Level.INFO, e,
-                    "exception from node {0} while preparing",
-                    nodeId);
+                        "exception from node {0} while preparing",
+                        nodeId);
                 runFailed = true;
                 maybeCountDown(nodeId);
             }
@@ -587,6 +632,7 @@ public class LabelPropagationServer extends BasicState
 
     /**
      * Run the algorithm iterations until all LPAClients have converged.
+     *
      * @param clientProxies a map of node ids to LPAClient proxies
      */
     private void runIterations(Map<Long, LPAClient> clientProxies) {
@@ -600,19 +646,19 @@ public class LabelPropagationServer extends BasicState
             assert (nodeBarrier.isEmpty());
             nodeBarrier.addAll(clientProxies.keySet());
             latch = new CountDownLatch(cleanSize);
-            for (final Map.Entry<Long, LPAClient> ce : clientProxies.entrySet())
-            {
+            for (final Map.Entry<Long, LPAClient> ce : clientProxies.entrySet()) {
                 long nodeId = ce.getKey();
                 try {
                     boolean ok = runIoTask(new IoRunnable() {
-                    public void run() throws IOException {
-                        ce.getValue().startIteration(currentIteration);
-                    } }, wdog, nodeId, maxIoAttempts, retryWaitTime,
-                         CLASS_NAME);
+                                               public void run() throws IOException {
+                                                   ce.getValue().startIteration(currentIteration);
+                                               }
+                                           }, wdog, nodeId, maxIoAttempts, retryWaitTime,
+                            CLASS_NAME);
                     if (!ok) {
                         String msg = "node " + nodeId +
-                                     " could not be contacted for iteration " +
-                                     currentIteration;
+                                " could not be contacted for iteration " +
+                                currentIteration;
                         if (runException == null) {
                             runException =
                                     new AffinityGroupFinderFailedException(msg);
@@ -626,16 +672,16 @@ public class LabelPropagationServer extends BasicState
                     }
                 } catch (Exception e) {
                     String msg = "node " + nodeId +
-                                 " exception for iteration " +
-                                 currentIteration;
+                            " exception for iteration " +
+                            currentIteration;
                     if (runException == null) {
                         runException =
                                 new AffinityGroupFinderFailedException(msg, e);
                     }
                     logger.logThrow(Level.INFO, e,
-                        "exception from node {0} while running " +
-                        "iteration {1}",
-                        nodeId, currentIteration);
+                            "exception from node {0} while running " +
+                                    "iteration {1}",
+                            nodeId, currentIteration);
                     runFailed = true;
                     maybeCountDown(nodeId);
                 }
@@ -661,14 +707,13 @@ public class LabelPropagationServer extends BasicState
      * @return the merged affinity groups found on each LPAClient
      */
     private NavigableSet<RelocatingAffinityGroup> gatherFinalGroups(
-                    Map<Long, LPAClient> clientProxies)
-    {
+            Map<Long, LPAClient> clientProxies) {
         // If, after this point, we cannot contact a node, simply
         // return the information that we have.
         // Assuming a node has failed, we won't report the identities
         // on the failed node as being part of any group.
         final Map<Long, Set<AffinityGroup>> returnedGroups =
-            new ConcurrentHashMap<Long, Set<AffinityGroup>>();
+                new ConcurrentHashMap<Long, Set<AffinityGroup>>();
         nodeBarrier.clear();
         nodeBarrier.addAll(clientProxies.keySet());
         latch = new CountDownLatch(clientProxies.keySet().size());
@@ -681,19 +726,20 @@ public class LabelPropagationServer extends BasicState
                 public void run() {
                     try {
                         boolean ok = runIoTask(new IoRunnable() {
-                            public void run() throws IOException {
-                                returnedGroups.put(nodeId,
-                                      proxy.getAffinityGroups(runNum, true));
-                            } }, wdog, nodeId, maxIoAttempts, retryWaitTime,
-                                 CLASS_NAME);
+                                                   public void run() throws IOException {
+                                                       returnedGroups.put(nodeId,
+                                                               proxy.getAffinityGroups(runNum, true));
+                                                   }
+                                               }, wdog, nodeId, maxIoAttempts, retryWaitTime,
+                                CLASS_NAME);
                         maybeCountDown(nodeId);
                         if (!ok) {
                             removeNode(ce.getKey());
                         }
                     } catch (Exception e) {
                         logger.logThrow(Level.INFO, e,
-                            "exception from node {0} while returning groups",
-                            ce.getKey());
+                                "exception from node {0} while returning groups",
+                                ce.getKey());
                         maybeCountDown(nodeId);
                     }
                 }
@@ -709,8 +755,7 @@ public class LabelPropagationServer extends BasicState
         // Ensure that each identity is only assigned to a single group
         Set<Identity> idSet = new HashSet<Identity>();
         for (Map.Entry<Long, Set<AffinityGroup>> e :
-            returnedGroups.entrySet())
-        {
+                returnedGroups.entrySet()) {
             Long nodeId = e.getKey();
             for (AffinityGroup ag : e.getValue()) {
                 long id = ag.getId();
@@ -735,9 +780,9 @@ public class LabelPropagationServer extends BasicState
         NavigableSet<RelocatingAffinityGroup> retVal =
                 new TreeSet<RelocatingAffinityGroup>();
         for (Map.Entry<Long, Map<Identity, Long>> e : groupMap.entrySet()) {
-            retVal.add(new RelocatingAffinityGroup(e.getKey(), 
-                                                   e.getValue(),
-                                                   runNum));
+            retVal.add(new RelocatingAffinityGroup(e.getKey(),
+                    e.getValue(),
+                    runNum));
         }
 
         return retVal;
@@ -769,7 +814,7 @@ public class LabelPropagationServer extends BasicState
     /**
      * Calls countDown on {@code latch} if the given node ID is in
      * the {@code nodeBarrier}.
-     * 
+     *
      * @param nodeId the ID of the node we're accounting for
      */
     private void maybeCountDown(long nodeId) {
@@ -777,6 +822,7 @@ public class LabelPropagationServer extends BasicState
             latch.countDown();
         }
     }
+
     /**
      * Executes the specified {@code ioTask} by invoking its {@link
      * IoRunnable#run run} method. If the specified task throws an
@@ -788,19 +834,17 @@ public class LabelPropagationServer extends BasicState
      * we don't bother to check for a transactional context (we won't be in
      * one).
      *
-     * @param ioTask a task with IO-related operations
-     * @param wdog the watchdog service for the local node, in case of failure
-     * @param nodeId the node that should be shut down in case of failure
+     * @param ioTask   a task with IO-related operations
+     * @param wdog     the watchdog service for the local node, in case of failure
+     * @param nodeId   the node that should be shut down in case of failure
      * @param maxTries the number of times to attempt the retry
      * @param waitTime the amount of time to wait before retry
-     * @param name name of caller, in case of failure
-     *
+     * @param name     name of caller, in case of failure
      * @return {@code true} if the ioTask ran successfully
      */
-    static boolean runIoTask(IoRunnable ioTask, WatchdogService wdog, 
-                            long nodeId, int maxTries, int waitTime,
-                            String name)
-    {
+    static boolean runIoTask(IoRunnable ioTask, WatchdogService wdog,
+                             long nodeId, int maxTries, int waitTime,
+                             String name) {
         int maxAttempts = maxTries;
         while (maxAttempts > 0) {
             try {
@@ -820,7 +864,7 @@ public class LabelPropagationServer extends BasicState
         }
         logger.log(Level.WARNING,
                 "A communication error occured while running an" +
-                "IO task. Could not reach node {0}.", nodeId);
+                        "IO task. Could not reach node {0}.", nodeId);
         wdog.reportFailure(nodeId, name);
         return false;
     }

@@ -43,7 +43,7 @@ public interface TransactionListenerDetail {
      * was called.
      *
      * @return {@code true} if the listener's {@code beforeCompletion} method
-     *         was called, {@code false} otherwise
+     * was called, {@code false} otherwise
      */
     boolean calledBeforeCompletion();
 
@@ -52,7 +52,7 @@ public interface TransactionListenerDetail {
      * threw an exception thus aborting the transaction.
      *
      * @return {@code true} if the listener's {@code beforeCompletion} method
-     *         aborted the transaction, {@code false} otherwise
+     * aborted the transaction, {@code false} otherwise
      */
     boolean abortedBeforeCompletion();
 

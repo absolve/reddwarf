@@ -27,6 +27,7 @@ import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import com.sun.sgs.service.task.ContinuePolicy;
+
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,15 +42,15 @@ import java.util.logging.Logger;
  * <dl style="margin-left: 1em">
  *
  * <dt> <i>Property:</i> <code><b>
- *	{@value #CONTINUE_THRESHOLD_PROPERTY}
- *	</b></code><br>
- *	<i>Default:</i> {@value #CONTINUE_THRESHOLD_DEFAULT}
+ * {@value #CONTINUE_THRESHOLD_PROPERTY}
+ * </b></code><br>
+ * <i>Default:</i> {@value #CONTINUE_THRESHOLD_DEFAULT}
  *
  * <dd style="padding-top: .5em">Specifies the time in milliseconds from the
- *      start of a transaction during which the
- *      {@link #shouldContinue() shouldContinue} method will return
- *      {@code true}.  After this period of time has elapsed in a transaction,
- *      this method will always return {@code false}.
+ * start of a transaction during which the
+ * {@link #shouldContinue() shouldContinue} method will return
+ * {@code true}.  After this period of time has elapsed in a transaction,
+ * this method will always return {@code false}.
  *
  * </dl> <p>
  */
@@ -57,8 +58,8 @@ public class FixedTimeContinuePolicy implements ContinuePolicy {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(FixedTimeContinuePolicy.
-                                           class.getName()));
+            new LoggerWrapper(Logger.getLogger(FixedTimeContinuePolicy.
+                    class.getName()));
 
     // the name of the current package
     private static final String PKG_NAME = "com.sun.sgs.impl.service.task";
@@ -68,9 +69,11 @@ public class FixedTimeContinuePolicy implements ContinuePolicy {
      * {@link #shouldContinue() shouldContinue} returns false.
      */
     public static final String CONTINUE_THRESHOLD_PROPERTY =
-                               PKG_NAME + ".continue.threshold";
+            PKG_NAME + ".continue.threshold";
 
-    /** The default continue threshold. */
+    /**
+     * The default continue threshold.
+     */
     public static final long CONTINUE_THRESHOLD_DEFAULT = 10L;
 
     // the actual value of the continue threshold
@@ -82,28 +85,28 @@ public class FixedTimeContinuePolicy implements ContinuePolicy {
     /**
      * Construct a {@code FixedTimeContinuePolicy} instance.
      *
-     * @param properties the system properties
+     * @param properties     the system properties
      * @param systemRegistry the system registry
-     * @param txnProxy the system's transaction proxy
+     * @param txnProxy       the system's transaction proxy
      */
     public FixedTimeContinuePolicy(Properties properties,
                                    ComponentRegistry systemRegistry,
                                    TransactionProxy txnProxy) {
         logger.log(Level.CONFIG, "Creating FixedTimeContinuePolicy");
         this.txnProxy = txnProxy;
-        
+
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
         this.continueThreshold = wrappedProps.getLongProperty(
                 CONTINUE_THRESHOLD_PROPERTY, CONTINUE_THRESHOLD_DEFAULT);
         if (continueThreshold <= 0) {
             throw new IllegalStateException("Continue threshold property " +
-                                            "must be positive");
+                    "must be positive");
         }
 
         logger.log(Level.CONFIG,
-                   "Created FixedTimeContinuePolicy with properties:" +
-                   "\n  " + CONTINUE_THRESHOLD_PROPERTY + "=" +
-                   continueThreshold);
+                "Created FixedTimeContinuePolicy with properties:" +
+                        "\n  " + CONTINUE_THRESHOLD_PROPERTY + "=" +
+                        continueThreshold);
     }
 
     /**
@@ -112,7 +115,7 @@ public class FixedTimeContinuePolicy implements ContinuePolicy {
     public boolean shouldContinue() {
         Transaction txn = txnProxy.getCurrentTransaction();
         return System.currentTimeMillis() - txn.getCreationTime() <
-               continueThreshold;
+                continueThreshold;
     }
 
 }

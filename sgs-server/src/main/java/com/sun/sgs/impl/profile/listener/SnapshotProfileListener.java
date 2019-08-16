@@ -22,23 +22,17 @@
 package com.sun.sgs.impl.profile.listener;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.profile.util.NetworkReporter;
-
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.TaskScheduler;
-
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
 
 import java.beans.PropertyChangeEvent;
-
 import java.io.IOException;
-
 import java.util.Formatter;
 import java.util.Properties;
 
@@ -80,7 +74,7 @@ public class SnapshotProfileListener implements ProfileListener {
     // one is looking at the data, since it gets cleared after the report
     // is made
     private final Object lock = new Object();
-    
+
     // the number of threads running through the scheduler
     private volatile int threadCount;
 
@@ -92,7 +86,7 @@ public class SnapshotProfileListener implements ProfileListener {
 
     // the base name for properties
     private static final String PROP_BASE =
-        SnapshotProfileListener.class.getName();
+            SnapshotProfileListener.class.getName();
 
     // the supported properties and their default values
     private static final String PORT_PROPERTY = PROP_BASE + ".report.port";
@@ -104,28 +98,26 @@ public class SnapshotProfileListener implements ProfileListener {
      * Creates an instance of <code>SnapshotProfileListener</code>.
      *
      * @param properties the <code>Properties</code> for this listener
-     * @param owner the <code>Identity</code> to use for all tasks run by
-     *              this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *                 available system components
-     *
+     * @param owner      the <code>Identity</code> to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      * @throws IOException if the server socket cannot be created
      */
     public SnapshotProfileListener(Properties properties, Identity owner,
                                    ComponentRegistry registry)
-        throws IOException
-    {
+            throws IOException {
         PropertiesWrapper wrappedProps = new PropertiesWrapper(properties);
 
         int port = wrappedProps.getIntProperty(PORT_PROPERTY, DEFAULT_PORT);
         networkReporter = new NetworkReporter(port);
 
         long reportPeriod =
-            wrappedProps.getLongProperty(PERIOD_PROPERTY, DEFAULT_PERIOD);
+                wrappedProps.getLongProperty(PERIOD_PROPERTY, DEFAULT_PERIOD);
         handle = registry.getComponent(TaskScheduler.class).
-            scheduleRecurringTask(new SnapshotRunnable(reportPeriod), owner, 
-                                  System.currentTimeMillis() + reportPeriod,
-                                  reportPeriod);
+                scheduleRecurringTask(new SnapshotRunnable(reportPeriod), owner,
+                        System.currentTimeMillis() + reportPeriod,
+                        reportPeriod);
         handle.start();
     }
 
@@ -133,8 +125,8 @@ public class SnapshotProfileListener implements ProfileListener {
      * {@inheritDoc}
      */
     public void propertyChange(PropertyChangeEvent event) {
-	if (event.getPropertyName().equals("com.sun.sgs.profile.threadcount")) {
-	    this.threadCount = ((Integer) event.getNewValue()).intValue();
+        if (event.getPropertyName().equals("com.sun.sgs.profile.threadcount")) {
+            this.threadCount = ((Integer) event.getNewValue()).intValue();
         }
     }
 
@@ -165,22 +157,25 @@ public class SnapshotProfileListener implements ProfileListener {
      */
     private class SnapshotRunnable implements KernelRunnable {
         private final long reportPeriod;
+
         SnapshotRunnable(long reportPeriod) {
             this.reportPeriod = reportPeriod;
         }
+
         public String getBaseTaskType() {
             return SnapshotRunnable.class.getName();
         }
+
         public void run() throws Exception {
             Formatter reportStr = new Formatter();
-	    reportStr.format("Snapshot[period=%dms]:%n", reportPeriod);
+            reportStr.format("Snapshot[period=%dms]:%n", reportPeriod);
             synchronized (lock) {
                 try {
                     reportStr.format("  Threads=%d", threadCount);
-                    reportStr.format("  Tasks=%d/%d%n", 
-                                     successCount, totalCount);
+                    reportStr.format("  Tasks=%d/%d%n",
+                            successCount, totalCount);
                     reportStr.format("  AverageQueueSize=%2.2f tasks%n%n",
-				 ((double) readyCount / (double) totalCount));
+                            ((double) readyCount / (double) totalCount));
                 } finally {
                     successCount = 0;
                     totalCount = 0;

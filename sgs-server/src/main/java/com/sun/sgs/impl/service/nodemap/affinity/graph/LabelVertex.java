@@ -35,16 +35,23 @@ import com.sun.sgs.auth.Identity;
  * to be unique.
  */
 public final class LabelVertex {
-    /** The label for this vertex. */
+    /**
+     * The label for this vertex.
+     */
     private volatile int label;
-    /** The identity this vertex represents.  */
+    /**
+     * The identity this vertex represents.
+     */
     private final Identity id;
-    /** The cached hashcode for this object. */
+    /**
+     * The cached hashcode for this object.
+     */
     private volatile int hashCode = 0;
 
     /**
      * Constructs a new vertex representing the given {@code id} and
      * initializes the label information to the hashcode of the {@code id}.
+     *
      * @param id the identity this vertex represents
      */
     public LabelVertex(Identity id) {
@@ -65,7 +72,7 @@ public final class LabelVertex {
      * We do no take the current label into account when calculating equals.
      */
     public boolean equals(Object o) {
-        if (o ==  this) {
+        if (o == this) {
             return true;
         }
         if (!(o instanceof LabelVertex)) {
@@ -75,7 +82,9 @@ public final class LabelVertex {
         return id.equals(oVertex.getIdentity());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int hashCode() {
         // If the id is simply a number, it's very useful for testing/debugging
         // to use that number as the label.
@@ -89,13 +98,16 @@ public final class LabelVertex {
         return hashCode;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String toString() {
         return "[" + id.toString() + ":" + label + "]";
     }
 
     /**
      * Sets the label to a new value.
+     *
      * @param newLabel the new label value
      */
     public void setLabel(int newLabel) {
@@ -104,6 +116,7 @@ public final class LabelVertex {
 
     /**
      * Returns the current label for this vertex.
+     *
      * @return the current label for this vertex
      */
     public int getLabel() {
@@ -112,6 +125,7 @@ public final class LabelVertex {
 
     /**
      * Returns the identity this vertex represents.
+     *
      * @return the identity this vertex represents
      */
     public Identity getIdentity() {

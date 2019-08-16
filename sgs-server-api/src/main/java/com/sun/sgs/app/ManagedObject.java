@@ -34,20 +34,21 @@ import java.io.Serializable;
  * to.  Any instances of {@code ManagedObject} that a managed object refers to
  * directly, or indirectly through non-managed objects, need to be referred to
  * through instances of {@link ManagedReference}. <p>
- *
+ * <p>
  * Classes that implement {@code ManagedObject} should not provide {@code
  * writeReplace} or {@code readRestore} methods to designate replacement
  * objects during serialization.  Object replacement would interfere with the
  * object identity maintained by the {@code DataManager}, and is not
  * permitted. <p>
- *
+ * <p>
  * Classes that implement {@code ManagedObject} can provide {@code readObject}
  * and {@code writeObject} methods to customize their serialization behavior,
  * but the {@code writeObject} methods should not perform calls to methods that
  * require a current transaction.
  *
- * @see		DataManager
- * @see		ManagedReference
- * @see		Serializable
+ * @see        DataManager
+ * @see        ManagedReference
+ * @see        Serializable
  */
-public interface ManagedObject { }
+public interface ManagedObject {
+}

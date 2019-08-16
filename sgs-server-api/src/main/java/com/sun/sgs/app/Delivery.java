@@ -32,7 +32,7 @@ package com.sun.sgs.app;
  * for details.
  *
  * <p>With all delivery guarantees, messages are guaranteed to be delivered
- * <i>at most once</i>. 
+ * <i>at most once</i>.
  */
 public enum Delivery {
 
@@ -48,14 +48,14 @@ public enum Delivery {
      * order.
      */
     ORDERED_UNRELIABLE,
-	
+
     /**
      * Unordered reliable delivery: Message delivery is guaranteed
      * unless there is a node or network failure.  No message order is
      * preserved.
      */
     UNORDERED_RELIABLE,
-	
+
     /**
      * Reliable delivery: Message delivery is guaranteed unless
      * there is a node or network failure.  Messages that are
@@ -68,17 +68,17 @@ public enum Delivery {
      * requirements of the specified {@code delivery} guarantee, otherwise
      * returns {@code false}.
      *
-     * @param	delivery a delivery guarantee
-     * @return	{@code true} if this delivery guarantee meets the minimum
-     *		requirements of the specified {@code delivery} guarantee
+     * @param    delivery a delivery guarantee
+     * @return    {@code true} if this delivery guarantee meets the minimum
+     * requirements of the specified {@code delivery} guarantee
      */
     public boolean supportsDelivery(Delivery delivery) {
-	if (delivery == null) {
-	    throw new NullPointerException("null delivery");
-	}
-	return
-	    this == delivery ||
-	    this == RELIABLE ||
-	    delivery == UNRELIABLE;
+        if (delivery == null) {
+            throw new NullPointerException("null delivery");
+        }
+        return
+                this == delivery ||
+                        this == RELIABLE ||
+                        delivery == UNRELIABLE;
     }
 }

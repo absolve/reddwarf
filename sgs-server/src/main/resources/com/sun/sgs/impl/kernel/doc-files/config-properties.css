@@ -2,29 +2,29 @@
 
 /* Indent the properties */
 dl {
-  margin-left: 1em;
+    margin-left: 1em;
 }
 
 /* Use monospace bold for the property name */
 dt {
-  font-family: monospace;
-  font-weight: bold;
+    font-family: monospace;
+    font-weight: bold;
 }
 
 /* Put <i>Property: </i> before the property name */
 dt:before {
-  font-family: serif;
-  font-style: italic;
-  font-weight: normal;
-  content: "Property: ";
+    font-family: serif;
+    font-style: italic;
+    font-weight: normal;
+    content: "Property: ";
 }
 
 /*
  * Put a 1/2 blank line before and 1 blank line after the property definition
  */
 dd {
-  padding-top: .5em;
-  padding-bottom: 1em;
+    padding-top: .5em;
+    padding-bottom: 1em;
 }
 
 /*
@@ -32,17 +32,17 @@ dd {
  * normal and start on a new line
  */
 span.default {
-  font-family: monospace;
-  font-weight: normal;
-  display: block;
+    font-family: monospace;
+    font-weight: normal;
+    display: block;
 }
 
 /* Put <i>Default: </i> in front of each property default */
 span.default:before {
-  font-family: serif;
-  font-style: italic;
-  font-weight: normal;
-  content: "Default: ";
+    font-family: serif;
+    font-style: italic;
+    font-weight: normal;
+    content: "Default: ";
 }
 
 /*
@@ -50,31 +50,31 @@ span.default:before {
  * start on a new line.
  */
 span.required {
-  font-family: serif;
-  font-style: italic;
-  font-weight: normal;
-  display: block;
+    font-family: serif;
+    font-style: italic;
+    font-weight: normal;
+    display: block;
 }
 
 /* Put <i>Required</i> for required. */
 span.required:before {
-  font-style: italic;
-  content: "Required";
+    font-style: italic;
+    content: "Required";
 }
 
 /*
  * Define a span for a property that has no default.  Use serif italic normal
  * and start on a new line.
  */
-span.nodefault { 
-  font-family: serif;
-  font-style: italic;
-  font-weight: normal;
-  display: block;
+span.nodefault {
+    font-family: serif;
+    font-style: italic;
+    font-weight: normal;
+    display: block;
 }
 
 /* Put <i>No default</i> when there is no default. */
-span.nodefault:before { 
-  font-style: italic;
-  content: "No default";
+span.nodefault:before {
+    font-style: italic;
+    content: "No default";
 }

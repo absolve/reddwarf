@@ -27,77 +27,88 @@ import com.sleepycat.db.Transaction;
 import com.sleepycat.db.TransactionConfig;
 import com.sun.sgs.service.store.db.DbTransaction;
 
-/** Provides a transaction implementation using Berkeley DB. */
+/**
+ * Provides a transaction implementation using Berkeley DB.
+ */
 class BdbTransaction implements DbTransaction {
 
-    /** The Berkeley DB transaction. */
+    /**
+     * The Berkeley DB transaction.
+     */
     private final Transaction txn;
 
     /**
      * Creates an instance of this class.
      *
-     * @param	env the Berkeley DB environment
-     * @param	timeout the number of milliseconds the transaction should be
-     *		allowed to run
-     * @param	txnConfig the Berkeley DB transaction configuration, or {@code
-     *		null} for the default
-     * @throws	IllegalArgumentException if timeout is less than {@code 1}
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @param    env the Berkeley DB environment
+     * @param    timeout the number of milliseconds the transaction should be
+     * allowed to run
+     * @param    txnConfig the Berkeley DB transaction configuration, or {@code
+     * null} for the default
+     * @throws IllegalArgumentException if timeout is less than {@code 1}
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     BdbTransaction(
-	Environment env, long timeout, TransactionConfig txnConfig)
-    {
-	if (timeout <= 0) {
-	    throw new IllegalArgumentException(
-		"Timeout must be greater than 0");
-	}
-	try {
-	    txn = env.beginTransaction(null, txnConfig);
-	    /* Avoid overflow -- BDB treats 0 as unlimited */
-	    long timeoutMicros =
-		(timeout < (Long.MAX_VALUE / 1000)) ? 1000 * timeout : 0;
-	    txn.setTxnTimeout(timeoutMicros);
-	} catch (DatabaseException e) {
-	    throw BdbEnvironment.convertException(e, false);
-	}
+            Environment env, long timeout, TransactionConfig txnConfig) {
+        if (timeout <= 0) {
+            throw new IllegalArgumentException(
+                    "Timeout must be greater than 0");
+        }
+        try {
+            txn = env.beginTransaction(null, txnConfig);
+            /* Avoid overflow -- BDB treats 0 as unlimited */
+            long timeoutMicros =
+                    (timeout < (Long.MAX_VALUE / 1000)) ? 1000 * timeout : 0;
+            txn.setTxnTimeout(timeoutMicros);
+        } catch (DatabaseException e) {
+            throw BdbEnvironment.convertException(e, false);
+        }
     }
 
-    /** Converts the argument to a Berkeley DB transaction. */
+    /**
+     * Converts the argument to a Berkeley DB transaction.
+     */
     static Transaction getBdbTxn(DbTransaction dbTxn) {
-	if (dbTxn instanceof BdbTransaction) {
-	    return ((BdbTransaction) dbTxn).txn;
-	} else {
-	    throw new IllegalArgumentException(
-		"Transaction must be an instance of BdbTransaction");
-	}
+        if (dbTxn instanceof BdbTransaction) {
+            return ((BdbTransaction) dbTxn).txn;
+        } else {
+            throw new IllegalArgumentException(
+                    "Transaction must be an instance of BdbTransaction");
+        }
     }
 
     /* -- Implement DbTransaction -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void prepare(byte[] gid) {
-	try {
-	    txn.prepare(gid);
-	} catch (DatabaseException e) {
-	    throw BdbEnvironment.convertException(e, false);
-	}
+        try {
+            txn.prepare(gid);
+        } catch (DatabaseException e) {
+            throw BdbEnvironment.convertException(e, false);
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void commit() {
-	try {
-	    txn.commit();
-	} catch (DatabaseException e) {
-	    throw BdbEnvironment.convertException(e, false);
-	}
+        try {
+            txn.commit();
+        } catch (DatabaseException e) {
+            throw BdbEnvironment.convertException(e, false);
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void abort() {
-	try {
-	    txn.abort();
-	} catch (DatabaseException e) {
-	    throw BdbEnvironment.convertException(e, false);
-	}
+        try {
+            txn.abort();
+        } catch (DatabaseException e) {
+            throw BdbEnvironment.convertException(e, false);
+        }
     }
 }

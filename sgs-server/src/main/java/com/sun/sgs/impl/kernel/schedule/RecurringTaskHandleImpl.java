@@ -21,9 +21,9 @@
 
 package com.sun.sgs.impl.kernel.schedule;
 
+import com.sun.sgs.kernel.RecurringTaskHandle;
 import com.sun.sgs.kernel.schedule.ScheduledTask;
 import com.sun.sgs.kernel.schedule.SchedulerQueue;
-import com.sun.sgs.kernel.RecurringTaskHandle;
 
 import java.util.TimerTask;
 
@@ -56,8 +56,7 @@ class RecurringTaskHandleImpl implements RecurringTaskHandle {
      *
      * @param queue the <code>SchedulerQueue</code> that is using
      *              this handle
-     * @param task the task for this handle
-     *
+     * @param task  the task for this handle
      * @throws IllegalArgumentException if the task is not recurring
      */
     public RecurringTaskHandleImpl(SchedulerQueue queue,
@@ -97,7 +96,7 @@ class RecurringTaskHandleImpl implements RecurringTaskHandle {
      * anything about the state of any associated <code>TimerTask</code>.
      *
      * @return <code>true</code> if this handle has been cancelled,
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     synchronized boolean isCancelled() {
         return cancelled;

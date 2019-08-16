@@ -30,13 +30,14 @@ import com.sun.sgs.app.TransactionException;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.service.TaskService;
 import com.sun.sgs.service.TransactionProxy;
+
 import java.util.Properties;
 
 /**
  * This interface is used to define a pluggable continuation policy for
  * {@link TaskService} implementations when the
  * {@link TaskService#shouldContinue()} method is called.
- *
+ * <p>
  * All implementations must define a constructor of the form
  * ({@link Properties}, {@link ComponentRegistry}, {@link TransactionProxy})
  */
@@ -48,9 +49,9 @@ public interface ContinuePolicy {
      * should only be called from a transactional context.
      *
      * @return {@code true} if the currently running task should do more work
-     *         if possible; otherwise {@code false}
+     * if possible; otherwise {@code false}
      * @throws TransactionException if the operation failed because of a
-     *	       problem with the current transaction
+     *                              problem with the current transaction
      * @see TaskManager#shouldContinue() TaskManager.shouldContinue()
      */
     boolean shouldContinue();

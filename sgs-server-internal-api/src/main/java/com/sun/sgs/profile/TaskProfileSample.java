@@ -34,9 +34,9 @@ package com.sun.sgs.profile;
  */
 public interface TaskProfileSample extends ProfileSample {
 
-    /** 
+    /**
      * {@inheritDoc}
-     * 
+     *
      * @throws IllegalStateException if this is called outside the scope
      *                               of a task run through the scheduler
      */

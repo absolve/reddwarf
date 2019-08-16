@@ -41,42 +41,47 @@ class ClientSessionServiceStats implements ClientSessionServiceMXBean {
     final ProfileOperation isRelocatingToLocalNodeOp;
 
     private final ClientSessionServiceImpl service;
-    
+
     ClientSessionServiceStats(ProfileCollector collector,
-                              ClientSessionServiceImpl service)
-    {
+                              ClientSessionServiceImpl service) {
         this.service = service;
-        ProfileConsumer consumer = 
-            collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX + 
-                                  "ClientSessionService");
+        ProfileConsumer consumer =
+                collector.getConsumer(ProfileCollectorImpl.CORE_CONSUMER_PREFIX +
+                        "ClientSessionService");
         ProfileLevel level = ProfileLevel.MAX;
         ProfileDataType type = ProfileDataType.TASK_AND_AGGREGATE;
-        
+
         addSessionStatusListenerOp =
-            consumer.createOperation("addSessionStatusListener", 
-                                     type, level);
+                consumer.createOperation("addSessionStatusListener",
+                        type, level);
         getSessionProtocolOp =
-            consumer.createOperation("getSessionProtocol", type, level);
+                consumer.createOperation("getSessionProtocol", type, level);
         isRelocatingToLocalNodeOp =
-            consumer.createOperation("isRelocatingToLocalNode", type, level);
+                consumer.createOperation("isRelocatingToLocalNode", type, level);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getAddSessionStatusListenerCalls() {
-        return ((AggregateProfileOperation) 
-                    addSessionStatusListenerOp).getCount();
+        return ((AggregateProfileOperation)
+                addSessionStatusListenerOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getGetSessionProtocolCalls() {
-        return ((AggregateProfileOperation) 
-                    getSessionProtocolOp).getCount();
+        return ((AggregateProfileOperation)
+                getSessionProtocolOp).getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getIsRelocatingToLocalNodeCalls() {
         return ((AggregateProfileOperation)
-		    isRelocatingToLocalNodeOp).getCount();
+                isRelocatingToLocalNodeOp).getCount();
     }
 
     @Override

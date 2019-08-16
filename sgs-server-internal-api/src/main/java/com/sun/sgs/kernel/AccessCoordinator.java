@@ -56,14 +56,13 @@ public interface AccessCoordinator {
      * conflict is managed for access to the reported objects, and
      * that a report of all accesses is available through profiling.
      *
-     * @param sourceName the name of the source of objects which may
-     *                   cause conflict on access
+     * @param sourceName   the name of the source of objects which may
+     *                     cause conflict on access
      * @param objectIdType the type of the identifier that will be used
      *                     to identify accessed objects
-     * @param <T> the type of the id object used to report accesses
-     *
+     * @param <T>          the type of the id object used to report accesses
      * @return an {@code AccessReporter} used to notify the system
-     *         of access to shared objects
+     * of access to shared objects
      */
     <T> AccessReporter<T> registerAccessSource(String sourceName,
                                                Class<T> objectIdType);
@@ -75,10 +74,9 @@ public interface AccessCoordinator {
      * for re-trying the failed transaction.
      *
      * @param txn a {@code Transaction} that failed due to conflict
-     *
      * @return the active {@code Transaction} that caused the provided
-     *         {@code Transaction} to fail due to conflict, or
-     *         {@code null} if there is no such active {@code Transaction}
+     * {@code Transaction} to fail due to conflict, or
+     * {@code null} if there is no such active {@code Transaction}
      */
     Transaction getConflictingTransaction(Transaction txn);
 

@@ -40,11 +40,11 @@ public interface BindingKeyedCollections {
      * Constructs an instance of a {@link BindingKeyedMap}
      * with the specified {@code keyPrefix}.
      *
-     * @param	<V> the type of the map's values
-     * @param	keyPrefix a key prefix
-     * @return	a {@code BindingKeyedMap} with the specified
-     *		{@code keyPrefix}
-     * @throws	IllegalArgumentException if {@code keyPrefix} is empty
+     * @param    <V> the type of the map's values
+     * @param    keyPrefix a key prefix
+     * @return a {@code BindingKeyedMap} with the specified
+     * {@code keyPrefix}
+     * @throws IllegalArgumentException if {@code keyPrefix} is empty
      */
     <V> BindingKeyedMap<V> newMap(String keyPrefix);
 
@@ -52,11 +52,11 @@ public interface BindingKeyedCollections {
      * Constructs an instance of a {@link BindingKeyedSet}
      * with the specified {@code keyPrefix}.
      *
-     * @param	<V> the type of the set's values
-     * @param	keyPrefix a key prefix
-     * @return	a {@code BindingKeyedSet} with the specified
-     *		{@code keyPrefix} 
-     * @throws	IllegalArgumentException if {@code keyPrefix} is empty
+     * @param    <V> the type of the set's values
+     * @param    keyPrefix a key prefix
+     * @return a {@code BindingKeyedSet} with the specified
+     * {@code keyPrefix}
+     * @throws IllegalArgumentException if {@code keyPrefix} is empty
      */
     <V> BindingKeyedSet<V> newSet(String keyPrefix);
 }

@@ -22,31 +22,16 @@
 package com.sun.sgs.impl.kernel;
 
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.profile.ProfileCollectorHandle;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.util.NamedThreadFactory;
-
-import com.sun.sgs.kernel.KernelRunnable;
-import com.sun.sgs.kernel.TaskQueue;
-import com.sun.sgs.kernel.RecurringTaskHandle;
-import com.sun.sgs.kernel.TaskReservation;
-import com.sun.sgs.kernel.TaskScheduler;
-
+import com.sun.sgs.kernel.*;
 
 import java.util.LinkedList;
 import java.util.Properties;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,11 +48,11 @@ import java.util.logging.Logger;
  * <dl style="margin-left: 1em">
  *
  * <dt> <i>Property:</i> <code><b>{@value #CONSUMER_THREADS_PROPERTY}
- *	</b></code> <br>
- *	<i>Default:</i> <code>{@value #DEFAULT_CONSUMER_THREADS}</code>
+ * </b></code> <br>
+ * <i>Default:</i> <code>{@value #DEFAULT_CONSUMER_THREADS}</code>
  *
  * <dd style="padding-top: .5em">The number of initial threads used to process
- *      non-transactional tasks.<p>
+ * non-transactional tasks.<p>
  * </dl>
  * FIXME: the profiling code needs a way to learn about the thread count
  * from this scheduler separately from the transaction pool. When this gets
@@ -77,15 +62,15 @@ final class TaskSchedulerImpl implements TaskScheduler {
 
     // logger for this class
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(TaskSchedulerImpl.
-                                           class.getName()));
+            new LoggerWrapper(Logger.getLogger(TaskSchedulerImpl.
+                    class.getName()));
 
     /**
      * The property used to define the default number of initial consumer
      * threads.
      */
     public static final String CONSUMER_THREADS_PROPERTY =
-        "com.sun.sgs.impl.kernel.task.threads";
+            "com.sun.sgs.impl.kernel.task.threads";
 
     /**
      * The default number of initial consumer threads.
@@ -110,16 +95,14 @@ final class TaskSchedulerImpl implements TaskScheduler {
     /**
      * Creates an instance of {@code TaskSchedulerImpl}.
      *
-     * @param properties the {@code Properties} for the system
+     * @param properties             the {@code Properties} for the system
      * @param profileCollectorHandle the {@code ProfileCollectorHandler} used to
-     *          manage collection of per-task profiling data
-     *
+     *                               manage collection of per-task profiling data
      * @throws Exception if there is any failure creating the scheduler
      */
     TaskSchedulerImpl(Properties properties,
-                      ProfileCollectorHandle profileCollectorHandle) 
-        throws Exception 
-    {
+                      ProfileCollectorHandle profileCollectorHandle)
+            throws Exception {
         logger.log(Level.CONFIG, "Creating TaskSchedulerImpl");
         if (properties == null) {
             throw new NullPointerException("Properties cannot be null");
@@ -131,8 +114,8 @@ final class TaskSchedulerImpl implements TaskScheduler {
         this.profileCollectorHandle = profileCollectorHandle;
 
         int requestedThreads =
-            Integer.parseInt(properties.getProperty(CONSUMER_THREADS_PROPERTY,
-                                                    DEFAULT_CONSUMER_THREADS));
+                Integer.parseInt(properties.getProperty(CONSUMER_THREADS_PROPERTY,
+                        DEFAULT_CONSUMER_THREADS));
 
         // NOTE: this is replicating previous behavior where there is a
         // fixed-size pool for running tasks, but in practice we may
@@ -142,8 +125,8 @@ final class TaskSchedulerImpl implements TaskScheduler {
                 requestedThreads, new NamedThreadFactory("TaskScheduler"));
 
         logger.log(Level.CONFIG,
-                   "Created TaskSchedulerImpl with properties:" +
-                   "\n  " + CONSUMER_THREADS_PROPERTY + "=" + requestedThreads);
+                "Created TaskSchedulerImpl with properties:" +
+                        "\n  " + CONSUMER_THREADS_PROPERTY + "=" + requestedThreads);
     }
 
     /**
@@ -164,7 +147,7 @@ final class TaskSchedulerImpl implements TaskScheduler {
      */
     public TaskReservation reserveTask(KernelRunnable task, Identity owner) {
         TaskDetail detail = new TaskDetail(task, owner,
-                                           System.currentTimeMillis());
+                System.currentTimeMillis());
         return new TaskReservationImpl(detail);
     }
 
@@ -172,8 +155,7 @@ final class TaskSchedulerImpl implements TaskScheduler {
      * {@inheritDoc}
      */
     public TaskReservation reserveTask(KernelRunnable task, Identity owner,
-                                       long startTime) 
-    {
+                                       long startTime) {
         return new TaskReservationImpl(new TaskDetail(task, owner, startTime));
     }
 
@@ -183,7 +165,7 @@ final class TaskSchedulerImpl implements TaskScheduler {
     public void scheduleTask(KernelRunnable task, Identity owner) {
         try {
             TaskDetail detail = new TaskDetail(task, owner,
-                                               System.currentTimeMillis());
+                    System.currentTimeMillis());
             executor.submit(new TaskRunner(detail));
             waitingSize.incrementAndGet();
         } catch (RejectedExecutionException ree) {
@@ -195,13 +177,12 @@ final class TaskSchedulerImpl implements TaskScheduler {
      * {@inheritDoc}
      */
     public void scheduleTask(KernelRunnable task, Identity owner,
-                             long startTime) 
-    {
+                             long startTime) {
         try {
             TaskDetail detail = new TaskDetail(task, owner, startTime);
             executor.schedule(new TaskRunner(detail),
-                              startTime - System.currentTimeMillis(),
-                              TimeUnit.MILLISECONDS);
+                    startTime - System.currentTimeMillis(),
+                    TimeUnit.MILLISECONDS);
             waitingSize.incrementAndGet();
         } catch (RejectedExecutionException ree) {
             throw new TaskRejectedException("Couldn't schedule task", ree);
@@ -214,14 +195,13 @@ final class TaskSchedulerImpl implements TaskScheduler {
     public RecurringTaskHandle scheduleRecurringTask(KernelRunnable task,
                                                      Identity owner,
                                                      long startTime,
-                                                     long period) 
-    {
+                                                     long period) {
         if (period <= 0) {
             throw new IllegalArgumentException("Illegal period: " + period);
         }
 
         return new RecurringTaskHandleImpl(new TaskDetail(task, owner,
-                                                          startTime, period));
+                startTime, period));
     }
 
     /**
@@ -240,7 +220,6 @@ final class TaskSchedulerImpl implements TaskScheduler {
 
     /**
      * Tells this scheduler to shutdown.
-     *
      */
     void shutdown() {
         synchronized (this) {
@@ -252,25 +231,35 @@ final class TaskSchedulerImpl implements TaskScheduler {
         }
     }
 
-    /** Private implementation of {@code TaskReservation}. */
+    /**
+     * Private implementation of {@code TaskReservation}.
+     */
     private class TaskReservationImpl implements TaskReservation {
         private final TaskDetail taskDetail;
         private boolean usedOrCancelled = false;
-        /** Creates an instance of {@code TaskReservationImpl}. */
+
+        /**
+         * Creates an instance of {@code TaskReservationImpl}.
+         */
         TaskReservationImpl(TaskDetail taskDetail) {
             this.taskDetail = taskDetail;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public synchronized void cancel() {
             if (usedOrCancelled) {
                 throw new IllegalStateException("This reservation cannot be " +
-                                                "cancelled");
+                        "cancelled");
             }
             usedOrCancelled = true;
         }
+
         /**
          * {@inheritDoc}
          * <p>
+         *
          * @throws TaskRejectedException if the system has become too
          *                               overloaded to honor this reservation
          */
@@ -278,7 +267,7 @@ final class TaskSchedulerImpl implements TaskScheduler {
             synchronized (this) {
                 if (usedOrCancelled) {
                     throw new IllegalStateException("This reservation cannot " +
-                                                    "be used");
+                            "be used");
                 }
                 usedOrCancelled = true;
             }
@@ -286,30 +275,38 @@ final class TaskSchedulerImpl implements TaskScheduler {
             try {
                 long delay = taskDetail.startTime - System.currentTimeMillis();
                 executor.schedule(new TaskRunner(taskDetail), delay,
-                                  TimeUnit.MILLISECONDS);
+                        TimeUnit.MILLISECONDS);
                 waitingSize.incrementAndGet();
             } catch (RejectedExecutionException ree) {
                 throw new TaskRejectedException("The system has run out of " +
-                                                "resources and cannot run " +
-                                                "the requested task", ree);
+                        "resources and cannot run " +
+                        "the requested task", ree);
             }
         }
     }
 
-    /** Private implementation of {@code RecurringTaskHandle}.  */
+    /**
+     * Private implementation of {@code RecurringTaskHandle}.
+     */
     private class RecurringTaskHandleImpl implements RecurringTaskHandle {
         private final TaskDetail taskDetail;
         private boolean isCancelled = false;
         private boolean isStarted = false;
         private volatile ScheduledFuture<?> future = null;
-        /** Creates an instance of {@code RecurringTaskHandleImpl}. */
+
+        /**
+         * Creates an instance of {@code RecurringTaskHandleImpl}.
+         */
         RecurringTaskHandleImpl(TaskDetail taskDetail) {
             if (isShutdown) {
                 throw new IllegalStateException("Scheduler is shutdown");
             }
             this.taskDetail = taskDetail;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void cancel() {
             synchronized (this) {
                 if (isCancelled) {
@@ -321,7 +318,10 @@ final class TaskSchedulerImpl implements TaskScheduler {
                 future.cancel(false);
             }
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void start() {
             synchronized (this) {
                 if (isCancelled) {
@@ -336,32 +336,39 @@ final class TaskSchedulerImpl implements TaskScheduler {
             long delay = taskDetail.startTime - System.currentTimeMillis();
             try {
                 future =
-                    executor.scheduleAtFixedRate(new TaskRunner(taskDetail),
-                                                 delay, taskDetail.period,
-                                                 TimeUnit.MILLISECONDS);
+                        executor.scheduleAtFixedRate(new TaskRunner(taskDetail),
+                                delay, taskDetail.period,
+                                TimeUnit.MILLISECONDS);
             } catch (RejectedExecutionException ree) {
                 throw new TaskRejectedException("The system has run out of " +
-                                                "resources and cannot start " +
-                                                "the requested task", ree);
+                        "resources and cannot start " +
+                        "the requested task", ree);
             }
         }
     }
 
-    /** Private class used to maintain task detail. */
+    /**
+     * Private class used to maintain task detail.
+     */
     private static class TaskDetail {
         final KernelRunnable task;
         final Identity owner;
         volatile long startTime;
         final long period;
         final TaskQueueImpl queue;
-        /** Creates an instance of {@code TaskDetail}. */
+
+        /**
+         * Creates an instance of {@code TaskDetail}.
+         */
         TaskDetail(KernelRunnable task, Identity owner, long startTime) {
             this(task, owner, startTime, 0);
         }
-        /** Creates an instance of {@code TaskDetail}. */
+
+        /**
+         * Creates an instance of {@code TaskDetail}.
+         */
         TaskDetail(KernelRunnable task, Identity owner, long startTime,
-                   long period) 
-        {
+                   long period) {
             if (task == null) {
                 throw new NullPointerException("Task cannot be null");
             }
@@ -375,7 +382,10 @@ final class TaskSchedulerImpl implements TaskScheduler {
             this.period = period;
             this.queue = null;
         }
-        /** Creates an instance of {@code TaskDetail} with dependency. */
+
+        /**
+         * Creates an instance of {@code TaskDetail} with dependency.
+         */
         TaskDetail(KernelRunnable task, Identity owner, TaskQueueImpl queue) {
             if (task == null) {
                 throw new NullPointerException("Task cannot be null");
@@ -393,7 +403,10 @@ final class TaskSchedulerImpl implements TaskScheduler {
             this.period = 0;
             this.queue = queue;
         }
-        /** Returns whether this task is recurring. */
+
+        /**
+         * Returns whether this task is recurring.
+         */
         boolean isRecurring() {
             return period != 0;
         }
@@ -405,18 +418,24 @@ final class TaskSchedulerImpl implements TaskScheduler {
      */
     private class TaskRunner implements Runnable {
         private final TaskDetail taskDetail;
-        /** Creates an instance of {@code TaskRunner} to run the task. */
+
+        /**
+         * Creates an instance of {@code TaskRunner} to run the task.
+         */
         TaskRunner(TaskDetail taskDetail) {
             this.taskDetail = taskDetail;
         }
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void run() {
             logger.log(Level.FINE, "Running a non-transactional task");
 
             int queueSize = (taskDetail.isRecurring() ? waitingSize.get() :
-                             waitingSize.decrementAndGet());
+                    waitingSize.decrementAndGet());
             profileCollectorHandle.startTask(taskDetail.task, taskDetail.owner,
-                                       taskDetail.startTime, queueSize);
+                    taskDetail.startTime, queueSize);
             if (taskDetail.isRecurring()) {
                 taskDetail.startTime += taskDetail.period;
             }
@@ -433,11 +452,11 @@ final class TaskSchedulerImpl implements TaskScheduler {
                 if (logger.isLoggable(Level.WARNING)) {
                     if (taskDetail.isRecurring()) {
                         logger.logThrow(Level.WARNING, e, "failed to run " +
-                                        "task {0}", taskDetail.task);
+                                "task {0}", taskDetail.task);
                     } else {
                         logger.logThrow(Level.WARNING, e, "failed to run " +
                                         "recurrence of task {0}",
-                                        taskDetail.task);
+                                taskDetail.task);
                     }
                 }
             } finally {
@@ -451,15 +470,20 @@ final class TaskSchedulerImpl implements TaskScheduler {
         }
     }
 
-    /** Private implementation of {@code TaskQueue}. */
+    /**
+     * Private implementation of {@code TaskQueue}.
+     */
     private final class TaskQueueImpl implements TaskQueue {
         private final LinkedList<TaskDetail> queue =
-            new LinkedList<TaskDetail>();
+                new LinkedList<TaskDetail>();
         private boolean inScheduler = false;
-        /** {@inheritDoc} */
+
+        /**
+         * {@inheritDoc}
+         */
         public void addTask(KernelRunnable task, Identity owner) {
             TaskDetail detail = new TaskDetail(task, owner, this);
-	    waitingSize.incrementAndGet();
+            waitingSize.incrementAndGet();
             synchronized (this) {
                 if (inScheduler) {
                     queue.offer(detail);
@@ -469,7 +493,10 @@ final class TaskSchedulerImpl implements TaskScheduler {
                 }
             }
         }
-        /** Private method to schedule the next task, if any. */
+
+        /**
+         * Private method to schedule the next task, if any.
+         */
         void scheduleNextTask() {
             synchronized (this) {
                 if (queue.isEmpty()) {

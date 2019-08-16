@@ -25,14 +25,14 @@
 
 package com.sun.sgs.nio.channels;
 
+import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
+
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetBoundException;
 import java.nio.channels.UnsupportedAddressTypeException;
 import java.util.concurrent.ExecutionException;
-
-import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
 
 /**
  * An asynchronous channel for stream-oriented listening sockets.
@@ -61,41 +61,41 @@ import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
  * {@link AsynchronousServerSocketChannel#setOption setOption} method.
  * Channels of this type support the following options:
  * <blockquote>
- *   <table>
- *     <tr>
- *       <th>Option Name</th>
- *       <th>Description</th>
- *     </tr>
- *     <tr>
- *       <td>{@link StandardSocketOption#SO_RCVBUF SO_RCVBUF}</td>
- *       <td>The size of the socket receive buffer</td>
- *     </tr>
- *     <tr>
- *       <td>{@link StandardSocketOption#SO_REUSEADDR SO_REUSEADDR}</td>
- *       <td>Re-use address</td>
- *     </tr>
- *   </table>
+ * <table>
+ * <tr>
+ * <th>Option Name</th>
+ * <th>Description</th>
+ * </tr>
+ * <tr>
+ * <td>{@link StandardSocketOption#SO_RCVBUF SO_RCVBUF}</td>
+ * <td>The size of the socket receive buffer</td>
+ * </tr>
+ * <tr>
+ * <td>{@link StandardSocketOption#SO_REUSEADDR SO_REUSEADDR}</td>
+ * <td>Re-use address</td>
+ * </tr>
+ * </table>
  * </blockquote>
  * and may support additional (implementation specific) options. The list of
  * options supported is obtained by invoking the
  * {@link NetworkChannel#options options} method.
- * 
+ *
  * <h4>Usage Example:</h4>
  * <pre>
- *   final AsynchronousServerSocketChannel listener = 
+ *   final AsynchronousServerSocketChannel listener =
  *       AsynchronousServerSocketChannel.open().bind(
  *           new InetSocketAddress(5000));
- * 
+ *
  *   listener.accept(
  *     new CompletionHandler&lt;AsynchronousSocketChannel,Void&gt;() {
- *       public void completed(IoFuture&lt;AsynchronousSocketChannel,Void&gt; 
- *                             result) 
+ *       public void completed(IoFuture&lt;AsynchronousSocketChannel,Void&gt;
+ *                             result)
  *       {
  *           try {
  *               AsynchronousSocketChannel ch = result.getNow();
  *               :
- *           } catch (ExecutionException x) { .. } 
- * 
+ *           } catch (ExecutionException x) { .. }
+ *
  *           // accept the next connection
  *           listener.accept(this);
  *       }
@@ -103,16 +103,14 @@ import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
  * </pre>
  */
 public abstract class AsynchronousServerSocketChannel
-    extends AsynchronousChannel implements NetworkChannel
-{
+        extends AsynchronousChannel implements NetworkChannel {
     /**
      * Initializes a new instance of this class.
-     * 
+     *
      * @param provider the asynchronous channel provider for this channel
      */
     protected AsynchronousServerSocketChannel(
-                                AsynchronousChannelProvider provider)
-    {
+            AsynchronousChannelProvider provider) {
         super(provider);
     }
 
@@ -126,18 +124,17 @@ public abstract class AsynchronousServerSocketChannel
      * group. If the group parameter is {@code null} then the resulting
      * channel is created by the system-wide default provider, and bound
      * to the <em>default group</em>.
-     * 
+     *
      * @param group the group to which the newly constructed channel should
-     *        be bound, or {@code null} for the default group
+     *              be bound, or {@code null} for the default group
      * @return a new asynchronous server socket channel
      * @throws ShutdownChannelGroupException the specified group is shutdown
-     * @throws IOException if an I/O error occurs
+     * @throws IOException                   if an I/O error occurs
      */
     public static AsynchronousServerSocketChannel open(
-        AsynchronousChannelGroup group) throws IOException
-    {
+            AsynchronousChannelGroup group) throws IOException {
         return AsynchronousChannelProvider.provider()
-            .openAsynchronousServerSocketChannel(group);
+                .openAsynchronousServerSocketChannel(group);
     }
 
     /**
@@ -149,7 +146,7 @@ public abstract class AsynchronousServerSocketChannel
      * <pre>
      *     open((AsynchronousChannelGroup)null);
      * </pre>
-     * 
+     *
      * @return a new asynchronous server socket channel
      * @throws IOException if an I/O error occurs
      */
@@ -168,19 +165,18 @@ public abstract class AsynchronousServerSocketChannel
      * </pre>
      *
      * @param local the local address to bind the socket, or {@code null}
-     *               to bind to an automatically assigned socket address
+     *              to bind to an automatically assigned socket address
      * @return this channel
-     * @throws AlreadyBoundException if the socket is already bound
+     * @throws AlreadyBoundException           if the socket is already bound
      * @throws UnsupportedAddressTypeException if the type of the given
-     *         address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and its checkListen method denies the operation
-     * @throws ClosedChannelException if the channel is closed
-     * @throws IOException if some other I/O error occurs
+     *                                         address is not supported
+     * @throws SecurityException               if a security manager has been installed
+     *                                         and its checkListen method denies the operation
+     * @throws ClosedChannelException          if the channel is closed
+     * @throws IOException                     if some other I/O error occurs
      */
     public final AsynchronousServerSocketChannel bind(SocketAddress local)
-        throws IOException
-    {
+            throws IOException {
         return bind(local, 0);
     }
 
@@ -202,26 +198,26 @@ public abstract class AsynchronousServerSocketChannel
      * the value 0, or a negative value, then an implementation specific
      * default is used.
      *
-     * @param local the local address to bind the socket, or {@code null}
-     *               to bind to an automatically assigned socket address
+     * @param local   the local address to bind the socket, or {@code null}
+     *                to bind to an automatically assigned socket address
      * @param backlog the maximum number number of pending connections
      * @return this channel
-     * @throws AlreadyBoundException if the socket is already bound
+     * @throws AlreadyBoundException           if the socket is already bound
      * @throws UnsupportedAddressTypeException if the type of the given
-     *         address is not supported
-     * @throws SecurityException if a security manager has been installed
-     *         and its checkListen method denies the operation
-     * @throws ClosedChannelException if the channel is closed
-     * @throws IOException if some other I/O error occurs
+     *                                         address is not supported
+     * @throws SecurityException               if a security manager has been installed
+     *                                         and its checkListen method denies the operation
+     * @throws ClosedChannelException          if the channel is closed
+     * @throws IOException                     if some other I/O error occurs
      */
     public abstract AsynchronousServerSocketChannel bind(SocketAddress local,
-        int backlog) throws IOException;
+                                                         int backlog) throws IOException;
 
     /**
      * {@inheritDoc}
      */
     public abstract AsynchronousServerSocketChannel setOption(
-        SocketOption name, Object value) throws IOException;
+            SocketOption name, Object value) throws IOException;
 
     /**
      * Accepts a connection.
@@ -243,22 +239,22 @@ public abstract class AsynchronousServerSocketChannel
      * that are restricted by the calling context of this method. If the
      * permission check fails then the operation completes by throwing
      * {@link ExecutionException} with cause {@link SecurityException}.
-     * 
-     * @param <A> the attachment type
+     *
+     * @param <A>        the attachment type
      * @param attachment the object to {@link IoFuture#attach attach} to the
      *                   returned {@code IoFuture} object; can be {@code null}
-     * @param handler the handler for consuming the result; can be
-     *                {@code null}
+     * @param handler    the handler for consuming the result; can be
+     *                   {@code null}
      * @return an {@code IoFuture} object representing the pending result
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws AcceptPendingException if an accept operation is already in
-     *         progress on this channel
-     * @throws NotYetBoundException if this channel's socket has not yet
-     *         been bound
+     * @throws AcceptPendingException             if an accept operation is already in
+     *                                            progress on this channel
+     * @throws NotYetBoundException               if this channel's socket has not yet
+     *                                            been bound
      */
     public abstract <A> IoFuture<AsynchronousSocketChannel, A> accept(
-        A attachment,
-        CompletionHandler<AsynchronousSocketChannel, ? super A> handler);
+            A attachment,
+            CompletionHandler<AsynchronousSocketChannel, ? super A> handler);
 
     /**
      * Accepts a connection.
@@ -274,25 +270,22 @@ public abstract class AsynchronousServerSocketChannel
      * <pre>
      *     accept((Object)null, handler);
      * </pre>
-     * 
+     * <p>
      * When a new connection is accepted then the resulting
      * {@code AsynchronousSocketChannel} will be bound to the same
      * {@link AsynchronousChannelGroup} as this channel.
-     * 
-     * @param <A> the attachment type
+     *
+     * @param <A>     the attachment type
      * @param handler the handler for consuming the result; can be {@code null}
-     * 
      * @return an {@code IoFuture} object representing the pending result
-     * 
      * @throws ClosedAsynchronousChannelException if this channel is closed
-     * @throws AcceptPendingException if an accept operation is already in
-     *         progress on this channel
-     * @throws NotYetBoundException if this channel's socket has not yet
-     *         been bound
+     * @throws AcceptPendingException             if an accept operation is already in
+     *                                            progress on this channel
+     * @throws NotYetBoundException               if this channel's socket has not yet
+     *                                            been bound
      */
     public final <A> IoFuture<AsynchronousSocketChannel, A> accept(
-        CompletionHandler<AsynchronousSocketChannel, ? super A> handler)
-    {
+            CompletionHandler<AsynchronousSocketChannel, ? super A> handler) {
         return accept(null, handler);
     }
 
@@ -302,9 +295,9 @@ public abstract class AsynchronousServerSocketChannel
      * The result of this method is a <em>snapshot</em> of the channel
      * state. It may be invalid when the caller goes to examine the result
      * and should not be used for the purpose of coordination.
-     * 
+     *
      * @return {@code true} if, and only if, an accept is pending for this
-     *         this channel but has not yet completed.
+     * this channel but has not yet completed.
      */
     public abstract boolean isAcceptPending();
 }

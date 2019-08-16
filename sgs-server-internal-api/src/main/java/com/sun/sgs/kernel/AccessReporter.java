@@ -27,7 +27,6 @@ package com.sun.sgs.kernel;
 
 import com.sun.sgs.app.TransactionAbortedException;
 import com.sun.sgs.app.TransactionNotActiveException;
-
 import com.sun.sgs.service.Transaction;
 
 
@@ -65,11 +64,17 @@ import com.sun.sgs.service.Transaction;
  */
 public interface AccessReporter<T> {
 
-    /** The type of access requested. */
+    /**
+     * The type of access requested.
+     */
     enum AccessType {
-        /** The object is being accessed, but not modified. */
+        /**
+         * The object is being accessed, but not modified.
+         */
         READ,
-        /** The object is being modified. */
+        /**
+         * The object is being modified.
+         */
         WRITE
     }
 
@@ -79,11 +84,10 @@ public interface AccessReporter<T> {
      * and may be the cause of conflict.
      *
      * @param objId an identifier for the object being accessed
-     * @param type the {@code AccessType} being requested
-     *
+     * @param type  the {@code AccessType} being requested
      * @throws TransactionNotActiveException if not called in the context
      *                                       of an active transaction
-     * @throws TransactionAbortedException if access failed due to a conflict 
+     * @throws TransactionAbortedException   if access failed due to a conflict
      */
     void reportObjectAccess(T objId, AccessType type);
 
@@ -92,15 +96,14 @@ public interface AccessReporter<T> {
      * the context of the provided transaction. The requested object is
      * shared, and may be the cause of conflict.
      *
-     * @param txn the transaction in which the provided {@code objId}
-     *            was accessed
+     * @param txn   the transaction in which the provided {@code objId}
+     *              was accessed
      * @param objId an identifier for the object being accessed
-     * @param type the {@code AccessType} being requested
-     *
-     * @throws IllegalArgumentException if the provided transaction is invalid,
-     *                                  has already committed, or is otherwise
-     *                                  unknown to the {@code AccessCoordinator}
-     * @throws TransactionAbortedException if access failed due to a conflict 
+     * @param type  the {@code AccessType} being requested
+     * @throws IllegalArgumentException    if the provided transaction is invalid,
+     *                                     has already committed, or is otherwise
+     *                                     unknown to the {@code AccessCoordinator}
+     * @throws TransactionAbortedException if access failed due to a conflict
      */
     void reportObjectAccess(Transaction txn, T objId, AccessType type);
 
@@ -111,14 +114,13 @@ public interface AccessReporter<T> {
      * of conflict. See {@code setObjectDescription} for more details about
      * {@code description}.
      *
-     * @param objId an identifier for the object being accessed
-     * @param type the {@code AccessType} being requested
+     * @param objId       an identifier for the object being accessed
+     * @param type        the {@code AccessType} being requested
      * @param description an arbitrary object that contains a
      *                    description of the object being accessed
-     *
      * @throws TransactionNotActiveException if not called in the context
      *                                       of an active transaction
-     * @throws TransactionAbortedException if access failed due to a conflict 
+     * @throws TransactionAbortedException   if access failed due to a conflict
      */
     void reportObjectAccess(T objId, AccessType type, Object description);
 
@@ -129,20 +131,19 @@ public interface AccessReporter<T> {
      * of conflict. See {@code setObjectDescription} for more details about
      * {@code description}.
      *
-     * @param txn the transaction in which the provided {@code objId}
-     *        was accessed
-     * @param objId an identifier for the object being accessed
-     * @param type the {@code AccessType} being requested
+     * @param txn         the transaction in which the provided {@code objId}
+     *                    was accessed
+     * @param objId       an identifier for the object being accessed
+     * @param type        the {@code AccessType} being requested
      * @param description an arbitrary object that contains a
      *                    description of the object being accessed
-     *
-     * @throws IllegalArgumentException if the provided transaction is invalid,
-     *                                  has already committed, or is otherwise
-     *                                  unknown to the {@code AccessCoordinator}
-     * @throws TransactionAbortedException if access failed due to a conflict 
+     * @throws IllegalArgumentException    if the provided transaction is invalid,
+     *                                     has already committed, or is otherwise
+     *                                     unknown to the {@code AccessCoordinator}
+     * @throws TransactionAbortedException if access failed due to a conflict
      */
-    void reportObjectAccess(Transaction txn, T objId, AccessType type, 
-			    Object description);
+    void reportObjectAccess(Transaction txn, T objId, AccessType type,
+                            Object description);
 
     /**
      * In the current transaction, associates the given object with
@@ -166,10 +167,9 @@ public interface AccessReporter<T> {
      * or if the provided description is {@code null}, then no change is
      * made to the description of the object.
      *
-     * @param objId the identifier for the associated object
+     * @param objId       the identifier for the associated object
      * @param description an arbitrary {@code Object} that contains a
-     *        description of the objId being accessed
-     *
+     *                    description of the objId being accessed
      * @throws TransactionNotActiveException if not called in the context
      *                                       of an active transaction
      */
@@ -197,12 +197,11 @@ public interface AccessReporter<T> {
      * or if the provided description is {@code null}, then no change is
      * made to the description of the object.
      *
-     * @param txn the transaction in which the provided {@code objId}
-     *        was accessed
-     * @param objId the identifier for the associated object
+     * @param txn         the transaction in which the provided {@code objId}
+     *                    was accessed
+     * @param objId       the identifier for the associated object
      * @param description an arbitrary {@code Object} that contains a
-     *        description of the objId being accessed
-     *
+     *                    description of the objId being accessed
      * @throws IllegalArgumentException if the provided transaction is invalid,
      *                                  has already committed, or is otherwise
      *                                  unknown to the {@code AccessCoordinator}

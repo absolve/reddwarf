@@ -25,10 +25,11 @@ import com.sun.sgs.impl.service.data.store.DataStoreImpl;
 import com.sun.sgs.impl.service.data.store.db.bdb.BdbEnvironment;
 import com.sun.sgs.impl.service.data.store.db.je.JeEnvironment;
 import com.sun.sgs.service.store.DataStore;
-import java.io.File;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
 
 /**
  * Tests the isolation that {@link DataStoreImpl} enforces between
@@ -39,56 +40,64 @@ import org.junit.runner.RunWith;
 @RunWith(JeOnlyFilteredNameRunner.class)
 public class TestDataStoreImplTxnIsolation extends BasicTxnIsolationTest {
 
-    /** The name of the DataStoreImpl class. */
+    /**
+     * The name of the DataStoreImpl class.
+     */
     private static final String DataStoreImplClassName =
-	DataStoreImpl.class.getName();
+            DataStoreImpl.class.getName();
 
-    /** The directory used for the database shared across multiple tests. */
+    /**
+     * The directory used for the database shared across multiple tests.
+     */
     private static final String dbDirectory =
-	System.getProperty("java.io.tmpdir") + File.separator +
-	"TestDataStoreImplTxnIsolation.db";
+            System.getProperty("java.io.tmpdir") + File.separator +
+                    "TestDataStoreImplTxnIsolation.db";
 
     @BeforeClass
     public static void beforeClass() {
-	/* Clean the database directory */
-	cleanDirectory(dbDirectory);
-	/* Add properties specific to DataStoreImpl */
-	props.setProperty(DataStoreImplClassName + ".directory", dbDirectory);
-	props.setProperty(BdbEnvironment.LOCK_TIMEOUT_PROPERTY,
-			  String.valueOf(timeoutSuccess));
-	props.setProperty(JeEnvironment.LOCK_TIMEOUT_PROPERTY,
-			  String.valueOf(timeoutSuccess));
+        /* Clean the database directory */
+        cleanDirectory(dbDirectory);
+        /* Add properties specific to DataStoreImpl */
+        props.setProperty(DataStoreImplClassName + ".directory", dbDirectory);
+        props.setProperty(BdbEnvironment.LOCK_TIMEOUT_PROPERTY,
+                String.valueOf(timeoutSuccess));
+        props.setProperty(JeEnvironment.LOCK_TIMEOUT_PROPERTY,
+                String.valueOf(timeoutSuccess));
     }
 
-    /** Creates a {@link DataStoreImpl}. */
+    /**
+     * Creates a {@link DataStoreImpl}.
+     */
     protected DataStore createDataStore() {
-	return new DataStoreImpl(props, env.systemRegistry, env.txnProxy);
+        return new DataStoreImpl(props, env.systemRegistry, env.txnProxy);
     }
 
-    /** Insures an empty version of the directory exists. */
+    /**
+     * Insures an empty version of the directory exists.
+     */
     private static void cleanDirectory(String directory) {
-	File dir = new File(directory);
-	if (dir.exists()) {
-	    for (File f : dir.listFiles()) {
-		if (!f.delete()) {
-		    throw new RuntimeException("Failed to delete file: " + f);
-		}
-	    }
-	    if (!dir.delete()) {
-		throw new RuntimeException(
-		    "Failed to delete directory: " + dir);
-	    }
-	}
-	if (!dir.mkdir()) {
-	    throw new RuntimeException(
-		"Failed to create directory: " + dir);
-	}
+        File dir = new File(directory);
+        if (dir.exists()) {
+            for (File f : dir.listFiles()) {
+                if (!f.delete()) {
+                    throw new RuntimeException("Failed to delete file: " + f);
+                }
+            }
+            if (!dir.delete()) {
+                throw new RuntimeException(
+                        "Failed to delete directory: " + dir);
+            }
+        }
+        if (!dir.mkdir()) {
+            throw new RuntimeException(
+                    "Failed to create directory: " + dir);
+        }
     }
 
     /* -- Tests -- */
 
     /* -- Test name access -- */
-    
+
     /*
      * From testing, it appears that BDB JE performs the following locking
      * differently from AbstractDataStore:
@@ -101,38 +110,41 @@ public class TestDataStoreImplTxnIsolation extends BasicTxnIsolationTest {
      * nextBoundName			READ	READ
      */
 
-    @Override @Test
+    @Override
+    @Test
     public void testSetBindingExistingReadNext() throws Exception {
-	store.setBinding(txn, "a", 100);
-	newTransaction();
-	getBindingNotFound("b");
-	Runner runner = new Runner(new SetBinding("a", 200));
-	runner.assertBlocked();
-	commitTransaction();
-	runner.getResult();
-	runner.setAction(new GetBinding("a"));
-	assertEquals(Long.valueOf(200), runner.getResult());
-    }
-    
-    @Override @Test
-    public void testRemoveBindingNotFoundReadNext() throws Exception {
-	store.setBinding(txn, "b", 200);
-	newTransaction();
-	store.getBinding(txn, "b");
-	Runner runner = new Runner(new RemoveBinding("a"));
-	runner.assertBlocked();
-	commitTransaction();
-	assertFalse((Boolean) runner.getResult());
+        store.setBinding(txn, "a", 100);
+        newTransaction();
+        getBindingNotFound("b");
+        Runner runner = new Runner(new SetBinding("a", 200));
+        runner.assertBlocked();
+        commitTransaction();
+        runner.getResult();
+        runner.setAction(new GetBinding("a"));
+        assertEquals(Long.valueOf(200), runner.getResult());
     }
 
-    @Override @Test
+    @Override
+    @Test
+    public void testRemoveBindingNotFoundReadNext() throws Exception {
+        store.setBinding(txn, "b", 200);
+        newTransaction();
+        store.getBinding(txn, "b");
+        Runner runner = new Runner(new RemoveBinding("a"));
+        runner.assertBlocked();
+        commitTransaction();
+        assertFalse((Boolean) runner.getResult());
+    }
+
+    @Override
+    @Test
     public void testNextBoundNameWrite() throws Exception {
-	store.setBinding(txn, "a", 100);
-	newTransaction();
-	store.setBinding(txn, "a", 200);
-	Runner runner = new Runner(new NextBoundName("a"));
-	runner.assertBlocked();
-	commitTransaction();
-	assertSame(null, runner.getResult());
+        store.setBinding(txn, "a", 100);
+        newTransaction();
+        store.setBinding(txn, "a", 200);
+        Runner runner = new Runner(new NextBoundName("a"));
+        runner.assertBlocked();
+        commitTransaction();
+        assertSame(null, runner.getResult());
     }
 }

@@ -22,11 +22,12 @@
 package com.sun.sgs.impl.service.nodemap.affinity.dgb;
 
 import com.sun.sgs.auth.Identity;
+
 import java.io.IOException;
 import java.rmi.Remote;
 
 /**
- *  The server interface for the distributed graph builder.
+ * The server interface for the distributed graph builder.
  */
 public interface DistGraphBuilderServer extends Remote {
     /**

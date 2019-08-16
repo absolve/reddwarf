@@ -1,80 +1,80 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.reddwarfserver.server</groupId>
-    <artifactId>sgs-server-parent</artifactId>
-    <version>0.10.3-SNAPSHOT</version>
-  </parent>
+    <parent>
+        <groupId>org.reddwarfserver.server</groupId>
+        <artifactId>sgs-server-parent</artifactId>
+        <version>0.10.3-SNAPSHOT</version>
+    </parent>
 
-  <artifactId>sgs-server-internal-api</artifactId>
-  <name>RedDwarf Server Internal API</name>
-  <packaging>jar</packaging>
-  <description>
-    The sgs-server-internal-api package produces a jar artifact which
-    includes only the classes intended to be exposed for
-    developing RedDwarf services, custom protocols and transports,
-    authenticators, and other custom internal components.
-  </description>
+    <artifactId>sgs-server-internal-api</artifactId>
+    <name>RedDwarf Server Internal API</name>
+    <packaging>jar</packaging>
+    <description>
+        The sgs-server-internal-api package produces a jar artifact which
+        includes only the classes intended to be exposed for
+        developing RedDwarf services, custom protocols and transports,
+        authenticators, and other custom internal components.
+    </description>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.reddwarfserver.server</groupId>
-      <artifactId>sgs-server-api</artifactId>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.reddwarfserver.server</groupId>
+            <artifactId>sgs-server-api</artifactId>
+        </dependency>
+    </dependencies>
 
-  <build>
-    <plugins>
+    <build>
+        <plugins>
 
-      <!-- Always attach a sources jar (with the assembly plugin)
-	   Normally the maven-source-plugin should be used for this.
-	   However, that plugin currently does not attach classifier
-	   artifacts that are consumable by other modules in the reactor
-	   (i.e. the javadoc module).  Using this as a workaround -->
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-assembly-plugin</artifactId>
-	<executions>
-	  <execution>
-	    <id>attach-sources</id>
-	    <phase>package</phase>
-	    <goals>
-              <goal>attached</goal>
-	    </goals>
-	    <configuration>
-	      <descriptors>
-		<descriptor>src/main/assembly/sources.xml</descriptor>
-              </descriptors>
-	      <attach>true</attach>
-	    </configuration>
-	  </execution>
-	</executions>
-      </plugin>
+            <!-- Always attach a sources jar (with the assembly plugin)
+             Normally the maven-source-plugin should be used for this.
+             However, that plugin currently does not attach classifier
+             artifacts that are consumable by other modules in the reactor
+             (i.e. the javadoc module).  Using this as a workaround -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attached</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/sources.xml</descriptor>
+                            </descriptors>
+                            <attach>true</attach>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-      <!-- Activate the resource bundle plugin to include the license
-	   file in the jar -->
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-remote-resources-plugin</artifactId>
-	<executions>
-	  <execution>
-	    <id>include-gpl-classpath-license</id>
-	    <phase>generate-resources</phase>
-	  </execution>
-	</executions>
-      </plugin>
+            <!-- Activate the resource bundle plugin to include the license
+             file in the jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>include-gpl-classpath-license</id>
+                        <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
 
-    </plugins>
-  </build>
+        </plugins>
+    </build>
 
-  <properties>
-    <findbugs-exclude.filter>
-      ${basedir}/src/main/etc/findbugs-exclude.xml
-    </findbugs-exclude.filter>
-  </properties>
+    <properties>
+        <findbugs-exclude.filter>
+            ${basedir}/src/main/etc/findbugs-exclude.xml
+        </findbugs-exclude.filter>
+    </properties>
 
 </project>

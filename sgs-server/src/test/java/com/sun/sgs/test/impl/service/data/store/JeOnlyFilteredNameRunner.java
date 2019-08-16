@@ -32,30 +32,32 @@ import org.junit.runner.notification.RunNotifier;
  */
 public class JeOnlyFilteredNameRunner extends FilteredNameRunner {
 
-    /** Whether BDB Java edition is in use. */
+    /**
+     * Whether BDB Java edition is in use.
+     */
     private boolean usingJe;
 
     /**
      * Creates an instance for running tests in the given class.
      *
-     * @param	c the class which needs its tests run
-     * @throws	Exception if an error occurs initializing the runner
+     * @param    c the class which needs its tests run
+     * @throws Exception if an error occurs initializing the runner
      */
     public JeOnlyFilteredNameRunner(Class<?> c) throws Exception {
-	super(c);
-	EnvironmentType env =
-	    UtilDataStoreDb.getEnvironmentType(System.getProperties());
-	usingJe = (env == EnvironmentType.JE);
+        super(c);
+        EnvironmentType env =
+                UtilDataStoreDb.getEnvironmentType(System.getProperties());
+        usingJe = (env == EnvironmentType.JE);
     }
 
     /**
      * {@inheritDoc}
-     * 
+     * <p>
      * Skips running the tests if BDB Java edition is not in use.
      */
     public void run(RunNotifier runNotifier) {
-	if (usingJe) {
-	    super.run(runNotifier);
-	}
+        if (usingJe) {
+            super.run(runNotifier);
+        }
     }
 }	

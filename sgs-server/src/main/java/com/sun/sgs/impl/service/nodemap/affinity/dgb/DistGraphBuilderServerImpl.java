@@ -22,19 +22,8 @@
 package com.sun.sgs.impl.service.nodemap.affinity.dgb;
 
 import com.sun.sgs.auth.Identity;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
-import com.sun.sgs.impl.service.nodemap.affinity.LPAAffinityGroupFinder;
-import
-   com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderFailedException;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupFinderStats;
-import com.sun.sgs.impl.service.nodemap.affinity.RelocatingAffinityGroup;
-import
-   com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
-import
-    com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilderStats;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
-import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
+import com.sun.sgs.impl.service.nodemap.affinity.*;
+import com.sun.sgs.impl.service.nodemap.affinity.graph.*;
 import com.sun.sgs.impl.service.nodemap.affinity.single.SingleGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.single.SingleLabelPropagation;
 import com.sun.sgs.impl.util.AbstractKernelRunnable;
@@ -50,22 +39,18 @@ import com.sun.sgs.service.NodeMappingService;
 import com.sun.sgs.service.TransactionProxy;
 import com.sun.sgs.service.UnknownIdentityException;
 import edu.uci.ics.jung.graph.UndirectedGraph;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
+
 import javax.management.JMException;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * The server side of a distributed graph builder for label propagation.
- *
+ * <p>
  * It builds a single graph representing all information for the entire
  * system using the single node graph builder, and uses a single node label
  * propagation implementation to process the graph.
- *
+ * <p>
  * This LPA implementation is expected to be useful for simple multi-node
  * testing.  It may have scalability problems due to the amount of data
  * being sent from each node, and the size of the affinity graph and
@@ -73,82 +58,100 @@ import javax.management.JMException;
  * of the system.
  */
 public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
-    implements DistGraphBuilderServer, AffinityGraphBuilder,
-               LPAAffinityGroupFinder
-{
-    /** The property name for the server port. */
+        implements DistGraphBuilderServer, AffinityGraphBuilder,
+        LPAAffinityGroupFinder {
+    /**
+     * The property name for the server port.
+     */
     public static final String SERVER_PORT_PROPERTY =
             PROP_BASE + ".server.port";
 
-    /** The default value of the server port. */
+    /**
+     * The default value of the server port.
+     */
     public static final int DEFAULT_SERVER_PORT = 44537;
 
-    /** The name we export ourselves under. */
-    public static final String SERVER_EXPORT_NAME = 
+    /**
+     * The name we export ourselves under.
+     */
+    public static final String SERVER_EXPORT_NAME =
             "DistributedGraphBuilderServer";
 
-    /** The exporter for this server. */
+    /**
+     * The exporter for this server.
+     */
     private final Exporter<DistGraphBuilderServer> exporter;
 
-    /** Our backing builder. */
+    /**
+     * Our backing builder.
+     */
     private final SingleGraphBuilder builder;
 
-    /** Our label propagation algorithm. */
+    /**
+     * Our label propagation algorithm.
+     */
     private final SingleLabelPropagation lpa;
 
-    /** The transaction scheduler. */
+    /**
+     * The transaction scheduler.
+     */
     private final TransactionScheduler transactionScheduler;
 
-    /** The task owner. */
+    /**
+     * The task owner.
+     */
     private final Identity taskOwner;
 
-    /** Our transaction proxy. */
+    /**
+     * Our transaction proxy.
+     */
     private final TransactionProxy txnProxy;
 
-    /** Our JMX exposed information.  The group finder stats is held
+    /**
+     * Our JMX exposed information.  The group finder stats is held
      * in {@code lpa}.
      */
     private final AffinityGraphBuilderStats builderStats;
 
     /**
      * Creates a distributed graph builder server.
+     *
      * @param systemRegistry the registry of available system components
-     * @param txnProxy the transaction proxy
-     * @param properties  application properties
-     * @param nodeId the core server node id
+     * @param txnProxy       the transaction proxy
+     * @param properties     application properties
+     * @param nodeId         the core server node id
      * @throws Exception if an error occurs
      */
     DistGraphBuilderServerImpl(ComponentRegistry systemRegistry,
                                TransactionProxy txnProxy,
                                Properties properties,
                                long nodeId)
-            throws Exception
-    {
+            throws Exception {
         super(properties);
         transactionScheduler =
-	    systemRegistry.getComponent(TransactionScheduler.class);
-	this.txnProxy = txnProxy;
-	taskOwner = txnProxy.getCurrentOwner();
+                systemRegistry.getComponent(TransactionScheduler.class);
+        this.txnProxy = txnProxy;
+        taskOwner = txnProxy.getCurrentOwner();
 
         ProfileCollector col =
                 systemRegistry.getComponent(ProfileCollector.class);
         // Create our backing graph builder.  We wrap this object so we
         // can return a different type from findAffinityGroups.
         builder = new SingleGraphBuilder(properties, systemRegistry,
-                                         txnProxy, false);
- 
+                txnProxy, false);
+
         // Create our group finder and graph builder JMX MBeans
         AffinityGroupFinderStats stats =
                 new AffinityGroupFinderStats(this, col, -1);
         builderStats = new AffinityGraphBuilderStats(col,
-                                                     builder.getAffinityGraph(),
-                                                     periodCount, snapshot);
+                builder.getAffinityGraph(),
+                periodCount, snapshot);
         // We must set the stats before exporting ourself!
         builder.setStats(builderStats);
         try {
             col.registerMBean(stats, AffinityGroupFinderMXBean.MXBEAN_NAME);
             col.registerMBean(builderStats,
-                                     AffinityGraphBuilderMXBean.MXBEAN_NAME);
+                    AffinityGraphBuilderMXBean.MXBEAN_NAME);
         } catch (JMException e) {
             // Continue on if we couldn't register this bean, although
             // it's probably a very bad sign
@@ -161,13 +164,15 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
                 SERVER_PORT_PROPERTY, DEFAULT_SERVER_PORT, 0, 65535);
         // Export ourself.
         exporter =
-            new Exporter<DistGraphBuilderServer>(DistGraphBuilderServer.class);
+                new Exporter<DistGraphBuilderServer>(DistGraphBuilderServer.class);
         exporter.export(this, SERVER_EXPORT_NAME, requestedPort);
     }
 
     // Implement DistGraphBuilderServer
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void updateGraph(Identity owner, Object[] objIds) {
         checkForShutdownState();
         builder.updateGraph(owner, objIds);
@@ -175,7 +180,9 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
 
     // Implement LPAAffinityGraphBuilder
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void disable() {
         if (setDisabledState()) {
             // We don't tell our clients, so they will still be sending
@@ -189,14 +196,19 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void enable() {
         if (setEnabledState()) {
             builder.enable();
             lpa.enable();
         }
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         // This method is in both AffinityGraphBuilder and AffinityGroupFinder
         if (setShutdownState()) {
@@ -205,22 +217,30 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LPAAffinityGroupFinder getAffinityGroupFinder() {
         return this;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void updateGraph(Identity owner, AccessedObjectsDetail detail) {
         throw new UnsupportedOperationException("Unexpected direct update");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public UndirectedGraph<LabelVertex, WeightedEdge> getAffinityGraph() {
         return builder.getAffinityGraph();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LabelVertex getVertex(Identity id) {
         return builder.getVertex(id);
     }
@@ -230,7 +250,7 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
      *
      * @return the runnable which prunes the graph.
      * @throws UnsupportedOperationException if this builder does not support
-     *    graph pruning.
+     *                                       graph pruning.
      */
     public Runnable getPruneTask() {
         return builder.getPruneTask();
@@ -249,8 +269,7 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
      * find this LPA implementation is useful in deployed systems.
      */
     public NavigableSet<RelocatingAffinityGroup> findAffinityGroups()
-            throws AffinityGroupFinderFailedException
-    {
+            throws AffinityGroupFinderFailedException {
         checkForDisabledOrShutdownState();
 
         Set<RelocatingAffinityGroup> groups = lpa.findAffinityGroups();
@@ -273,7 +292,7 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
                 } catch (Exception e) {
                     // We don't know what the assignment is.
                     logger.log(Level.INFO,
-                               "Unknown node assignment for identity {0}", id);
+                            "Unknown node assignment for identity {0}", id);
                     idMap.put(id, Long.valueOf(-1));
                 }
             }
@@ -283,8 +302,9 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
     }
 
     /**
-     *  Run the given task synchronously, and transactionally, retrying
-     *  if the exception is of type {@code ExceptionRetryStatus}.
+     * Run the given task synchronously, and transactionally, retrying
+     * if the exception is of type {@code ExceptionRetryStatus}.
+     *
      * @param task the task
      */
     private void runTransactionally(KernelRunnable task) throws Exception {
@@ -296,21 +316,21 @@ public class DistGraphBuilderServerImpl extends AbstractAffinityGraphBuilder
      */
     private class GetNodeIdTask extends AbstractKernelRunnable {
 
-	private final Identity id;
-	private volatile long nodeId = -1;
+        private final Identity id;
+        private volatile long nodeId = -1;
 
-	GetNodeIdTask(Identity id) {
-	    super(null);
-	    this.id = id;
-	}
+        GetNodeIdTask(Identity id) {
+            super(null);
+            this.id = id;
+        }
 
-	public void run() throws Exception {
-	    nodeId = txnProxy.getService(NodeMappingService.class).
-                         getNode(id).getId();
-	}
+        public void run() throws Exception {
+            nodeId = txnProxy.getService(NodeMappingService.class).
+                    getNode(id).getId();
+        }
 
-	long getNodeId() {
-	    return nodeId;
-	}
+        long getNodeId() {
+            return nodeId;
+        }
     }
 }

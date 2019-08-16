@@ -67,10 +67,8 @@ public interface TransactionParticipant {
      * without failure.
      *
      * @param txn the <code>Transaction</code> object
-     *
      * @return true if this participant is read-only, false otherwise
-     *
-     * @throws Exception if there are any failures in preparing
+     * @throws Exception             if there are any failures in preparing
      * @throws IllegalStateException if this participant has already been
      *                               prepared, committed, or aborted, or
      *                               if this participant is not participating
@@ -83,7 +81,6 @@ public interface TransactionParticipant {
      * transaction.
      *
      * @param txn the <code>Transaction</code> object
-     *
      * @throws IllegalStateException if this participant was not previously
      *                               prepared, or if this participant has
      *                               already committed or aborted, or
@@ -94,11 +91,10 @@ public interface TransactionParticipant {
 
     /**
      * Tells the participant to both prepare and commit its state associated
-     * with the given transaction. 
+     * with the given transaction.
      *
      * @param txn the <code>Transaction</code> object
-     *
-     * @throws Exception if there are any failures in preparing
+     * @throws Exception             if there are any failures in preparing
      * @throws IllegalStateException if this participant has already been
      *                               prepared, committed, or aborted, or
      *                               if this participant is not participating
@@ -111,19 +107,18 @@ public interface TransactionParticipant {
      * transaction.
      *
      * @param txn the <code>Transaction</code> object
-     *
      * @throws IllegalStateException if this participant has already been
      *                               aborted or committed, or if this
      *                               participant is not participating in
      *                               the given transaction
      */
     void abort(Transaction txn);
-    
+
     /**
      * Returns the fully qualified type name of the participant.
      * If this participant is acting as a proxy for a {@code Service}, this
-     * will typically be the {@code Service}'s type name. 
-     * 
+     * will typically be the {@code Service}'s type name.
+     *
      * @return the name of the participant
      */
     String getTypeName();

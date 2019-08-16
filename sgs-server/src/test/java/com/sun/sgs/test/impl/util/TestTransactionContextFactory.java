@@ -30,13 +30,17 @@ import com.sun.sgs.tools.test.FilteredJUnit3TestRunner;
 import junit.framework.TestCase;
 import org.junit.runner.RunWith;
 
-/** Test the TransactionContextFactory class. */
+/**
+ * Test the TransactionContextFactory class.
+ */
 @RunWith(FilteredJUnit3TestRunner.class)
 public class TestTransactionContextFactory extends TestCase {
 
-    /** Creates an instance of this class. */
+    /**
+     * Creates an instance of this class.
+     */
     public TestTransactionContextFactory(String name) {
-	super(name);
+        super(name);
     }
 
     /* -- Tests -- */
@@ -46,34 +50,37 @@ public class TestTransactionContextFactory extends TestCase {
      * to fail to clear the thread context.
      */
     public void testIsPreparedFailsDuringCommit() throws Exception {
-	DummyTransactionProxy txnProxy = new DummyTransactionProxy();
-	TransactionContextFactory<TransactionContext> contextFactory =
-	    new TransactionContextFactory<TransactionContext>(txnProxy, 
-                                          "TestTransactionContextFactory") 
-            {
-	        protected TransactionContext createContext(Transaction txn) {
-		    return new TransactionContext(txn) {
-			public boolean isPrepared() {
-			    if (isPrepared) {
-				throw new RuntimeException(
-				    "isPrepared fails during commit");
-			    } else {
-				return false;
-			    }
-			}
-			public void abort(boolean retryable) { }
-			public void commit() { }
-		    };
-		}
-	    };
-	DummyTransaction txn = new DummyTransaction(
-	    DummyTransaction.UsePrepareAndCommit.NO);
-	txnProxy.setCurrentTransaction(txn);
-	contextFactory.joinTransaction();
-	txn.commit();
-	txn = new DummyTransaction();
-	txnProxy.setCurrentTransaction(txn);
-	contextFactory.joinTransaction();
-	txn.commit();
+        DummyTransactionProxy txnProxy = new DummyTransactionProxy();
+        TransactionContextFactory<TransactionContext> contextFactory =
+                new TransactionContextFactory<TransactionContext>(txnProxy,
+                        "TestTransactionContextFactory") {
+                    protected TransactionContext createContext(Transaction txn) {
+                        return new TransactionContext(txn) {
+                            public boolean isPrepared() {
+                                if (isPrepared) {
+                                    throw new RuntimeException(
+                                            "isPrepared fails during commit");
+                                } else {
+                                    return false;
+                                }
+                            }
+
+                            public void abort(boolean retryable) {
+                            }
+
+                            public void commit() {
+                            }
+                        };
+                    }
+                };
+        DummyTransaction txn = new DummyTransaction(
+                DummyTransaction.UsePrepareAndCommit.NO);
+        txnProxy.setCurrentTransaction(txn);
+        contextFactory.joinTransaction();
+        txn.commit();
+        txn = new DummyTransaction();
+        txnProxy.setCurrentTransaction(txn);
+        contextFactory.joinTransaction();
+        txn.commit();
     }
 }

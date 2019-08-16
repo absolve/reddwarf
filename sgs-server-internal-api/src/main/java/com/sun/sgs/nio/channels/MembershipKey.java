@@ -48,7 +48,7 @@ import java.net.NetworkInterface;
  * operation system supports source filtering, then the {@link #block} and
  * {@link #unblock} methods can be used to block or unblock multicast
  * packets from particular source addresses.
- * 
+ *
  * @see MulticastChannel
  */
 public abstract class MembershipKey {
@@ -66,9 +66,9 @@ public abstract class MembershipKey {
      * A multicast group membership is valid upon creation and remains valid
      * until the membership is dropped by invoking the {@link #drop} method,
      * or the channel is closed.
-     * 
+     *
      * @return {@code true} if this membership key is valid, {@code false}
-     *         otherwise
+     * otherwise
      */
     public abstract boolean isValid();
 
@@ -89,7 +89,7 @@ public abstract class MembershipKey {
      * If the multicast group membership is already invalid then invoking
      * this method has no effect. Once a multicast group membership is
      * invalid, it remains invalid forever.
-     * 
+     *
      * @throws IOException if an I/O error occurs
      */
     public abstract void drop() throws IOException;
@@ -104,39 +104,39 @@ public abstract class MembershipKey {
      * source address is blocked it may still be possible to receive
      * datagams from that source. This can arise when datagrams are waiting
      * to be received in the socket's receive buffer.
-     * 
+     *
      * @param source the source address to block
      * @return this membership key
-     * @throws IllegalArgumentException if the {@code source} parameter is
-     *         not a unicast address or is not the same address type as the
-     *         multicast group
-     * @throws IllegalStateException i this membership key is source
-     *         specific or is no longer valid
+     * @throws IllegalArgumentException      if the {@code source} parameter is
+     *                                       not a unicast address or is not the same address type as the
+     *                                       multicast group
+     * @throws IllegalStateException         i this membership key is source
+     *                                       specific or is no longer valid
      * @throws UnsupportedOperationException if the underlying operating
-     *         system does not support source filtering
-     * @throws IOException if an I/O error occurs
+     *                                       system does not support source filtering
+     * @throws IOException                   if an I/O error occurs
      */
     public abstract MembershipKey block(InetAddress source)
-        throws IOException;
+            throws IOException;
 
     /**
      * Unblock multicast packets from the given source address that was
      * previously blocked using the {@link #block} method.
-     * 
+     *
      * @param source a list of source addresses to unblock
      * @return this membership key
      * @throws IllegalStateException if the given source address is not
-     *         currently blocked or the membership key is no longer valid
-     * @throws IOException if an I/O error occurs
+     *                               currently blocked or the membership key is no longer valid
+     * @throws IOException           if an I/O error occurs
      */
     public abstract MembershipKey unblock(InetAddress source)
-        throws IOException;
+            throws IOException;
 
     /**
      * Returns the channel for which this membership key was created. This
      * method will continue to return the channel even after the membership
      * is dropped.
-     * 
+     *
      * @return the channel
      */
     public abstract MulticastChannel getChannel();
@@ -145,7 +145,7 @@ public abstract class MembershipKey {
      * Returns the multicast group for which this membership key was
      * created. This method will continue to return the group even after the
      * membership is dropped.
-     * 
+     *
      * @return the multicast group
      */
     public abstract InetAddress getGroup();
@@ -154,7 +154,7 @@ public abstract class MembershipKey {
      * Returns the network interface for which this membership key was
      * created. This method will continue to return the network interface
      * even after the membership is dropped or the channel is closed.
-     * 
+     *
      * @return the network interface
      */
     public abstract NetworkInterface getNetworkInterface();
@@ -162,9 +162,9 @@ public abstract class MembershipKey {
     /**
      * Returns the source address if this membership key is source specific,
      * or {@code null} if this membership is not source specific.
-     * 
+     *
      * @return the source address if this membership key is source specific,
-     *         otherwise {@code null}
+     * otherwise {@code null}
      */
     public abstract InetAddress getSourceAddress();
 }

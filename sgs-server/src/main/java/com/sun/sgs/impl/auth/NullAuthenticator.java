@@ -25,9 +25,8 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCredentials;
 
-import java.util.Properties;
-
 import javax.security.auth.login.CredentialException;
+import java.util.Properties;
 
 
 /**
@@ -43,15 +42,15 @@ public class NullAuthenticator implements IdentityAuthenticator {
      * @param properties the application's configuration properties
      */
     public NullAuthenticator(
-        @SuppressWarnings("unused") Properties properties)
-    {
+            @SuppressWarnings("unused") Properties properties) {
     }
 
     /**
      * {@inheritDoc}
      */
-    public String [] getSupportedCredentialTypes() {
-        return new String [] { NamePasswordCredentials.TYPE_IDENTIFIER };
+    @Override
+    public String[] getSupportedCredentialTypes() {
+        return new String[]{NamePasswordCredentials.TYPE_IDENTIFIER};
     }
 
     /**
@@ -61,15 +60,13 @@ public class NullAuthenticator implements IdentityAuthenticator {
      *
      * @param credentials the identity's credentials, which must be an
      *                    instance of <code>NamePasswordCredentials</code>
-     *
      * @return the identity of the given user
-     *
      * @throws CredentialException if the wrong type of credentials were
      *                             provided
      */
+    @Override
     public Identity authenticateIdentity(IdentityCredentials credentials)
-        throws CredentialException
-    {
+            throws CredentialException {
         if (!(credentials instanceof NamePasswordCredentials)) {
             throw new CredentialException("unsupported credentials type");
         }

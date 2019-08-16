@@ -32,9 +32,10 @@ import java.io.IOException;
  * asynchronous I/O operation completes.
  */
 public class AbortedByTimeoutException
-    extends IOException
-{
-    /** The version of the serialized representation of this class. */
+        extends IOException {
+    /**
+     * The version of the serialized representation of this class.
+     */
     private static final long serialVersionUID = 1L;
 
     /**

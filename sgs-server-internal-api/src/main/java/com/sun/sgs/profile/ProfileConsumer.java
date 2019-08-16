@@ -28,7 +28,7 @@ package com.sun.sgs.profile;
 import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
 
 /**
- * A profile consumer object is used to gather profiling data for a 
+ * A profile consumer object is used to gather profiling data for a
  * specific system or application component.  Each profile consumer
  * has a level associated with it, which determines how much data the
  * consumer will gather.
@@ -37,16 +37,16 @@ import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
  * and samples.  These profiling data objects come in three varieties:
  * <ul>
  * <li> aggregate, where the data is collected until it is explicitly cleared
- * <li> task-local, where data is collected on a task-by-task basis into a 
- *      {@link ProfileReport}
+ * <li> task-local, where data is collected on a task-by-task basis into a
+ * {@link ProfileReport}
  * <li> aggregate and task-local, where the data is both aggregated until
- *      cleared and reported on a task-by-task basis
+ * cleared and reported on a task-by-task basis
  * </ul>
- *
+ * <p>
  * The factory methods include a parameter indicating the minimum profile
  * level the consumer must be set at for the created object's profiling
  * data to be collected.
- * 
+ *
  * @see ProfileCounter
  * @see ProfileOperation
  * @see ProfileSample
@@ -55,28 +55,28 @@ public interface ProfileConsumer {
 
     /**
      * Set the local profiling level for this consumer.  Setting the global
-     * profiling level via 
+     * profiling level via
      * {@link ProfileCollector#setDefaultProfileLevel(ProfileLevel)} will
      * override this value.
-     * 
+     *
      * @param level the profiling level
      */
     void setProfileLevel(ProfileLevel level);
-    
+
     /**
      * Get the local profiling level for this consumer. Defaults to the
      * value of {@link ProfileCollector#getDefaultProfileLevel()}.
-     * 
+     *
      * @return the profiling level
      */
     ProfileLevel getProfileLevel();
-    
+
     /**
      * The valid types of profile operations, counters and samples that
      * can be created with the profile data factory methods.
      */
     enum ProfileDataType {
-        /**  
+        /**
          * Task local data reported through the {@link ProfileReport} to
          * {@code ProfileListener}s on a per-task basis.
          */
@@ -90,24 +90,22 @@ public interface ProfileConsumer {
          */
         TASK_AND_AGGREGATE,
     }
-    
+
     /**
      * Creates the named operation in this consumer.  If an operation has
      * already been created by this consumer with the same {@code name},
      * {@code type} and {@code minLevel}, it is returned.
      *
-     * @param name the name of the operation
-     * @param type the type of operation to create
+     * @param name     the name of the operation
+     * @param type     the type of operation to create
      * @param minLevel the minimum level of profiling that must be set to report
-     *              this operation
-     *
+     *                 this operation
      * @return a {@code ProfileOperation} to note operations
-     * 
      * @throws IllegalArgumentException if an operation has already been
-     *         created with this {@code name} but a different {@code type}
-     *         or {@code minLevel}
+     *                                  created with this {@code name} but a different {@code type}
+     *                                  or {@code minLevel}
      */
-    ProfileOperation createOperation(String name,  
+    ProfileOperation createOperation(String name,
                                      ProfileDataType type,
                                      ProfileLevel minLevel);
 
@@ -116,38 +114,34 @@ public interface ProfileConsumer {
      * already been created by this consumer with the same {@code name},
      * {@code type} and {@code minLevel}, it is returned.
      *
-     * @param name the name of the counter
-     * @param type the type of counter to create
+     * @param name     the name of the counter
+     * @param type     the type of counter to create
      * @param minLevel the minimum level of profiling that must be set to update
-     *              this counter
-     *
+     *                 this counter
      * @return a {@code ProfileCounter}
-     * 
      * @throws IllegalArgumentException if a counter has already been
-     *         created with this {@code name} but a different {@code type}
-     *         or {@code minLevel}
+     *                                  created with this {@code name} but a different {@code type}
+     *                                  or {@code minLevel}
      */
-    ProfileCounter createCounter(String name, 
+    ProfileCounter createCounter(String name,
                                  ProfileDataType type,
                                  ProfileLevel minLevel);
 
     /**
      * Creates the named sample collection in this consumer.  If a sample has
      * already been created by this consumer with the same {@code name},
-     * {@code type}, and {@code minLevel}, it is returned.  
+     * {@code type}, and {@code minLevel}, it is returned.
      *
-     * @param name a name or description of the sample collection
-     * @param type the type of sample collection to create
+     * @param name     a name or description of the sample collection
+     * @param type     the type of sample collection to create
      * @param minLevel the minimum level of profiling that must be set to record
-     *              this sample  
-     *
+     *                 this sample
      * @return a {@code ProfileSample} that collects {@code long} data
-     * 
      * @throws IllegalArgumentException if a sample collection has already been
-     *         created with this {@code name} but a different {@code type} or
-     *         {@code minLevel}
+     *                                  created with this {@code name} but a different {@code type} or
+     *                                  {@code minLevel}
      */
-    ProfileSample createSample(String name, 
+    ProfileSample createSample(String name,
                                ProfileDataType type,
                                ProfileLevel minLevel);
 

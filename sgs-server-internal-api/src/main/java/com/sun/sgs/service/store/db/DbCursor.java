@@ -40,10 +40,10 @@ public interface DbCursor {
      * Returns the current key, or {@code null} if the cursor has no current
      * key.
      *
-     * @return	the current key or {@code null}
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @return the current key or {@code null}
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     byte[] getKey();
 
@@ -51,10 +51,10 @@ public interface DbCursor {
      * Returns the current value, or {@code null} if the cursor has no current
      * value.
      *
-     * @return	the current value or {@code null}
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @return the current value or {@code null}
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     byte[] getValue();
 
@@ -63,10 +63,10 @@ public interface DbCursor {
      * true}, then sets the current key and value to the first key and its
      * associated value.
      *
-     * @return	{@code true} if the first key was found, else {@code false}
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @return    {@code true} if the first key was found, else {@code false}
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     boolean findFirst();
 
@@ -76,10 +76,10 @@ public interface DbCursor {
      * then sets the current key and value to the key found and its associated
      * value.
      *
-     * @return	{@code true} if the next key was found, else {@code false}
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @return    {@code true} if the next key was found, else {@code false}
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     boolean findNext();
 
@@ -88,11 +88,11 @@ public interface DbCursor {
      * specified key.  If the result is {@code true}, then sets the current key
      * and value to the key found and its associated value.
      *
-     * @param	key the key at which to start searching
-     * @return	{@code true} if the next key was found, else {@code false}
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @param    key the key at which to start searching
+     * @return    {@code true} if the next key was found, else {@code false}
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     boolean findNext(byte[] key);
 
@@ -101,10 +101,10 @@ public interface DbCursor {
      * true}, then sets the current key and value to the last key and its
      * associated value.
      *
-     * @return	{@code true} if the last key was found, else {@code false}
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @return    {@code true} if the last key was found, else {@code false}
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     boolean findLast();
 
@@ -114,13 +114,13 @@ public interface DbCursor {
      * {@code true}, then sets the current key and value to the newly inserted
      * key and its associated value.
      *
-     * @param	key the key
-     * @param	value the value
-     * @return	{@code true} if a value was stored for the key, and {@code
-     *		false} if the key already had a value
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @param    key the key
+     * @param    value the value
+     * @return    {@code true} if a value was stored for the key, and {@code
+     * false} if the key already had a value
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     boolean putNoOverwrite(byte[] key, byte[] value);
 
@@ -129,14 +129,14 @@ public interface DbCursor {
      * should not be used after this method is called.  This method should be
      * called before preparing, committing, or aborting the associated
      * transaction. <p>
-     *
+     * <p>
      * Note that the Berkeley DB documentation for prepare doesn't say you need
      * to close cursors, but my testing shows that you do.  -tjb@sun.com
      * (12/14/2006)
      *
-     * @throws	TransactionAbortedException if the transaction should be
-     *		aborted due to timeout or conflict
-     * @throws	DbDatabaseException if an unexpected database problem occurs
+     * @throws TransactionAbortedException if the transaction should be
+     * aborted due to timeout or conflict
+     * @throws DbDatabaseException if an unexpected database problem occurs
      */
     void close();
 }

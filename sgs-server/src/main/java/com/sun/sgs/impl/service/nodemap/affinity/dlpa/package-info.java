@@ -30,7 +30,7 @@
  * object uses.  The builders also are notified of data cache conflicts,
  * as reported by the caching data store.
  * <p>
- * The algorithm is driven by the 
+ * The algorithm is driven by the
  * {@link com.sun.sgs.impl.service.nodemap.affinity.dlpa.LPAServer}, which
  * instructs each
  * {@link com.sun.sgs.impl.service.nodemap.affinity.dlpa.LPAClient} when to

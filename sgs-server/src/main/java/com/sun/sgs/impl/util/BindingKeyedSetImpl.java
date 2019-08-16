@@ -30,14 +30,15 @@ import java.util.Iterator;
  * An implementation of {@code BindingKeyedSet} backed by a
  * {@link BindingKeyedMap}.
  *
- * @param	<E> the element type
+ * @param    <E> the element type
  */
 public class BindingKeyedSetImpl<E>
-    extends AbstractSet<E>
-    implements BindingKeyedSet<E>, Serializable
-{
+        extends AbstractSet<E>
+        implements BindingKeyedSet<E>, Serializable {
 
-    /** The version of the serialized form. */
+    /**
+     * The version of the serialized form.
+     */
     private static final long serialVersionUID = 1;
 
     /**
@@ -50,75 +51,93 @@ public class BindingKeyedSetImpl<E>
     /**
      * Creates an empty set with the specified {@code keyPrefix}.
      *
-     * @param	keyPrefix the key prefix for a service binding name
-     * @throws	IllegalArgumentException if {@code keyPrefix} is empty
+     * @param    keyPrefix the key prefix for a service binding name
+     * @throws IllegalArgumentException if {@code keyPrefix} is empty
      */
     BindingKeyedSetImpl(String keyPrefix) {
-	map = new BindingKeyedMapImpl<E>(keyPrefix);
+        map = new BindingKeyedMapImpl<E>(keyPrefix);
     }
 
     /* -- Implement BindingKeyedSet -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getKeyPrefix() {
-	return map.getKeyPrefix();
+        return map.getKeyPrefix();
     }
-    
+
     /* -- Implement AbstractSet overrides -- */
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean add(E e) {
-	return !map.putOverride(e.toString(), e);
+        return !map.putOverride(e.toString(), e);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void clear() {
-	map.clear();
+        map.clear();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean contains(Object o) {
-	if (o == null) {
-	    throw new NullPointerException("null object");
-	}
-	return map.containsKey(o.toString());
+        if (o == null) {
+            throw new NullPointerException("null object");
+        }
+        return map.containsKey(o.toString());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isEmpty() {
-	return map.isEmpty();
+        return map.isEmpty();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Iterator<E> iterator() {
-	return map.values().iterator();
+        return map.values().iterator();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean remove(Object o) {
-	return map.removeOverride(o.toString());
+        return map.removeOverride(o.toString());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int size() {
-	return map.size();
+        return map.size();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean retainAll(Collection<?> c) {
-	/*
-	 * The AbstractCollection method doesn't currently do this check.
-	 * -tjb@sun.com (10/10/2007)
-	 */
-	if (c == null) {
-	    throw new NullPointerException("The argument must not be null");
-	}
-	return super.retainAll(c);
+        /*
+         * The AbstractCollection method doesn't currently do this check.
+         * -tjb@sun.com (10/10/2007)
+         */
+        if (c == null) {
+            throw new NullPointerException("The argument must not be null");
+        }
+        return super.retainAll(c);
     }
 }

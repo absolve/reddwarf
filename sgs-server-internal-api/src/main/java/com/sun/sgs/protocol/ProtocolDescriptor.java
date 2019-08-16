@@ -35,17 +35,17 @@ import java.io.Serializable;
  * ProtocolDescriptor} should also be immutable.
  */
 public interface ProtocolDescriptor {
-    
+
     /**
      * Returns {@code true} if the specified {@code descriptor} represents
      * a protocol supported by the protocol that this descriptor
      * represents, and returns {@code false} otherwise. The determination
      * of whether the given protocol is supported is protocol specific.
      *
-     * @param	descriptor a protocol descriptor
      * @return {@code true} if the specified {@code descriptor} represents
-     * 		a protocol supported by the protocol that  this descriptor
-     *		represents, and {@code false} otherwise
+     * a protocol supported by the protocol that  this descriptor
+     * represents, and {@code false} otherwise
+     * @param    descriptor a protocol descriptor
      */
     boolean supportsProtocol(ProtocolDescriptor descriptor);
 }

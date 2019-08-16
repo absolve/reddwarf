@@ -87,9 +87,9 @@ public interface Transaction {
      * <code>TransactionTimeoutException</code> if it has.
      *
      * @throws TransactionNotActiveException if the transaction is not active
-     * @throws TransactionTimeoutException if the transaction has timed out
-     * @throws IllegalStateException if called from a thread that is not the
-     *				     thread that created this transaction
+     * @throws TransactionTimeoutException   if the transaction has timed out
+     * @throws IllegalStateException         if called from a thread that is not the
+     *                                       thread that created this transaction
      */
     void checkTimeout();
 
@@ -112,21 +112,18 @@ public interface Transaction {
      *
      * @param participant the <code>TransactionParticipant</code> joining
      *                    the transaction
-     *
      * @throws TransactionNotActiveException if the transaction has been
      *                                       aborted
-     *
-     * @throws IllegalStateException if {@link TransactionParticipant#prepare
-     *				     prepare} has been called on any
-     *				     transaction participant and the
-     *				     transaction has not been aborted, or if
-     *				     called from a thread that is not the
-     *				     thread that created this transaction
-     *
+     * @throws IllegalStateException         if {@link TransactionParticipant#prepare
+     *                                       prepare} has been called on any
+     *                                       transaction participant and the
+     *                                       transaction has not been aborted, or if
+     *                                       called from a thread that is not the
+     *                                       thread that created this transaction
      * @throws UnsupportedOperationException if <code>participant</code> does
-     *         not implement {@link NonDurableTransactionParticipant} and the
-     *         implementation cannot support an additional durable transaction
-     *         participant
+     *                                       not implement {@link NonDurableTransactionParticipant} and the
+     *                                       implementation cannot support an additional durable transaction
+     *                                       participant
      */
     void join(TransactionParticipant participant);
 
@@ -153,15 +150,13 @@ public interface Transaction {
      * value returned by calling that method on the cause.
      *
      * @param cause the exception that caused the abort
-     *
      * @throws TransactionNotActiveException if the transaction has been
-     *					     aborted
-     *
-     * @throws IllegalStateException if all transaction participants have been
-     *                               prepared and {@link #abort abort} has not
-     *                               been called, or if called from a thread
-     *				     that is not the thread that created this
-     *				     transaction
+     *                                       aborted
+     * @throws IllegalStateException         if all transaction participants have been
+     *                                       prepared and {@link #abort abort} has not
+     *                                       been called, or if called from a thread
+     *                                       that is not the thread that created this
+     *                                       transaction
      */
     void abort(Throwable cause);
 
@@ -170,7 +165,7 @@ public interface Transaction {
      * on this transaction.
      *
      * @return {@code true} if {@code abort} has been called on this
-     *         transaction, else {@code false}
+     * transaction, else {@code false}
      */
     boolean isAborted();
 
@@ -185,7 +180,7 @@ public interface Transaction {
     /**
      * Registers a listener that will be notified just before this transaction
      * is prepared, and after it commits or aborts. <p>
-     *
+     * <p>
      * The {@code listener}'s {@link TransactionListener#beforeCompletion
      * beforeCompletion} method will be called after the main work of the
      * transaction is complete, just before the transaction is prepared.  The
@@ -198,20 +193,20 @@ public interface Transaction {
      * is aborted before it reaches the preparation stage, including if an
      * earlier call to {@code beforeCompletion} on another listener throws an
      * exception or aborts this transaction. <p>
-     *
+     * <p>
      * The {@code listener}'s {@link TransactionListener#afterCompletion
      * afterCompletion} method will be called after this transaction is
      * committed or aborted. <p>
-     *
+     * <p>
      * Any number of listeners can be registered for this transaction by making
      * multiple calls to this method.  If multiple listeners are registered,
      * the order in which the listeners are called is unspecified.
      *
-     * @param	listener the listener
-     * @throws	TransactionNotActiveException if this transaction is not
-     *		active
-     * @throws	IllegalStateException if called from a thread that is not the
-     *		thread that created this transaction
+     * @param    listener the listener
+     * @throws TransactionNotActiveException if this transaction is not
+     * active
+     * @throws IllegalStateException if called from a thread that is not the
+     * thread that created this transaction
      */
     void registerListener(TransactionListener listener);
 }

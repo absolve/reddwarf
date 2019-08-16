@@ -57,27 +57,37 @@ class TransactionListenerDetailImpl implements TransactionListenerDetail {
 
     /* Implement TransactionListenerDetail. */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getListenerName() {
         return name;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean calledBeforeCompletion() {
         return beforeCompletionCalled;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean abortedBeforeCompletion() {
         return beforeCompletionFailed;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getBeforeCompletionTime() {
         return beforeCompletionTime;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getAfterCompletionTime() {
         return afterCompletionTime;
     }

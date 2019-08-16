@@ -34,22 +34,21 @@ import java.util.logging.Logger;
  * Uncaught exceptions are logged at level {@code WARNING}.
  */
 final class VerboseThreadFactory
-    implements ThreadFactory, Thread.UncaughtExceptionHandler
-{
+        implements ThreadFactory, Thread.UncaughtExceptionHandler {
     private final Logger log;
     private final ThreadFactory factory;
 
     /**
      * Creates a new {@code VerboseThreadFactory} that wraps the
      * given thread factory and logs to the given {@link Logger}.
-     * 
-     * @param log the {@code} Logger to log thread factory messages to
+     *
+     * @param log     the {@code} Logger to log thread factory messages to
      * @param factory the {@link ThreadFactory} to wrap
      */
     public VerboseThreadFactory(Logger log, ThreadFactory factory) {
         this.log = log;
         this.factory =
-            factory != null ? factory : Executors.defaultThreadFactory();
+                factory != null ? factory : Executors.defaultThreadFactory();
     }
 
     /**

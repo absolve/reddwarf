@@ -22,14 +22,10 @@
 package com.sun.sgs.impl.profile.listener;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.impl.profile.util.Histogram;
 import com.sun.sgs.impl.profile.util.PowerOfTwoHistogram;
-
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
-
 import com.sun.sgs.kernel.ComponentRegistry;
-
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
 
@@ -44,14 +40,13 @@ import java.util.Properties;
  * times.
  *
  * <p>
- *
+ * <p>
  * Note that this class uses a fixed number of tasks between outputs,
  * rather than a period of time.  The number of tasks can be
  * configured by defining the {@code
  * com.sun.sgs.profile.listener.window.size} property in the
  * application properties file.  The default window size for this
  * class is {@code 5000}.
- *
  */
 public class RuntimeHistogramListener implements ProfileListener {
 
@@ -60,7 +55,7 @@ public class RuntimeHistogramListener implements ProfileListener {
      * output when none is provided
      */
     private static final int DEFAULT_WINDOW_SIZE = 5000;
-    
+
     /**
      * The current number of tasks seen
      */
@@ -70,7 +65,7 @@ public class RuntimeHistogramListener implements ProfileListener {
      * The number of tasks aggregated between text outputs
      */
     private final int windowSize;
-    
+
     /**
      * The histogram for the tasks aggregated during the window
      */
@@ -86,29 +81,27 @@ public class RuntimeHistogramListener implements ProfileListener {
      * Creates an instance of {@code RuntimeHistogramListener}.
      *
      * @param properties the {@code Properties} for this listener
-     * @param owner the {@code Identity} to use for all tasks run by
-     *        this listener
-     * @param registry the {@code ComponentRegistry} containing the
-     *        available system components
-     *
+     * @param owner      the {@code Identity} to use for all tasks run by
+     *                   this listener
+     * @param registry   the {@code ComponentRegistry} containing the
+     *                   available system components
      */
     public RuntimeHistogramListener(Properties properties, Identity owner,
-                                    ComponentRegistry registry) 
-    {
-  	taskCount = 0;
-	lifetimeHistogram = new PowerOfTwoHistogram();
-	windowHistogram = new PowerOfTwoHistogram();
+                                    ComponentRegistry registry) {
+        taskCount = 0;
+        lifetimeHistogram = new PowerOfTwoHistogram();
+        windowHistogram = new PowerOfTwoHistogram();
 
-	windowSize = new PropertiesWrapper(properties).
-	    getIntProperty(ProfileListener.WINDOW_SIZE_PROPERTY, 
-                           DEFAULT_WINDOW_SIZE);
+        windowSize = new PropertiesWrapper(properties).
+                getIntProperty(ProfileListener.WINDOW_SIZE_PROPERTY,
+                        DEFAULT_WINDOW_SIZE);
     }
 
     /**
      * {@inheritDoc}
      */
     public void propertyChange(PropertyChangeEvent event) {
-	// unused
+        // unused
     }
 
     /**
@@ -121,27 +114,27 @@ public class RuntimeHistogramListener implements ProfileListener {
      */
     public void report(ProfileReport profileReport) {
 
-	if (!profileReport.wasTaskSuccessful()) {
-	    return;
+        if (!profileReport.wasTaskSuccessful()) {
+            return;
         }
 
-	long count = ++taskCount;
+        long count = ++taskCount;
 
-	long runTime = profileReport.getRunningTime();
+        long runTime = profileReport.getRunningTime();
 
-	windowHistogram.bin(runTime);
-	lifetimeHistogram.bin(runTime);
+        windowHistogram.bin(runTime);
+        lifetimeHistogram.bin(runTime);
 
-	if (count % windowSize == 0) {
-	    
-	    // print out the results
-	    System.out.printf("past %d tasks:%n%s", windowSize,
-			      windowHistogram.toString("ms"));
-	    System.out.printf("lifetime of %d tasks:%n%s", count,
-			      lifetimeHistogram.toString("ms"));
+        if (count % windowSize == 0) {
 
-	    windowHistogram.clear();
-	}	
+            // print out the results
+            System.out.printf("past %d tasks:%n%s", windowSize,
+                    windowHistogram.toString("ms"));
+            System.out.printf("lifetime of %d tasks:%n%s", count,
+                    lifetimeHistogram.toString("ms"));
+
+            windowHistogram.clear();
+        }
     }
 
 
@@ -149,7 +142,7 @@ public class RuntimeHistogramListener implements ProfileListener {
      * {@inheritDoc}
      */
     public void shutdown() {
-	// unused
+        // unused
     }
 
 }

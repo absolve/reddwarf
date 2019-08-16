@@ -21,31 +21,36 @@
 
 package com.sun.sgs.tutorial.server.swordworld;
 
-import java.io.Serializable;
-
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
+
+import java.io.Serializable;
 
 /**
  * A {@code ManagedObject} that has a name and a description.
  */
 public class SwordWorldObject
-    implements Serializable, ManagedObject
-{
-    /** The version of the serialized form of this class. */
+        implements Serializable, ManagedObject {
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The name of this object. */
+    /**
+     * The name of this object.
+     */
     private String name;
 
-    /** The description of this object. */
+    /**
+     * The description of this object.
+     */
     private String description;
 
     /**
      * Creates a new {@code SwordWorldObject} with the given {@code name}
      * and {@code description}.
      *
-     * @param name the name of this object
+     * @param name        the name of this object
      * @param description the description of this object
      */
     public SwordWorldObject(String name, String description) {
@@ -91,7 +96,9 @@ public class SwordWorldObject
         return description;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return getName();

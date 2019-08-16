@@ -55,8 +55,7 @@ public interface AccessedObject {
      * Returns the supplied description of the object, if any.
      *
      * @return the associated description, or {@code null}
-     *
-     * @see AccessReporter#setObjectDescription(Object,Object)
+     * @see AccessReporter#setObjectDescription(Object, Object)
      */
     Object getDescription();
 

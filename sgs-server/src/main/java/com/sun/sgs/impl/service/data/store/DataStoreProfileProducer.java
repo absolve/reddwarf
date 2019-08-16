@@ -29,9 +29,10 @@ import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionParticipant;
 import com.sun.sgs.service.store.ClassInfoNotFoundException;
 import com.sun.sgs.service.store.DataStore;
+
+import javax.management.JMException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.JMException;
 
 /**
  * Implements a {@link DataStore} that reports profiling information about data
@@ -41,20 +42,27 @@ import javax.management.JMException;
  * to another data store.
  */
 public class DataStoreProfileProducer
-    implements DataStore, TransactionParticipant
-{
-    /** The name of this class. */
+        implements DataStore, TransactionParticipant {
+    /**
+     * The name of this class.
+     */
     private static final String CLASSNAME =
-        "com.sun.sgs.impl.service.data.store.DataStoreProfileProducer";
+            "com.sun.sgs.impl.service.data.store.DataStoreProfileProducer";
 
-     /** The logger for this class. */
+    /**
+     * The logger for this class.
+     */
     private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(CLASSNAME));
-    
-    /** The associated data store. */
+            new LoggerWrapper(Logger.getLogger(CLASSNAME));
+
+    /**
+     * The associated data store.
+     */
     private final DataStore dataStore;
 
-    /** The associated transaction participant. */
+    /**
+     * The associated transaction participant.
+     */
     private final TransactionParticipant participant;
 
     /* -- Profile operations for the DataStore API -- */
@@ -64,24 +72,23 @@ public class DataStoreProfileProducer
      * Creates an instance that delegates all {@link DataStore} and {@link
      * TransactionParticipant} methods to {@code dataStore}.
      *
-     * @param	dataStore the object for delegating operations
-     * @param	collector the object for collecting profile data
-     * @throws	IllegalArgumentException if {@code dataStore} does not
-     *		implement {@code TransactionParticipant}
+     * @param    dataStore the object for delegating operations
+     * @param    collector the object for collecting profile data
+     * @throws IllegalArgumentException if {@code dataStore} does not
+     * implement {@code TransactionParticipant}
      */
     public DataStoreProfileProducer(DataStore dataStore,
-				    ProfileCollector collector)
-    {
-	if (dataStore == null) {
-	    throw new NullPointerException(
-		"The dataStore argument must not be null");
-	} else if (!(dataStore instanceof TransactionParticipant)) {
-	    throw new IllegalArgumentException(
-		"The dataStore argument must implement" +
-		" TransactionParticipant");
-	}
-	this.dataStore = dataStore;
-	participant = (TransactionParticipant) dataStore;
+                                    ProfileCollector collector) {
+        if (dataStore == null) {
+            throw new NullPointerException(
+                    "The dataStore argument must not be null");
+        } else if (!(dataStore instanceof TransactionParticipant)) {
+            throw new IllegalArgumentException(
+                    "The dataStore argument must implement" +
+                            " TransactionParticipant");
+        }
+        this.dataStore = dataStore;
+        participant = (TransactionParticipant) dataStore;
 
         stats = new DataStoreStats(collector);
         try {
@@ -101,191 +108,234 @@ public class DataStoreProfileProducer
      * (08/05/2008)
      */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void ready() throws Exception {
-	/* No profiling for this operation -- it only happens once */
-	dataStore.ready();
+        /* No profiling for this operation -- it only happens once */
+        dataStore.ready();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getLocalNodeId() {
-	/* No profiling for this operation -- it only happens once */
-	return dataStore.getLocalNodeId();
+        /* No profiling for this operation -- it only happens once */
+        return dataStore.getLocalNodeId();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long createObject(Transaction txn) {
-	long result = dataStore.createObject(txn);
-	stats.createObjectOp.report();
-	return result;
+        long result = dataStore.createObject(txn);
+        stats.createObjectOp.report();
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void markForUpdate(Transaction txn, long oid) {
-	dataStore.markForUpdate(txn, oid);
-	stats.markForUpdateOp.report();
-	/*
-	 * Note that the DataStore's implementation of markForUpdate may
-	 * actually read the contents of the object, so we might want to
-	 * increment the read objects and bytes counters here, but we don't
-	 * have access to that information within the implementation.
-	 * -tjb@sun.com (08/05/2008)
-	 */
+        dataStore.markForUpdate(txn, oid);
+        stats.markForUpdateOp.report();
+        /*
+         * Note that the DataStore's implementation of markForUpdate may
+         * actually read the contents of the object, so we might want to
+         * increment the read objects and bytes counters here, but we don't
+         * have access to that information within the implementation.
+         * -tjb@sun.com (08/05/2008)
+         */
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public byte[] getObject(Transaction txn, long oid, boolean forUpdate) {
-	byte[] result = dataStore.getObject(txn, oid, forUpdate);
-	ProfileOperation op = 
+        byte[] result = dataStore.getObject(txn, oid, forUpdate);
+        ProfileOperation op =
                 forUpdate ? stats.getObjectForUpdateOp : stats.getObjectOp;
-	op.report();
-	stats.readBytesCounter.incrementCount(result.length);
-	stats.readObjectsCounter.incrementCount();
-	stats.readBytesSample.addSample(result.length);
-	return result;
+        op.report();
+        stats.readBytesCounter.incrementCount(result.length);
+        stats.readObjectsCounter.incrementCount();
+        stats.readBytesSample.addSample(result.length);
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setObject(Transaction txn, long oid, byte[] data) {
-	dataStore.setObject(txn, oid, data);
-	stats.setObjectOp.report();
-	stats.writtenBytesCounter.incrementCount(data.length);
-	stats.writtenObjectsCounter.incrementCount();
-	stats.writtenBytesSample.addSample(data.length);
+        dataStore.setObject(txn, oid, data);
+        stats.setObjectOp.report();
+        stats.writtenBytesCounter.incrementCount(data.length);
+        stats.writtenObjectsCounter.incrementCount();
+        stats.writtenBytesSample.addSample(data.length);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setObjects(Transaction txn, long[] oids, byte[][] dataArray) {
-	dataStore.setObjects(txn, oids, dataArray);
-	stats.setObjectsOp.report();
-	for (byte[] data : dataArray) {
-	    stats.writtenBytesCounter.incrementCount(data.length);
-	    stats.writtenObjectsCounter.incrementCount();
-	    stats.writtenBytesSample.addSample(data.length);
-	}
+        dataStore.setObjects(txn, oids, dataArray);
+        stats.setObjectsOp.report();
+        for (byte[] data : dataArray) {
+            stats.writtenBytesCounter.incrementCount(data.length);
+            stats.writtenObjectsCounter.incrementCount();
+            stats.writtenBytesSample.addSample(data.length);
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeObject(Transaction txn, long oid) {
-	dataStore.removeObject(txn, oid);
-	stats.removeObjectOp.report();
+        dataStore.removeObject(txn, oid);
+        stats.removeObjectOp.report();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getBinding(Transaction txn, String name) {
-	long result = dataStore.getBinding(txn, name);
-	stats.getBindingOp.report();
-	return result;
+        long result = dataStore.getBinding(txn, name);
+        stats.getBindingOp.report();
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setBinding(Transaction txn, String name, long oid) {
-	dataStore.setBinding(txn, name, oid);
-	stats.setBindingOp.report();
+        dataStore.setBinding(txn, name, oid);
+        stats.setBindingOp.report();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeBinding(Transaction txn, String name) {
-	dataStore.removeBinding(txn, name);
-	stats.removeBindingOp.report();
+        dataStore.removeBinding(txn, name);
+        stats.removeBindingOp.report();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String nextBoundName(Transaction txn, String name) {
-	String result = dataStore.nextBoundName(txn, name);
-	stats.nextBoundNameOp.report();
-	return result;
+        String result = dataStore.nextBoundName(txn, name);
+        stats.nextBoundNameOp.report();
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
-	/* No profiling for this operation -- it only happens once */
-	dataStore.shutdown();
+        /* No profiling for this operation -- it only happens once */
+        dataStore.shutdown();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getClassId(Transaction txn, byte[] classInfo) {
-	int result = dataStore.getClassId(txn, classInfo);
-	stats.getClassIdOp.report();
-	return result;
+        int result = dataStore.getClassId(txn, classInfo);
+        stats.getClassIdOp.report();
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public byte[] getClassInfo(Transaction txn, int classId)
-	throws ClassInfoNotFoundException
-    {
-	byte[] result = dataStore.getClassInfo(txn, classId);
-	stats.getClassInfoOp.report();
-	return result;
+            throws ClassInfoNotFoundException {
+        byte[] result = dataStore.getClassInfo(txn, classId);
+        stats.getClassInfoOp.report();
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long nextObjectId(Transaction txn, long oid) {
-	long result = dataStore.nextObjectId(txn, oid);
-	stats.nextObjectIdOp.report();
-	return result;
+        long result = dataStore.nextObjectId(txn, oid);
+        stats.nextObjectIdOp.report();
+        return result;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setBindingDescription(
-	Transaction txn, String name, Object description)
-    {
-	/* No need for profiling here */
-	dataStore.setBindingDescription(txn, name, description);
+            Transaction txn, String name, Object description) {
+        /* No need for profiling here */
+        dataStore.setBindingDescription(txn, name, description);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setObjectDescription(
-	Transaction txn, long oid, Object description)
-    {
-	/* No need for profiling here */
-	dataStore.setObjectDescription(txn, oid, description);
+            Transaction txn, long oid, Object description) {
+        /* No need for profiling here */
+        dataStore.setObjectDescription(txn, oid, description);
     }
 
     /* -- Implement TransactionParticipant -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean prepare(Transaction txn) throws Exception {
-	return participant.prepare(txn);
+        return participant.prepare(txn);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void commit(Transaction txn) {
-	participant.commit(txn);
+        participant.commit(txn);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void prepareAndCommit(Transaction txn) throws Exception {
-	participant.prepareAndCommit(txn);
+        participant.prepareAndCommit(txn);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void abort(Transaction txn) {
-	participant.abort(txn);
+        participant.abort(txn);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getTypeName() {
-	return participant.getTypeName();
+        return participant.getTypeName();
     }
 
     /* -- Other public methods -- */
-    
+
     /**
      * Returns a string representation of this object.
      *
-     * @return	a string representation of this object
+     * @return a string representation of this object
      */
     public String toString() {
-	return "DataStoreProfileProducer[" + dataStore + "]";
+        return "DataStoreProfileProducer[" + dataStore + "]";
     }
 
     /**
      * Returns the {@code DataStore} that this instance delegates to.
      *
-     * @return	the {@code DataStore} that this instance delegates to
+     * @return the {@code DataStore} that this instance delegates to
      */
     public DataStore getDataStore() {
-	return dataStore;
+        return dataStore;
     }
 }

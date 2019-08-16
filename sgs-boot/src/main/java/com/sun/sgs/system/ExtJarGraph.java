@@ -24,18 +24,16 @@ package com.sun.sgs.system;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-/** A collection of extension jars used to determine ordering. */
+/**
+ * A collection of extension jars used to determine ordering.
+ */
 class ExtJarGraph {
 
     // the location for an extension's properties
@@ -46,7 +44,7 @@ class ExtJarGraph {
 
     // a map of all extension jars
     private final Map<String, JarNode> extNodes =
-        new HashMap<String, JarNode>();
+            new HashMap<String, JarNode>();
 
     // a collection of jars that depend on other jars
     private final Set<JarNode> dependencyRoots = new HashSet<JarNode>();
@@ -56,8 +54,11 @@ class ExtJarGraph {
     private boolean hasPreferences = false;
     private boolean hasDependencies = false;
 
-    /** Creates an instance of {@code ExtJarGraph}. */
-    ExtJarGraph() { }
+    /**
+     * Creates an instance of {@code ExtJarGraph}.
+     */
+    ExtJarGraph() {
+    }
 
     /**
      * Adds a jar file to this collection. This method checks that the jar
@@ -76,11 +77,11 @@ class ExtJarGraph {
             manifest = jar.getManifest();
         } catch (IOException ioe) {
             throw new IllegalStateException("Failed to get manifest from " +
-                                            "jar file: " + jar.getName());
+                    "jar file: " + jar.getName());
         }
         if (manifest == null) {
             throw new IllegalStateException("Manifest missing in extension " +
-                                            "jar file: " + jar.getName());
+                    "jar file: " + jar.getName());
         }
         Attributes attrs = manifest.getMainAttributes();
         String extName = attrs.getValue(Name.SPECIFICATION_TITLE);
@@ -89,7 +90,7 @@ class ExtJarGraph {
         }
         if (extNodes.containsKey(extName)) {
             throw new IllegalStateException("Found two extensions with the " +
-                                            "same name: " + extName);
+                    "same name: " + extName);
         }
         String extVersion = attrs.getValue(Name.SPECIFICATION_VERSION);
         if (extVersion == null) {
@@ -104,7 +105,7 @@ class ExtJarGraph {
                 p.load(jar.getInputStream(propertiesEntry));
             } catch (IOException ioe) {
                 throw new IllegalStateException("Malformed properties in " +
-                                                "ext jar: " + jar.getName());
+                        "ext jar: " + jar.getName());
             }
             node = new JarNode(extName, extVersion, p);
             hasPreferences = true;
@@ -151,7 +152,7 @@ class ExtJarGraph {
         StringBuilder profileListenersLine = new StringBuilder();
         for (JarNode node : dependencyRoots) {
             buildProperties(node, p, servicesLine, managersLine, nodeTypesLine,
-                            authenticatorsLine, profileListenersLine);
+                    authenticatorsLine, profileListenersLine);
         }
         if (servicesLine.length() != 0) {
             p.setProperty("com.sun.sgs.ext.services", servicesLine.toString());
@@ -161,15 +162,15 @@ class ExtJarGraph {
         }
         if (nodeTypesLine.length() != 0) {
             p.setProperty("com.sun.sgs.ext.services.node.types",
-                          nodeTypesLine.toString());
+                    nodeTypesLine.toString());
         }
         if (authenticatorsLine.length() != 0) {
             p.setProperty("com.sun.sgs.ext.authenticators",
-                          authenticatorsLine.toString());
+                    authenticatorsLine.toString());
         }
         if (profileListenersLine.length() != 0) {
             p.setProperty("com.sun.sgs.ext.kernel.profile.listeners",
-                          profileListenersLine.toString());
+                    profileListenersLine.toString());
         }
 
         // generate the properties file
@@ -183,15 +184,17 @@ class ExtJarGraph {
         return propFile.getAbsolutePath();
     }
 
-    /** Check that all dependencies are met, and that there are no loops. */
+    /**
+     * Check that all dependencies are met, and that there are no loops.
+     */
     private void checkDependencies() {
         // scan all the jar nodes checking that all depdencies are available
         for (JarNode node : extNodes.values()) {
-            for (String dependency :  node.namedDependencies) {
+            for (String dependency : node.namedDependencies) {
                 JarNode dNode = extNodes.get(dependency);
                 if (dNode == null) {
                     throw new IllegalStateException("Missing dependency: " +
-                                                    dependency);
+                            dependency);
                 }
                 // if someone depends on dNode then it is removed from the
                 // the root collection
@@ -216,11 +219,13 @@ class ExtJarGraph {
         }
     }
 
-    /** Recursively check that a given node doesn't lead to a loop. */
+    /**
+     * Recursively check that a given node doesn't lead to a loop.
+     */
     private static void loopCheck(JarNode node, Set<String> names) {
         if (names.contains(node.name)) {
             throw new IllegalStateException("Loop in dependent extensions: " +
-                                            node.name);
+                    node.name);
         }
         names.add(node.name);
         for (JarNode dNode : node.dNodes) {
@@ -228,18 +233,19 @@ class ExtJarGraph {
         }
     }
 
-    /** Collects all properties and multi-element lines. */
+    /**
+     * Collects all properties and multi-element lines.
+     */
     private void buildProperties(JarNode node, Properties p,
                                  StringBuilder servicesLine,
                                  StringBuilder managersLine,
                                  StringBuilder nodeTypesLine,
                                  StringBuilder authenticatorsLine,
-                                 StringBuilder profileListenersLine)
-    {
+                                 StringBuilder profileListenersLine) {
         // gather properties from depdencies first
         for (JarNode dNode : node.dNodes) {
             buildProperties(dNode, p, servicesLine, managersLine, nodeTypesLine,
-                            authenticatorsLine, profileListenersLine);
+                    authenticatorsLine, profileListenersLine);
         }
 
         // include this node's properties if they haven't already been included
@@ -260,13 +266,13 @@ class ExtJarGraph {
             if (managerCount != 0) {
                 if (managerCount != serviceCount) {
                     throw new IllegalStateException("Mis-matched Manager " +
-                                                    "and Service count for " +
-                                                    node.name);
+                            "and Service count for " +
+                            node.name);
                 }
             } else {
                 if (serviceCount > 1) {
                     throw new IllegalStateException("Missing Managers for " +
-                                                    node.name);
+                            node.name);
                 }
             }
 
@@ -274,8 +280,8 @@ class ExtJarGraph {
             // number as there are services
             if (nodeTypeCount != 0 && nodeTypeCount != serviceCount) {
                 throw new IllegalStateException("Mis-matched Node Type " +
-                                                "and Service count for " +
-                                                node.name);
+                        "and Service count for " +
+                        node.name);
             }
 
             // if there are services then add them after figuring out how to
@@ -289,8 +295,7 @@ class ExtJarGraph {
                     }
                 } else {
                     if ((servicesLine.length() != 0) &&
-                        (managersLine.length() == 0))
-                    {
+                            (managersLine.length() == 0)) {
                         // there were previously services but no managers, so
                         // pre-pend a ":" to the line
                         addToLine(managersLine, ":" + managers);
@@ -312,7 +317,7 @@ class ExtJarGraph {
             }
 
             String authenticators =
-                (String) nodeProps.remove("com.sun.sgs.app.authenticators");
+                    (String) nodeProps.remove("com.sun.sgs.app.authenticators");
             if ((authenticators != null) && (authenticators.length() != 0)) {
                 addToLine(authenticatorsLine, authenticators);
             }
@@ -320,7 +325,7 @@ class ExtJarGraph {
             String profileListeners = (String) nodeProps.remove(
                     "com.sun.sgs.impl.kernel.profile.listeners");
             if ((profileListeners != null) &&
-                (profileListeners.length() != 0)) {
+                    (profileListeners.length() != 0)) {
                 addToLine(profileListenersLine, profileListeners);
             }
 
@@ -331,13 +336,15 @@ class ExtJarGraph {
                 Object oldValue = p.setProperty(key, value);
                 if ((oldValue != null) && (!value.equals(oldValue))) {
                     throw new IllegalStateException("Multiple values for " +
-                                                    "property: " + key);
+                            "property: " + key);
                 }
             }
         }
     }
 
-    /** Count the number of colon-separated elements in the string. */
+    /**
+     * Count the number of colon-separated elements in the string.
+     */
     private int getElementCount(String str) {
         if ((str == null) || (str.length() == 0)) {
             return 0;
@@ -350,9 +357,11 @@ class ExtJarGraph {
         } while (pos != -1);
         return count;
     }
-    
 
-    /** Adds an element to a multi-element line. */
+
+    /**
+     * Adds an element to a multi-element line.
+     */
     private static void addToLine(StringBuilder buf, String str) {
         if (buf.length() != 0) {
             buf.append(":" + str);
@@ -361,29 +370,35 @@ class ExtJarGraph {
         }
     }
 
-    /** Private class used to maintain state for a single extension jar. */
+    /**
+     * Private class used to maintain state for a single extension jar.
+     */
     private static class JarNode {
         final String name;
         final String version;
         final Properties properties;
         final Set<String> namedDependencies = new HashSet<String>();
         final Set<JarNode> dNodes = new HashSet<JarNode>();
+
         JarNode(String name, String version) {
             this.name = name;
             this.version = version;
             this.properties = null;
         }
+
         JarNode(String name, String version, Properties properties) {
             this.name = name;
             this.version = version;
             this.properties = properties;
         }
+
         public boolean equals(Object o) {
             if (!(o instanceof JarNode)) {
                 return false;
             }
             return name.equals(((JarNode) o).name);
         }
+
         public int hashCode() {
             return name.hashCode();
         }

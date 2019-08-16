@@ -25,11 +25,9 @@
 
 package com.sun.sgs.nio.channels;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
+import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
+
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.IllegalBlockingModeException;
@@ -43,37 +41,36 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import com.sun.sgs.nio.channels.spi.AsynchronousChannelProvider;
-
 /**
  * Utility methods for channels and streams.
  * <p>
  * This class defines:
  * <ul>
  * <li>Static methods that support the interoperation of the stream
- *     classes of the {@link java.io} package with the channel classes of
- *     this package.
+ * classes of the {@link java.io} package with the channel classes of
+ * this package.
  * <li>Method to get the management interfaces for pools of channels
- *     in the the Java virtual machine.
+ * in the the Java virtual machine.
  * </ul>
  */
 public final class Channels {
 
-    /** Prevents instantiation of this class. */
-    private Channels() { }
+    /**
+     * Prevents instantiation of this class.
+     */
+    private Channels() {
+    }
 
     /**
      * Unwraps an {@code ExecutionException} and throws its cause.
-     * 
+     *
      * @param e the {@code ExecutionException} to unwrap
-     * 
-     * @throws IOException if the cause was an {@code IOException}
-     * @throws Error if the cause was an {@code Error}
+     * @throws IOException      if the cause was an {@code IOException}
+     * @throws Error            if the cause was an {@code Error}
      * @throws RuntimeException otherwise
      */
     private static void launderExecutionException(ExecutionException e)
-        throws IOException
-    {
+            throws IOException {
         Throwable t = e.getCause();
         if (t instanceof IOException) {
             throw (IOException) t;
@@ -89,12 +86,12 @@ public final class Channels {
     /**
      * Checks that the given offset and length are appropriate for the
      * array, otherwise throws {@link IndexOutOfBoundsException}.
-     * 
-     * @param b the array
+     *
+     * @param b   the array
      * @param off the offset
      * @param len the length
      * @throws IndexOutOfBoundsException if the offset and length are
-     *         out of the array bounds
+     *                                   out of the array bounds
      */
     private static void checkBounds(byte[] b, int off, int len) {
         if ((off < 0) || (off > b.length) || (len < 0) ||
@@ -110,26 +107,24 @@ public final class Channels {
      * {@code mark} or {@code reset} methods. The stream will be safe for
      * access by multiple concurrent threads. Closing the stream will in
      * turn cause the channel to be closed.
-     * 
+     *
      * @param ch the channel from which bytes will be read
      * @return a new input stream
      */
     public static InputStream
-    newInputStream(final AsynchronousByteChannel ch)
-    {
+    newInputStream(final AsynchronousByteChannel ch) {
         return new InputStream() {
 
             @Override
             public synchronized int read() throws IOException {
-               byte[] oneByte = new byte[1];
-               int rc = this.read(oneByte);
-               return (rc == -1) ? -1 : oneByte[0];
+                byte[] oneByte = new byte[1];
+                int rc = this.read(oneByte);
+                return (rc == -1) ? -1 : oneByte[0];
             }
 
             @Override
             public synchronized int read(byte[] b, int off, int len)
-                throws IOException
-            {
+                    throws IOException {
                 checkBounds(b, off, len);
 
                 if (len == 0) {
@@ -168,9 +163,8 @@ public final class Channels {
      * @param ch the channel to which bytes will be written
      * @return a new output stream
      */
-    public static OutputStream 
-    newOutputStream(final AsynchronousByteChannel ch)
-    {
+    public static OutputStream
+    newOutputStream(final AsynchronousByteChannel ch) {
         return new OutputStream() {
 
             @Override
@@ -182,8 +176,7 @@ public final class Channels {
 
             @Override
             public synchronized void write(byte[] b, int off, int len)
-                throws IOException
-            {
+                    throws IOException {
                 checkBounds(b, off, len);
 
                 if (len == 0) {
@@ -236,15 +229,15 @@ public final class Channels {
     public static List<ChannelPoolMXBean> getChannelPoolMXBeans() {
         List<ChannelPoolMXBean> result = new LinkedList<ChannelPoolMXBean>();
 
-        Object[] providers = new Object[] {
-            SelectorProvider.provider(),
-            AsynchronousChannelProvider.provider()
+        Object[] providers = new Object[]{
+                SelectorProvider.provider(),
+                AsynchronousChannelProvider.provider()
         };
 
         for (Object provider : providers) {
             if (provider instanceof ManagedChannelFactory) {
                 result.addAll(
-                    ((ManagedChannelFactory) provider).getChannelPoolMXBeans());
+                        ((ManagedChannelFactory) provider).getChannelPoolMXBeans());
             }
         }
 
@@ -258,10 +251,8 @@ public final class Channels {
      * its I/O operations to the given stream.  Closing the channel will in
      * turn cause the stream to be closed.  </p>
      *
-     * @param  in
-     *         The stream from which bytes are to be read
-     *
-     * @return  A new readable byte channel
+     * @param in The stream from which bytes are to be read
+     * @return A new readable byte channel
      */
     public static ReadableByteChannel newChannel(InputStream in) {
         return java.nio.channels.Channels.newChannel(in);
@@ -274,10 +265,8 @@ public final class Channels {
      * its I/O operations to the given stream.  Closing the channel will in
      * turn cause the stream to be closed.  </p>
      *
-     * @param  out
-     *         The stream to which bytes are to be written
-     *
-     * @return  A new writable byte channel
+     * @param out The stream to which bytes are to be written
+     * @return A new writable byte channel
      */
     public static WritableByteChannel newChannel(OutputStream out) {
         return java.nio.channels.Channels.newChannel(out);
@@ -294,10 +283,8 @@ public final class Channels {
      * multiple concurrent threads.  Closing the stream will in turn cause the
      * channel to be closed.  </p>
      *
-     * @param  ch
-     *         The channel from which bytes will be read
-     *
-     * @return  A new input stream
+     * @param ch The channel from which bytes will be read
+     * @return A new input stream
      */
     public static InputStream newInputStream(ReadableByteChannel ch) {
         return java.nio.channels.Channels.newInputStream(ch);
@@ -312,10 +299,8 @@ public final class Channels {
      * stream will be safe for access by multiple concurrent threads.  Closing
      * the stream will in turn cause the channel to be closed.  </p>
      *
-     * @param  ch
-     *         The channel to which bytes will be written
-     *
-     * @return  A new output stream
+     * @param ch The channel to which bytes will be written
+     * @return A new output stream
      */
     public static OutputStream newOutputStream(WritableByteChannel ch) {
         return java.nio.channels.Channels.newOutputStream(ch);
@@ -334,23 +319,16 @@ public final class Channels {
      * the {@link Reader#mark mark} or {@link Reader#reset reset} methods.
      * Closing the stream will in turn cause the channel to be closed.  </p>
      *
-     * @param  ch
-     *         The channel from which bytes will be read
-     *
-     * @param  dec
-     *         The charset decoder to be used
-     *
-     * @param  minBufferCap
-     *         The minimum capacity of the internal byte buffer,
-     *         or <tt>-1</tt> if an implementation-dependent
-     *         default capacity is to be used
-     *
-     * @return  A new reader
+     * @param ch           The channel from which bytes will be read
+     * @param dec          The charset decoder to be used
+     * @param minBufferCap The minimum capacity of the internal byte buffer,
+     *                     or <tt>-1</tt> if an implementation-dependent
+     *                     default capacity is to be used
+     * @return A new reader
      */
     public static Reader newReader(ReadableByteChannel ch,
                                    CharsetDecoder dec,
-                                   int minBufferCap)
-    {
+                                   int minBufferCap) {
         return java.nio.channels.Channels.newReader(ch, dec, minBufferCap);
     }
 
@@ -362,7 +340,7 @@ public final class Channels {
      *
      * <blockquote><pre>
      * Channels.newReader(ch, csname)</pre></blockquote>
-     *
+     * <p>
      * behaves in exactly the same way as the expression
      *
      * <blockquote><pre>
@@ -371,17 +349,11 @@ public final class Channels {
      *                        .newDecoder(),
      *                    -1);</pre></blockquote>
      *
-     * @param  ch
-     *         The channel from which bytes will be read
-     *
-     * @param  csName
-     *         The name of the charset to be used
-     *
-     * @return  A new reader
-     *
-     * @throws  UnsupportedCharsetException
-     *          If no support for the named charset is available
-     *          in this instance of the Java virtual machine
+     * @param ch     The channel from which bytes will be read
+     * @param csName The name of the charset to be used
+     * @return A new reader
+     * @throws UnsupportedCharsetException If no support for the named charset is available
+     *                                     in this instance of the Java virtual machine
      */
     public static Reader newReader(ReadableByteChannel ch, String csName) {
         return java.nio.channels.Channels.newReader(ch, csName);
@@ -399,18 +371,12 @@ public final class Channels {
      * The resulting stream will not otherwise be buffered.  Closing the stream
      * will in turn cause the channel to be closed.  </p>
      *
-     * @param  ch
-     *         The channel to which bytes will be written
-     *
-     * @param  enc
-     *         The charset encoder to be used
-     *
-     * @param  minBufferCap
-     *         The minimum capacity of the internal byte buffer,
-     *         or <tt>-1</tt> if an implementation-dependent
-     *         default capacity is to be used
-     *
-     * @return  A new writer
+     * @param ch           The channel to which bytes will be written
+     * @param enc          The charset encoder to be used
+     * @param minBufferCap The minimum capacity of the internal byte buffer,
+     *                     or <tt>-1</tt> if an implementation-dependent
+     *                     default capacity is to be used
+     * @return A new writer
      */
     public static Writer newWriter(WritableByteChannel ch,
                                    CharsetEncoder enc,
@@ -426,7 +392,7 @@ public final class Channels {
      *
      * <blockquote><pre>
      * Channels.newWriter(ch, csname)</pre></blockquote>
-     *
+     * <p>
      * behaves in exactly the same way as the expression
      *
      * <blockquote><pre>
@@ -435,17 +401,11 @@ public final class Channels {
      *                        .newEncoder(),
      *                    -1);</pre></blockquote>
      *
-     * @param  ch
-     *         The channel to which bytes will be written
-     *
-     * @param  csName
-     *         The name of the charset to be used
-     *
-     * @return  A new writer
-     *
-     * @throws  UnsupportedCharsetException
-     *          If no support for the named charset is available
-     *          in this instance of the Java virtual machine
+     * @param ch     The channel to which bytes will be written
+     * @param csName The name of the charset to be used
+     * @return A new writer
+     * @throws UnsupportedCharsetException If no support for the named charset is available
+     *                                     in this instance of the Java virtual machine
      */
     public static Writer newWriter(WritableByteChannel ch, String csName) {
         return java.nio.channels.Channels.newWriter(ch, csName);

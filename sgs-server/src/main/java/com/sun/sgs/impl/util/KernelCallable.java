@@ -21,67 +21,72 @@
 
 package com.sun.sgs.impl.util;
 
-import java.util.concurrent.Callable;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.TransactionScheduler;
+
+import java.util.concurrent.Callable;
 
 /**
  * An abstract utility class to run a transactional task that returns a
  * value.  A subclass of this class must implement the abstract {@code
  * call} method which is invoked in a transaction.<p>
- *
+ * <p>
  * Here's an example of running a {@code KernelCallable} that returns a
  * boolean value:<p>
  *
  * <pre>
  * boolean result = KernelCallable.call(
- *	new KernelCallable&lt;Boolean&gt;("MyKernelCallable") {
- *	    public Boolean call() {
- *		return ...;
- *	    }
- *	},
- *	txnScheduler, taskOwner);
+ * 	new KernelCallable&lt;Boolean&gt;("MyKernelCallable") {
+ * 	    public Boolean call() {
+ * 		return ...;
+ *        }
+ *    },
+ * 	txnScheduler, taskOwner);
  * </pre>
+ *
  * @param <R> the type of the result (the return value of the {@code call}
- *	      method)
+ *            method)
  */
 public abstract class KernelCallable<R>
-    extends AbstractKernelRunnable
-    implements Callable<R>
-{
-    /** The result of invoking the {@code call} method. */
+        extends AbstractKernelRunnable
+        implements Callable<R> {
+    /**
+     * The result of invoking the {@code call} method.
+     */
     private R result;
-    /** The flag to indicate whether the {@code call} method is complete. */
+    /**
+     * The flag to indicate whether the {@code call} method is complete.
+     */
     private boolean done;
 
     /**
      * Constructs an instance with the specified {@code name}.
      *
-     * @param	name a descriptive name (or {@code null}) for use in the
-     *		{@code toString} method
+     * @param    name a descriptive name (or {@code null}) for use in the
+     * {@code toString} method
      */
     public KernelCallable(String name) {
-	super(name);
+        super(name);
     }
 
     /**
      * {@inheritDoc} <p>
-     *
+     * <p>
      * This implementation invokes the {@code call} method of this
      * instance and sets the result.
      *
      * @throws IllegalStateException if this task has already been successfully
-     *         run via an invocation of the {@link
-     *         #call(com.sun.sgs.impl.util.KernelCallable,
-     *         com.sun.sgs.kernel.TransactionScheduler,
-     *         com.sun.sgs.auth.Identity) call} method
+     *                               run via an invocation of the {@link
+     *                               #call(com.sun.sgs.impl.util.KernelCallable,
+     *                               com.sun.sgs.kernel.TransactionScheduler,
+     *                               com.sun.sgs.auth.Identity) call} method
      */
     @Override
     public synchronized void run() throws Exception {
-	if (done) {
-	    throw new IllegalStateException("already completed");
-	}
-	result = call();
+        if (done) {
+            throw new IllegalStateException("already completed");
+        }
+        result = call();
     }
 
     /**
@@ -102,15 +107,15 @@ public abstract class KernelCallable<R>
      * Returns the result, previously set by invoking the {@link #run}
      * method.
      *
-     * @return	the result
-     * @throws	IllegalStateException if the {@link #run} method has not
-     *		completed
+     * @return the result
+     * @throws IllegalStateException if the {@link #run} method has not
+     * completed
      */
     private synchronized R getResult() {
-	if (!done) {
-	    throw new IllegalStateException("not done");
-	}
-	return result;
+        if (!done) {
+            throw new IllegalStateException("not done");
+        }
+        return result;
     }
 
     /**
@@ -119,21 +124,20 @@ public abstract class KernelCallable<R>
      * and {@code taskOwner} and returns the result.  The specified
      * {@code callable} can only be used once.
      *
-     * @param	<R> the return type of the {@code KernelCallable}
-     * @param	callable a callable to invoke
-     * @param	txnScheduler a transaction scheduler
-     * @param	taskOwner an identity for the task's owner
-     * @return	the result of executing the {@code callable}
-     * @throws	Exception if running the specified {@code callable} throws
-     *		an {@code Exception} 
+     * @param    <R> the return type of the {@code KernelCallable}
+     * @param    callable a callable to invoke
+     * @param    txnScheduler a transaction scheduler
+     * @param    taskOwner an identity for the task's owner
+     * @return the result of executing the {@code callable}
+     * @throws Exception if running the specified {@code callable} throws
+     * an {@code Exception}
      */
     public static <R> R call(KernelCallable<R> callable,
-			     TransactionScheduler txnScheduler,
-			     Identity taskOwner)
-	throws Exception
-    {
-	txnScheduler.runTask(callable, taskOwner);
+                             TransactionScheduler txnScheduler,
+                             Identity taskOwner)
+            throws Exception {
+        txnScheduler.runTask(callable, taskOwner);
         callable.setDone();
-	return callable.getResult();
+        return callable.getResult();
     }
 }

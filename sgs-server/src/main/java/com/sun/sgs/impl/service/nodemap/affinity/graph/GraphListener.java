@@ -27,6 +27,7 @@ import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.profile.AccessedObjectsDetail;
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
+
 import java.beans.PropertyChangeEvent;
 import java.util.Properties;
 
@@ -35,7 +36,9 @@ import java.util.Properties;
  * a graph based on that information.
  */
 public class GraphListener implements ProfileListener {
-    /** The affinity graph builder. */
+    /**
+     * The affinity graph builder.
+     */
     private final AffinityGraphBuilder builder;
 
     /**
@@ -47,42 +50,47 @@ public class GraphListener implements ProfileListener {
      * for the server's use.
      *
      * @param properties the configuration properties
-     * @param owner task owner for any tasks run by this listener
-     * @param registry the system registry
+     * @param owner      task owner for any tasks run by this listener
+     * @param registry   the system registry
      */
     public GraphListener(Properties properties,
                          Identity owner,
                          ComponentRegistry registry) {
         throw new NullPointerException("null builder not allowed");
     }
+
     /**
      * Constructs a new listener for affinity graph data.
      *
      * @param builder the affinity graph builder to report to
-     * 
      * @throws NullPointerException if the builder is {@code null}
      */
-    public GraphListener(AffinityGraphBuilder builder)
-    {
+    public GraphListener(AffinityGraphBuilder builder) {
         if (builder == null) {
             throw new NullPointerException("null builder not allowed");
         }
         this.builder = builder;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void propertyChange(PropertyChangeEvent event) {
-	// unused
+        // unused
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         // do nothing
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void report(ProfileReport profileReport) {
-        Identity owner = profileReport.getTaskOwner(); 
+        Identity owner = profileReport.getTaskOwner();
         // We don't care about accesses by the system identity, since
         // these identities cannot move to other nodes. The affinity graphs
         // consist of application information only to help reduce their
@@ -90,7 +98,7 @@ public class GraphListener implements ProfileListener {
         if (owner instanceof SystemIdentity) {
             return;
         }
-        
+
         AccessedObjectsDetail detail = profileReport.getAccessedObjectsDetail();
         if (detail == null) {
             return;

@@ -28,8 +28,7 @@ import com.sun.sgs.auth.IdentityCredentials;
  * This simple implementation of <code>IdentityCredentials</code> is used to
  * represent a name and password pair.
  */
-public class NamePasswordCredentials implements IdentityCredentials
-{
+public class NamePasswordCredentials implements IdentityCredentials {
 
     /**
      * The identifier for this type of credentials.
@@ -38,15 +37,15 @@ public class NamePasswordCredentials implements IdentityCredentials
 
     // the name and password
     private final String name;
-    private final char [] password;
+    private final char[] password;
 
     /**
      * Creates an instance of <code>NamePasswordCredentials</code>.
      *
-     * @param name the name
+     * @param name     the name
      * @param password the password
      */
-    public NamePasswordCredentials(String name, char [] password) {
+    public NamePasswordCredentials(String name, char[] password) {
         this.name = name;
         this.password = password.clone();
     }
@@ -54,6 +53,7 @@ public class NamePasswordCredentials implements IdentityCredentials
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getCredentialsType() {
         return TYPE_IDENTIFIER;
     }
@@ -72,7 +72,7 @@ public class NamePasswordCredentials implements IdentityCredentials
      *
      * @return the password
      */
-    public char [] getPassword() {
+    public char[] getPassword() {
         return password.clone();
     }
 

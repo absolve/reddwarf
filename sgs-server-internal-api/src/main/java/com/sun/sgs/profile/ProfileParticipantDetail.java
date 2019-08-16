@@ -44,7 +44,7 @@ public interface ProfileParticipantDetail {
      * conclusion of the transaction.
      *
      * @return <code>true</code> if this participant finished preparing,
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     boolean wasPrepared();
 
@@ -54,7 +54,7 @@ public interface ProfileParticipantDetail {
      * return value has no meaning and will always return <code>false</code>.
      *
      * @return <code>true</code> if the participant returned from preparation
-     *         with a vote of read-only, <code>false</code> otherwise
+     * with a vote of read-only, <code>false</code> otherwise
      */
     boolean wasReadOnly();
 
@@ -62,7 +62,7 @@ public interface ProfileParticipantDetail {
      * Returns whether this participant was successfully committed.
      *
      * @return <code>true</code> if this participant committed,
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     boolean wasCommitted();
 
@@ -76,7 +76,7 @@ public interface ProfileParticipantDetail {
      * failed.
      *
      * @return <code>true</code> if this participant was called directly to
-     *         commit, <code>false</code> otherwise
+     * commit, <code>false</code> otherwise
      */
     boolean wasCommittedDirectly();
 
@@ -87,8 +87,8 @@ public interface ProfileParticipantDetail {
      * prepare to commit and to commit.
      *
      * @return the time in milliseconds this participant spent preparing to
-     *         commit, or the time spent preparing and committing if called
-     *         directly to commit
+     * commit, or the time spent preparing and committing if called
+     * directly to commit
      */
     long getPrepareTime();
 
@@ -100,9 +100,9 @@ public interface ProfileParticipantDetail {
      * directly, then this is the time it took both to prepare to commit and
      * to commit.
      *
-     *  @return the time in milliseconds this participant spent committing,
-     *          or the time spent preparing and committing if called directly
-     *          to commit
+     * @return the time in milliseconds this participant spent committing,
+     * or the time spent preparing and committing if called directly
+     * to commit
      */
     long getCommitTime();
 

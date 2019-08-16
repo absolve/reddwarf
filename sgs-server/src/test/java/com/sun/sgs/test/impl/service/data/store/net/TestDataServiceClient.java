@@ -26,11 +26,14 @@ import com.sun.sgs.impl.service.data.store.net.DataStoreClient;
 import com.sun.sgs.kernel.NodeType;
 import com.sun.sgs.test.impl.service.data.TestDataServiceImpl;
 import com.sun.sgs.tools.test.ParameterizedFilteredNameRunner;
-import java.util.Properties;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
-/** Test the DataStoreService using a networked data store. */
+import java.util.Properties;
+
+/**
+ * Test the DataStoreService using a networked data store.
+ */
 @SuppressWarnings("hiding")
 @RunWith(ParameterizedFilteredNameRunner.class)
 public class TestDataServiceClient extends TestDataServiceImpl {
@@ -39,44 +42,54 @@ public class TestDataServiceClient extends TestDataServiceImpl {
      * locally.
      */
     private static final String serverHost =
-	System.getProperty("test.server.host");
+            System.getProperty("test.server.host");
 
-    /** The network port for the DataStoreServer. */
+    /**
+     * The network port for the DataStoreServer.
+     */
     private static final int serverPort =
-	Integer.getInteger("test.server.port", 44530);
-    
-    /** The name of the DataStoreClient class. */
+            Integer.getInteger("test.server.port", 44530);
+
+    /**
+     * The name of the DataStoreClient class.
+     */
     private static final String DataStoreClientClassName =
-	DataStoreClient.class.getName();
+            DataStoreClient.class.getName();
 
-    /** The name of the DataStoreClient package. */
+    /**
+     * The name of the DataStoreClient package.
+     */
     private static final String DataStoreNetPackage =
-	"com.sun.sgs.impl.service.data.store.net";
+            "com.sun.sgs.impl.service.data.store.net";
 
-    /** Creates an instance. */
+    /**
+     * Creates an instance.
+     */
     public TestDataServiceClient(boolean durableParticipant) {
-	super(durableParticipant);
+        super(durableParticipant);
     }
 
-    /** Adds client and server properties. */
+    /**
+     * Adds client and server properties.
+     */
     @Override
     protected Properties getProperties() throws Exception {
-	Properties props = super.getProperties();
-	String host = serverHost;
-	int port = serverPort;
+        Properties props = super.getProperties();
+        String host = serverHost;
+        int port = serverPort;
         String nodeType = NodeType.appNode.toString();
-	if (host == null) {
-	    host = "localhost";
-	    port = 0;
+        if (host == null) {
+            host = "localhost";
+            port = 0;
             nodeType = NodeType.coreServerNode.toString();
         }
         props.setProperty(StandardProperties.NODE_TYPE, nodeType);
-	props.setProperty(DataStoreNetPackage + ".server.host", host);
-	props.setProperty(DataStoreNetPackage + ".server.port",
-			  String.valueOf(port));
-	props.setProperty(DataServiceImplClassName + ".data.store.class",
-			  DataStoreClientClassName);
-	return props;
+        props.setProperty(DataStoreNetPackage + ".server.host", host);
+        props.setProperty(DataStoreNetPackage + ".server.port",
+                String.valueOf(port));
+        props.setProperty(DataServiceImplClassName + ".data.store.class",
+                DataStoreClientClassName);
+        return props;
     }
 
     /* -- Tests -- */
@@ -86,12 +99,12 @@ public class TestDataServiceClient extends TestDataServiceImpl {
     @Override
     @Ignore
     public void testConstructorNoDirectory() {
-	System.err.println("Skipping");
+        System.err.println("Skipping");
     }
 
     @Override
     @Ignore
     public void testConstructorNoDirectoryNorRoot() {
-	System.err.println("Skipping");
+        System.err.println("Skipping");
     }
 }

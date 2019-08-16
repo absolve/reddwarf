@@ -27,7 +27,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * An edge with an associated weight.
  */
 public class WeightedEdge {
-    /** The weight. */
+    /**
+     * The weight.
+     */
     private final AtomicLong weight;
 
     /**
@@ -39,6 +41,7 @@ public class WeightedEdge {
 
     /**
      * Constructs a weighted edge with an initial weight of {@code value}.
+     *
      * @param value the initial weight
      */
     public WeightedEdge(long value) {
@@ -57,7 +60,7 @@ public class WeightedEdge {
     public long getWeight() {
         return weight.get();
     }
-    
+
     /**
      * Increments the edge weight.
      */
@@ -67,13 +70,16 @@ public class WeightedEdge {
 
     /**
      * Adds the given {@code value} to the edge weight.
+     *
      * @param value the value to add to the weight
      */
     public void addWeight(long value) {
         weight.addAndGet(value);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String toString() {
         return "E:" + weight;
     }

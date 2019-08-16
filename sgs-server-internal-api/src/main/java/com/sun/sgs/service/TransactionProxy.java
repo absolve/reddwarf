@@ -28,6 +28,7 @@ package com.sun.sgs.service;
 import com.sun.sgs.app.TransactionNotActiveException;
 import com.sun.sgs.app.TransactionTimeoutException;
 import com.sun.sgs.auth.Identity;
+
 import java.util.MissingResourceException;
 
 
@@ -42,24 +43,23 @@ public interface TransactionProxy {
      * Returns the current transaction state.
      *
      * @return the current <code>Transaction</code>
-     *
      * @throws TransactionNotActiveException if there is no current, active
      *                                       transaction, or if the current
      *                                       transaction has already started
      *                                       preparing or aborting
-     * @throws TransactionTimeoutException if the current transaction has
-     *                                     timed out
+     * @throws TransactionTimeoutException   if the current transaction has
+     *                                       timed out
      */
     Transaction getCurrentTransaction();
 
     /**
-     * Returns {@code true} if there is a current transaction, even if the 
+     * Returns {@code true} if there is a current transaction, even if the
      * transaction has been aborted.
-     * 
+     *
      * @return {@code true} if there is a current transaction
      */
     boolean inTransaction();
-    
+
     /**
      * Returns the owner of the task that is executing the current
      * transaction.
@@ -74,11 +74,9 @@ public interface TransactionProxy {
      * the type is unknown, or if there is more than one <code>Service</code>
      * of the given type, <code>MissingResourceException</code> is thrown.
      *
-     * @param <T> the type of the <code>Service</code>
+     * @param <T>  the type of the <code>Service</code>
      * @param type the <code>Class</code> of the requested <code>Service</code>
-     *
      * @return the requested <code>Service</code>
-     *
      * @throws MissingResourceException if there wasn't exactly one match to
      *                                  the requested type
      */

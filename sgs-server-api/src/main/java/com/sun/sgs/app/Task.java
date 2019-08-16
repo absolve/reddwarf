@@ -32,14 +32,14 @@ import java.io.Serializable;
  * TaskManager}.  Classes that implement <code>Task</code> must also implement
  * {@link Serializable}.
  *
- * @see		TaskManager
+ * @see        TaskManager
  */
 public interface Task {
 
     /**
      * Performs an action, throwing an exception if the action fails.
      *
-     * @throws	Exception if the action fails
+     * @throws Exception if the action fails
      */
     void run() throws Exception;
 }

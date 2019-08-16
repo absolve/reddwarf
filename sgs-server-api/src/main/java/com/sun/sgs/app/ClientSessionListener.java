@@ -68,9 +68,9 @@ public interface ClientSessionListener {
      * possible to save any partial processing result before {@code
      * MessageRejectedException} is thrown.
      *
-     * @param	message a message
-     * @throws	MessageRejectedException if there are not enough resources
-     *		to process the specified message
+     * @param    message a message
+     * @throws MessageRejectedException if there are not enough resources
+     * to process the specified message
      */
     void receivedMessage(ByteBuffer message);
 
@@ -80,12 +80,12 @@ public interface ClientSessionListener {
      * session's client logged out gracefully; otherwise, the session
      * was either disconnected forcibly by the server or disconnected
      * due to other factors such as communication failure. <p>
-     *
+     * <p>
      * If this listener does not implement {@link ManagedObject}, it will
      * be removed from the persistent store after this method returns.
      * Otherwise, this listener will remain in the persistent store until
      * it is explicitly {@linkplain DataManager#removeObject removed}. <p>
-     *
+     * <p>
      * When this method is invoked, the client session associated with this
      * listener will have already been removed if the application removed
      * the client session in order to disconnect it.  If the client session
@@ -94,7 +94,7 @@ public interface ClientSessionListener {
      * after this method returns.
      *
      * @param graceful if {@code true}, the specified client
-     *        session logged out gracefully
+     *                 session logged out gracefully
      */
     void disconnected(boolean graceful);
 }

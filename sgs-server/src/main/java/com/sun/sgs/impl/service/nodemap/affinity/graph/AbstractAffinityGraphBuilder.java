@@ -24,6 +24,7 @@ package com.sun.sgs.impl.service.nodemap.affinity.graph;
 import com.sun.sgs.impl.service.nodemap.affinity.BasicState;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
+
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,58 +37,75 @@ import java.util.logging.Logger;
  * <dl style="margin-left: 1em">
  *
  * <dt>	<i>Property:</i> <code><b>
- *	com.sun.sgs.impl.service.nodemap.affinity.snapshot.period
- *	</b></code><br>
- *	<i>Default:</i> {@code 300000} (5 minutes)<br>
+ * com.sun.sgs.impl.service.nodemap.affinity.snapshot.period
+ * </b></code><br>
+ * <i>Default:</i> {@code 300000} (5 minutes)<br>
  *
  * <dd style="padding-top: .5em">The amount of time, in milliseconds, for
- *      each snapshot of retained data.  Older snapshots are discarded as
- *      time goes on. A longer snapshot period gives us more history, but
- *      also longer compute times to use that history, as more data must
- *      be processed.<p>
+ * each snapshot of retained data.  Older snapshots are discarded as
+ * time goes on. A longer snapshot period gives us more history, but
+ * also longer compute times to use that history, as more data must
+ * be processed.<p>
  *
  * <dt>	<i>Property:</i> <code><b>
- *	com.sun.sgs.impl.service.nodemap.affinity.snapshot.count
- *	</b></code><br>
- *	<i>Default:</i> {@code 1}
+ * com.sun.sgs.impl.service.nodemap.affinity.snapshot.count
+ * </b></code><br>
+ * <i>Default:</i> {@code 1}
  *
  * <dd style="padding-top: .5em">The number of snapshots to retain.  A
- *       larger value means more history will be retained.  Using a smaller
- *       snapshot period with a larger count means more total history will be
- *       retained, with a smaller amount discarded at the start of each
- *       new snapshot.<p>
+ * larger value means more history will be retained.  Using a smaller
+ * snapshot period with a larger count means more total history will be
+ * retained, with a smaller amount discarded at the start of each
+ * new snapshot.<p>
  * </dl>
- *
  */
 public class AbstractAffinityGraphBuilder extends BasicState {
-    /** The base name for graph builder properties. */
+    /**
+     * The base name for graph builder properties.
+     */
     public static final String PROP_BASE =
             "com.sun.sgs.impl.service.nodemap.affinity";
 
-    /** The property controlling time snapshots, in milliseconds. */
+    /**
+     * The property controlling time snapshots, in milliseconds.
+     */
     public static final String PERIOD_PROPERTY = PROP_BASE + ".snapshot.period";
 
-    /** The default time snapshot period. */
+    /**
+     * The default time snapshot period.
+     */
     public static final long DEFAULT_PERIOD = 1000 * 60 * 5;
 
-    /** The property controlling how many past snapshots to retain. */
+    /**
+     * The property controlling how many past snapshots to retain.
+     */
     public static final String PERIOD_COUNT_PROPERTY =
             PROP_BASE + ".snapshot.count";
 
-    /** The default snapshot count. */
+    /**
+     * The default snapshot count.
+     */
     public static final int DEFAULT_PERIOD_COUNT = 1;
 
-    /** Our logger. */
+    /**
+     * Our logger.
+     */
     protected static final LoggerWrapper logger =
             new LoggerWrapper(Logger.getLogger(PROP_BASE));
 
-    /** Our properties. */
+    /**
+     * Our properties.
+     */
     protected final PropertiesWrapper wrappedProps;
 
-    /** The time, in milliseconds for each period snapshot. */
+    /**
+     * The time, in milliseconds for each period snapshot.
+     */
     protected final long snapshot;
 
-    /** The number of snapshots the graph pruner should maintain. */
+    /**
+     * The number of snapshots the graph pruner should maintain.
+     */
     protected final int periodCount;
 
     /**
@@ -102,9 +120,9 @@ public class AbstractAffinityGraphBuilder extends BasicState {
         periodCount = wrappedProps.getIntProperty(
                 PERIOD_COUNT_PROPERTY, DEFAULT_PERIOD_COUNT,
                 1, Integer.MAX_VALUE);
-         logger.log(Level.CONFIG,
-                       "Created graph builder with properties:" +
-                       "\n  " + PERIOD_PROPERTY + "=" + snapshot +
-                       "\n  " + PERIOD_COUNT_PROPERTY + "=" + periodCount);
+        logger.log(Level.CONFIG,
+                "Created graph builder with properties:" +
+                        "\n  " + PERIOD_PROPERTY + "=" + snapshot +
+                        "\n  " + PERIOD_COUNT_PROPERTY + "=" + periodCount);
     }
 }

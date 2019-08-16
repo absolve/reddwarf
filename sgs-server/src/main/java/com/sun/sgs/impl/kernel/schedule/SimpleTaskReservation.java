@@ -21,9 +21,9 @@
 
 package com.sun.sgs.impl.kernel.schedule;
 
+import com.sun.sgs.kernel.TaskReservation;
 import com.sun.sgs.kernel.schedule.ScheduledTask;
 import com.sun.sgs.kernel.schedule.SchedulerQueue;
-import com.sun.sgs.kernel.TaskReservation;
 
 
 /**
@@ -47,7 +47,7 @@ class SimpleTaskReservation implements TaskReservation {
      * Creates an instance of <code>SimpleTaskReservation</code>.
      *
      * @param queue the associated <code>SchedulerQueue</code>
-     * @param task the <code>ScheduledTask</code> being reserved
+     * @param task  the <code>ScheduledTask</code> being reserved
      */
     public SimpleTaskReservation(SchedulerQueue queue,
                                  ScheduledTask task) {

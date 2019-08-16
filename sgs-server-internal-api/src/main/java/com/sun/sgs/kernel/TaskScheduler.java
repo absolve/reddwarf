@@ -26,7 +26,6 @@
 package com.sun.sgs.kernel;
 
 import com.sun.sgs.app.TaskRejectedException;
-
 import com.sun.sgs.auth.Identity;
 
 
@@ -48,18 +47,16 @@ import com.sun.sgs.auth.Identity;
  * will start. If a task is scheduled to run immediately, or at some point
  * in the future, then this means that the scheduler will try to acquire
  * resources to run the task at that point. It may still be some indefinite
- * length of time before the task can actually be run. 
+ * length of time before the task can actually be run.
  */
 public interface TaskScheduler {
 
     /**
      * Reserves the ability to run the given task.
      *
-     * @param task the {@code KernelRunnable} to execute
+     * @param task  the {@code KernelRunnable} to execute
      * @param owner the entity on who's behalf this task is run
-     *
      * @return a {@code TaskReservation} for the task
-     *
      * @throws TaskRejectedException if a reservation cannot be made
      */
     TaskReservation reserveTask(KernelRunnable task, Identity owner);
@@ -69,12 +66,10 @@ public interface TaskScheduler {
      * the future. The {@code startTime} is a value in milliseconds
      * measured from 1/1/1970.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task      the {@code KernelRunnable} to execute
+     * @param owner     the entity on who's behalf this task is run
      * @param startTime the time at which to start the task
-     *
      * @return a {@code TaskReservation} for the task
-     *
      * @throws TaskRejectedException if a reservation cannot be made
      */
     TaskReservation reserveTask(KernelRunnable task, Identity owner,
@@ -84,9 +79,8 @@ public interface TaskScheduler {
      * Schedules a task to run as soon as possible based on the specific
      * scheduler implementation.
      *
-     * @param task the {@code KernelRunnable} to execute
+     * @param task  the {@code KernelRunnable} to execute
      * @param owner the entity on who's behalf this task is run
-     *
      * @throws TaskRejectedException if the given task is not accepted
      */
     void scheduleTask(KernelRunnable task, Identity owner);
@@ -97,10 +91,9 @@ public interface TaskScheduler {
      * 1/1/1970. If the starting time has already passed, then the task is
      * run immediately.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task      the {@code KernelRunnable} to execute
+     * @param owner     the entity on who's behalf this task is run
      * @param startTime the time at which to start the task
-     *
      * @throws TaskRejectedException if the given task is not accepted
      */
     void scheduleTask(KernelRunnable task, Identity owner, long startTime);
@@ -119,15 +112,13 @@ public interface TaskScheduler {
      * fail. Regardless, the scheduler will always try again at the next
      * execution time.
      *
-     * @param task the {@code KernelRunnable} to execute
-     * @param owner the entity on who's behalf this task is run
+     * @param task      the {@code KernelRunnable} to execute
+     * @param owner     the entity on who's behalf this task is run
      * @param startTime the time at which to start the task
-     * @param period the length of time in milliseconds between each
-     *               recurring task execution
-     *
+     * @param period    the length of time in milliseconds between each
+     *                  recurring task execution
      * @return a {@code RecurringTaskHandle} used to manage the
-     *         recurring task
-     *
+     * recurring task
      * @throws IllegalArgumentException if {@code period} is less than or
      *                                  equal to zero
      */

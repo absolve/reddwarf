@@ -23,9 +23,12 @@ package com.sun.sgs.test.impl.profile;
 
 import com.sun.sgs.profile.ProfileListener;
 import com.sun.sgs.profile.ProfileReport;
+
 import java.beans.PropertyChangeEvent;
 
-/** A simple profile listener that notes calls to the public APIs */
+/**
+ * A simple profile listener that notes calls to the public APIs
+ */
 class SimpleTestListener implements ProfileListener {
     int propertyChangeCalls = 0;
     long reportedNodeId = -1L;
@@ -38,6 +41,7 @@ class SimpleTestListener implements ProfileListener {
     SimpleTestListener() {
         this.doReport = null;
     }
+
     SimpleTestListener(Runnable doReport) {
         this.doReport = doReport;
     }

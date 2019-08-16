@@ -21,12 +21,14 @@
 
 package com.sun.sgs.impl.util;
 
-import static com.sun.sgs.impl.sharedutil.Objects.checkNull;
 import com.sun.sgs.protocol.RequestCompletionHandler;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static com.sun.sgs.impl.sharedutil.Objects.checkNull;
 
 /**
  * This future is an abstract implementation for the futures
@@ -37,9 +39,10 @@ import java.util.concurrent.TimeoutException;
  * @param <T> the future's result type
  */
 public abstract class AbstractCompletionFuture<T>
-    implements Future<T>
-{
-    /** The completion handler for the associated request. */
+        implements Future<T> {
+    /**
+     * The completion handler for the associated request.
+     */
     private final RequestCompletionHandler<T> completionHandler;
 
     /**
@@ -47,82 +50,92 @@ public abstract class AbstractCompletionFuture<T>
      * is complete.
      */
     private boolean done = false;
-    
-    /** Lock for accessing the {@code done} field. */
+
+    /**
+     * Lock for accessing the {@code done} field.
+     */
     private final Object lock = new Object();
-    
-    /** An exception cause, or {@code null}. */
+
+    /**
+     * An exception cause, or {@code null}.
+     */
     private volatile Throwable exceptionCause = null;
-    
+
     /**
      * Constructs an instance with the specified {@code completionHandler}.
      *
      * @param completionHandler a completion handler
      */
     protected AbstractCompletionFuture(
-	RequestCompletionHandler<T> completionHandler)
-    {
-	checkNull("completionHandler", completionHandler);
-	this.completionHandler = completionHandler;
+            RequestCompletionHandler<T> completionHandler) {
+        checkNull("completionHandler", completionHandler);
+        this.completionHandler = completionHandler;
     }
 
     /**
      * Returns the value associated with this future.
      *
-     * @return	the value for this future
+     * @return the value for this future
      */
     protected abstract T getValue();
-	    
+
     /**
      * Returns the value associated with this future, or throws
      * {@code ExecutionException} if there is a problem
      * processing the operation associated with this future.
      *
-     * @return	the value for this future
-     * @throws	ExecutionException if there is a problem processing
-     *		the operation associated with this future
+     * @return the value for this future
+     * @throws ExecutionException if there is a problem processing
+     * the operation associated with this future
      */
     private T getValueInternal() throws ExecutionException {
-	if (exceptionCause != null) {
-	    throw new ExecutionException(exceptionCause);
-	} else {
-	    return getValue();
-	}
+        if (exceptionCause != null) {
+            throw new ExecutionException(exceptionCause);
+        } else {
+            return getValue();
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean cancel(boolean mayInterruptIfRunning) {
-	return false;
+        return false;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public T get() throws InterruptedException, ExecutionException {
-	synchronized (lock) {
-	    while (!done) {
-		lock.wait();
-	    }
-	}
-	return getValueInternal();
+        synchronized (lock) {
+            while (!done) {
+                lock.wait();
+            }
+        }
+        return getValueInternal();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public T get(long timeout, TimeUnit unit)
-	throws InterruptedException, ExecutionException, TimeoutException
-    {
-	synchronized (lock) {
-	    if (!done) {
-		unit.timedWait(lock, timeout);
-	    }
-	    if (!done) {
-		throw new TimeoutException();
-	    }
-	    return getValueInternal();
-	}
+            throws InterruptedException, ExecutionException, TimeoutException {
+        synchronized (lock) {
+            if (!done) {
+                unit.timedWait(lock, timeout);
+            }
+            if (!done) {
+                throw new TimeoutException();
+            }
+            return getValueInternal();
+        }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isCancelled() {
-	return false;
+        return false;
     }
 
     /**
@@ -131,19 +144,21 @@ public abstract class AbstractCompletionFuture<T>
      * the cause of the {@code ExecutionException} thrown by
      * this future's {@code get} methods.
      *
-     * @param	throwable an exception cause
+     * @param    throwable an exception cause
      */
     protected void setException(Throwable throwable) {
-	checkNull("throwable", throwable);
-	exceptionCause = throwable;
-	done();
+        checkNull("throwable", throwable);
+        exceptionCause = throwable;
+        done();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean isDone() {
-	synchronized (lock) {
-	    return done;
-	}
+        synchronized (lock) {
+            return done;
+        }
     }
 
     /**
@@ -152,17 +167,17 @@ public abstract class AbstractCompletionFuture<T>
      * handler. Subsequent invocations to {@link #isDone isDone}
      * will return {@code true}.
      *
-     * @throws	IllegalStateException if this method has already been
-     *		invoked 
+     * @throws IllegalStateException if this method has already been
+     * invoked
      */
     protected void done() {
-	synchronized (lock) {
-	    if (done) {
-		throw new IllegalStateException("already completed");
-	    }
-	    done = true;
-	    lock.notifyAll();
-	}	
-	completionHandler.completed(this);
+        synchronized (lock) {
+            if (done) {
+                throw new IllegalStateException("already completed");
+            }
+            done = true;
+            lock.notifyAll();
+        }
+        completionHandler.completed(this);
     }
 }

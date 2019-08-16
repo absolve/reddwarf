@@ -24,12 +24,14 @@ package com.sun.sgs.test.app.util;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.util.ScalableHashMap;
-import static com.sun.sgs.test.util.UtilReflection.getField;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.sun.sgs.test.util.UtilReflection.getField;
 
 /**
  * A runnable that can be used to count the completions of asynchronous
@@ -37,14 +39,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class DoneRemoving implements Runnable {
 
-    /** The ScalableHashMap.noteDoneRemoving field. */
+    /**
+     * The ScalableHashMap.noteDoneRemoving field.
+     */
     private static Field noteDoneRemoving =
-	getField(ScalableHashMap.class, "noteDoneRemoving");
+            getField(ScalableHashMap.class, "noteDoneRemoving");
 
-    /** The number of milliseconds to wait for the removal to complete. */
+    /**
+     * The number of milliseconds to wait for the removal to complete.
+     */
     private static final long WAIT = 5000;
 
-    /** The runnable that ScalableHashMap should notify of completions. */
+    /**
+     * The runnable that ScalableHashMap should notify of completions.
+     */
     private static final DoneRemoving INSTANCE = new DoneRemoving();
 
     /**
@@ -59,19 +67,24 @@ class DoneRemoving implements Runnable {
      */
     private int count = 0;
 
-    /** The next completion value. */
+    /**
+     * The next completion value.
+     */
     private AtomicInteger next = new AtomicInteger();
 
-    /** Creates an instance. */
-    private DoneRemoving() { }
+    /**
+     * Creates an instance.
+     */
+    private DoneRemoving() {
+    }
 
     /**
      * Schedules a task with a unique number to notify that the removal task
      * was committed.
      */
     public void run() {
-	AppContext.getTaskManager().scheduleTask(
-	    new CountCallsTask(next.getAndIncrement()));
+        AppContext.getTaskManager().scheduleTask(
+                new CountCallsTask(next.getAndIncrement()));
     }
 
     /**
@@ -79,43 +92,48 @@ class DoneRemoving implements Runnable {
      * clear the count.
      */
     static synchronized void init() {
-	try {
-	    noteDoneRemoving.set(null, INSTANCE);
-	} catch (Exception e) {
-	    throw new RuntimeException(e.getMessage(), e);
-	}
-	INSTANCE.count = 0;
+        try {
+            noteDoneRemoving.set(null, INSTANCE);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+        INSTANCE.count = 0;
     }
 
-    /** Wait for the specified number of completions. */
+    /**
+     * Wait for the specified number of completions.
+     */
     static void await(int value) throws InterruptedException {
-	INSTANCE.awaitInternal(value);
+        INSTANCE.awaitInternal(value);
     }
 
-    /** Note that the specified completion committed. */
+    /**
+     * Note that the specified completion committed.
+     */
     private synchronized void note(int number) {
-	if (seen.add(number)) {
-	    count++;
-	    notifyAll();
-	}
+        if (seen.add(number)) {
+            count++;
+            notifyAll();
+        }
     }
 
-    /** Wait for the specified number of completions. */
+    /**
+     * Wait for the specified number of completions.
+     */
     private synchronized void awaitInternal(int value)
-	throws InterruptedException
-    {
-	try {
-	    long deadline = System.currentTimeMillis() + WAIT;
-	    while (count < value) {
-		long wait = deadline - System.currentTimeMillis();
-		if (wait <= 0) {
-		    throw new RuntimeException("Failed waiting for count");
-		}
-		wait(wait);
-	    }
-	} finally {
-	    count = 0;
-	}
+            throws InterruptedException {
+        try {
+            long deadline = System.currentTimeMillis() + WAIT;
+            while (count < value) {
+                long wait = deadline - System.currentTimeMillis();
+                if (wait <= 0) {
+                    throw new RuntimeException("Failed waiting for count");
+                }
+                wait(wait);
+            }
+        } finally {
+            count = 0;
+        }
     }
 
     /**
@@ -123,13 +141,15 @@ class DoneRemoving implements Runnable {
      * removing has been committed.
      */
     private static class CountCallsTask implements Serializable, Task {
-	private static final long serialVersionUID = 1;
-	private final int number;
-	CountCallsTask(int number) {
-	    this.number = number;
-	}
-	public void run() {
-	    INSTANCE.note(number);
-	}
+        private static final long serialVersionUID = 1;
+        private final int number;
+
+        CountCallsTask(int number) {
+            this.number = number;
+        }
+
+        public void run() {
+            INSTANCE.note(number);
+        }
     }
 }

@@ -33,8 +33,7 @@ package com.sun.sgs.auth;
  * actually contain any authentication logic. This should instead be
  * part of the consuming <code>IdentityAuthenticator</code>.
  */
-public interface IdentityCredentials
-{
+public interface IdentityCredentials {
 
     /**
      * Returns the identifier for the type of credentials. This will be

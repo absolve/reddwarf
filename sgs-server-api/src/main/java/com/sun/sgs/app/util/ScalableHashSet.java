@@ -25,12 +25,8 @@
 
 package com.sun.sgs.app.util;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.ManagedObjectRemoval;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.ObjectNotFoundException;
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Collection;
@@ -44,7 +40,7 @@ import java.util.Iterator;
  * for parallel write operations to successfully complete.
  *
  * <p>
- *
+ * <p>
  * Developers may use this class as a drop-in replacement for the {@link
  * java.util.HashSet} class for use in a {@link ManagedObject}.  A {@code
  * HashSet} will typically perform better than this class when the number of
@@ -61,7 +57,7 @@ import java.util.Iterator;
  * directly.
  *
  * <p>
- *
+ * <p>
  * This implementation requires that all non-{@code null} elements implement
  * {@link Serializable}.  Attempting to add elements to the set that do not
  * implement {@code Serializable} will result in an {@link
@@ -75,7 +71,7 @@ import java.util.Iterator;
  * DataManager} prior to removing them from the set.
  *
  * <p>
- *
+ * <p>
  * Applications must make sure that objects used as elements in sets of this
  * class have {@code equals} and {@code hashCode} methods that return the same
  * values after the elements have been serialized and deserialized.  In
@@ -85,7 +81,7 @@ import java.util.Iterator;
  * not suitable for use with this class.
  *
  * <p>
- *
+ * <p>
  * This class marks itself for update as necessary; no additional calls to the
  * {@link DataManager} are necessary when modifying the map.  Developers do not
  * need to call {@code markForUpdate} or {@code getForUpdate} on this set, as
@@ -94,7 +90,7 @@ import java.util.Iterator;
  * operation needs to prevent all access to the set.
  *
  * <p>
- *
+ * <p>
  * This class offers constant-time implementations of the {@code add}, {@code
  * remove} and {@code contains} methods.  Note that, unlike most collections,
  * the {@code size} and {@code isEmpty} methods for this class are <em>not</em>
@@ -102,7 +98,7 @@ import java.util.Iterator;
  * these operations may require accessing all of the entries in the set.
  *
  * <p>
- *
+ * <p>
  * An instance of {@code ScalableHashSet} offers one parameter for performance
  * tuning: {@code minConcurrency}, which specifies the minimum number of write
  * operations to support in parallel.  This parameter acts as a hint to the
@@ -113,7 +109,7 @@ import java.util.Iterator;
  * support more concurrent operations.
  *
  * <p>
- *
+ * <p>
  * Since the expected distribution of objects in the set is essentially random,
  * the actual concurrency will vary.  Developers are strongly encouraged to use
  * hash codes that provide a normal distribution; a large number of collisions
@@ -133,14 +129,14 @@ import java.util.Iterator;
  * {@code ManagedObject}.
  *
  * <p>
- *
+ * <p>
  * The iterator do not throw {@link java.util.ConcurrentModificationException}.
  * The iterator for this class is stable with respect to the concurrent changes
  * to the associated collection, but may ignore additions and removals made to
  * the set during iteration.
  *
  * <p>
- *
+ * <p>
  * If a call to the {@link Iterator#next next} method on the iterator causes a
  * {@link ObjectNotFoundException} to be thrown because the return value has
  * been removed from the {@code DataManager}, the iterator will still have
@@ -149,13 +145,12 @@ import java.util.Iterator;
  * remove the current object even though that object could not be returned.
  *
  * <p>
- *
+ * <p>
  * This class and its iterator implement all optional operations and support
  * {@code null} elements.  This set provides no guarantees on the order of
  * elements when iterating.
  *
  * @param <E> the type of elements maintained by this set
- *
  * @see Object#hashCode Object.hashCode
  * @see java.util.Set
  * @see java.util.HashSet
@@ -164,10 +159,12 @@ import java.util.Iterator;
  * @see ManagedObject
  */
 public class ScalableHashSet<E>
-    extends AbstractSet<E>
-    implements Serializable, ManagedObjectRemoval {
+        extends AbstractSet<E>
+        implements Serializable, ManagedObjectRemoval {
 
-    /** The version of the serialized form. */
+    /**
+     * The version of the serialized form.
+     */
     private static final long serialVersionUID = 1;
 
     /**
@@ -198,7 +195,7 @@ public class ScalableHashSet<E>
      * @see ScalableHashMap#ScalableHashMap()
      */
     public ScalableHashSet() {
-	map = AppContext.getDataManager().
+        map = AppContext.getDataManager().
                 createReference(new ScalableHashMap<E, Marker>());
     }
 
@@ -207,15 +204,13 @@ public class ScalableHashSet<E>
      * specified minimum concurrency.
      *
      * @param minConcurrency the minimum number of concurrent write operations
-     *	      to support
-     *
+     *                       to support
      * @throws IllegalArgumentException if {@code minConcurrency} is
-     *	       not greater than zero
-     *
+     *                                  not greater than zero
      * @see ScalableHashMap#ScalableHashMap(int)
      */
     public ScalableHashSet(int minConcurrency) {
-	map = AppContext.getDataManager().
+        map = AppContext.getDataManager().
                 createReference(new ScalableHashMap<E, Marker>(minConcurrency));
     }
 
@@ -224,29 +219,26 @@ public class ScalableHashSet<E>
      * The new set will have the default minimum concurrency ({@code 32}).
      *
      * @param c the collection of elements to be added to the set
-     *
      * @throws IllegalArgumentException if any elements contained in the
-     *	       argument are not {@code null} and do not implement {@code
-     *	       Serializable}
+     *                                  argument are not {@code null} and do not implement {@code
+     *                                  Serializable}
      */
     public ScalableHashSet(Collection<? extends E> c) {
-	this();
-	addAll(c);
+        this();
+        addAll(c);
     }
 
     /**
      * Adds the specified element to this set if it was not already present.
      *
      * @param e the element to be added
-     *
      * @return {@code true} if the set did not already contain the specified
-     *         element
-     *
+     * element
      * @throws IllegalArgumentException if the argument is not {@code null} and
-     *	       does not implement {@code Serializable}
+     *                                  does not implement {@code Serializable}
      */
     public boolean add(E e) {
-	return map.get().put(e, PRESENT) == null;
+        return map.get().put(e, PRESENT) == null;
     }
 
     /**
@@ -255,18 +247,17 @@ public class ScalableHashSet<E>
      * O(n*log(n))} time.
      */
     public void clear() {
-	map.get().clear();
+        map.get().clear();
     }
 
     /**
      * Returns {@code true} if this set contains the specified element.
      *
      * @param o the element whose presence in the set is to be tested
-     *
      * @return {@code true} if this set contains the specified element
      */
     public boolean contains(Object o) {
-	return map.get().containsKey(o);
+        return map.get().containsKey(o);
     }
 
     /**
@@ -275,7 +266,7 @@ public class ScalableHashSet<E>
      * @return {@code true} if this set contains no elements
      */
     public boolean isEmpty() {
-	return map.get().isEmpty();
+        return map.get().isEmpty();
     }
 
     /**
@@ -285,18 +276,17 @@ public class ScalableHashSet<E>
      * @return an iterator over the elements in this set
      */
     public Iterator<E> iterator() {
-	return map.get().keySet().iterator();
+        return map.get().keySet().iterator();
     }
 
     /**
      * Removes the specified element from this set if it was present.
      *
      * @param o the element that should be removed from the set, if present
-     *
      * @return {@code true} if the element was initially present in this set
      */
     public boolean remove(Object o) {
-	return PRESENT.equals(map.get().remove(o));
+        return PRESENT.equals(map.get().remove(o));
     }
 
     /**
@@ -307,48 +297,46 @@ public class ScalableHashSet<E>
      * @return the number of elements in this set
      */
     public int size() {
-	return map.get().size();
+        return map.get().size();
     }
 
     /**
      * Retains only the elements in this collection that are contained in the
      * specified collection.  In other words, removes from this collection all
      * of its elements that are not contained in the specified collection. <p>
-     *
+     * <p>
      * This implementation iterates over this collection, checking each element
      * returned by the iterator in turn to see if it's contained in the
      * specified collection.  If it's not so contained, it's removed from this
      * collection with the iterator's {@code remove} method.
      *
      * @param c elements to be retained in this collection.
-     *
      * @return {@code true} if this collection changed as a result of the
-     *         call
+     * call
      * @throws NullPointerException if the specified collection is {@code null}
-     *
      * @see #remove
      * @see #contains
      */
     @Override
     public boolean retainAll(Collection<?> c) {
-	/*
-	 * The AbstractCollection method doesn't currently do this check.
-	 * -tjb@sun.com (10/10/2007)
-	 */
-	if (c == null) {
-	    throw new NullPointerException("The argument must not be null");
-	}
-	return super.retainAll(c);
+        /*
+         * The AbstractCollection method doesn't currently do this check.
+         * -tjb@sun.com (10/10/2007)
+         */
+        if (c == null) {
+            throw new NullPointerException("The argument must not be null");
+        }
+        return super.retainAll(c);
     }
 
     /**
      * {@inheritDoc} <p>
-     *
+     * <p>
      * This implementation removes the underlying {@code ScalableHashMap}.
      */
     public void removingObject() {
-	AppContext.getDataManager().removeObject(
-	    map.get());
+        AppContext.getDataManager().removeObject(
+                map.get());
     }
 
     /**
@@ -357,14 +345,14 @@ public class ScalableHashSet<E>
      * deserialization without the added cost of write replacement.
      */
     private static final class Marker implements Serializable {
-	private static final long serialVersionUID = 1;
+        private static final long serialVersionUID = 1;
 
-	public int hashCode() {
-	    return 0;
-	}
+        public int hashCode() {
+            return 0;
+        }
 
-	public boolean equals(Object o) {
-	    return o != null && o instanceof Marker;
-	}
+        public boolean equals(Object o) {
+            return o != null && o instanceof Marker;
+        }
     }
 }

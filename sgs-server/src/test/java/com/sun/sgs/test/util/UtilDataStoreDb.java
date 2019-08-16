@@ -25,21 +25,32 @@ import com.sun.sgs.impl.service.data.store.DataStoreImpl;
 import com.sun.sgs.impl.service.data.store.db.bdb.BdbEnvironment;
 import com.sun.sgs.impl.service.data.store.db.je.JeEnvironment;
 import com.sun.sgs.service.store.db.DbEnvironment;
+
 import java.lang.reflect.Method;
 import java.util.Properties;
 
-/** Utilities for handling the data store database layer in tests. */
+/**
+ * Utilities for handling the data store database layer in tests.
+ */
 public final class UtilDataStoreDb {
 
-    /** Types of data store database environment implementations. */
+    /**
+     * Types of data store database environment implementations.
+     */
     public enum EnvironmentType {
 
-	/** Berkeley DB Standard Edition */
-	BDB,
+        /**
+         * Berkeley DB Standard Edition
+         */
+        BDB,
 
-	/** Berkeley DB Java Edition */
-	JE
-    };
+        /**
+         * Berkeley DB Java Edition
+         */
+        JE
+    }
+
+    ;
 
     /**
      * Returns type of data store database environment implementation in use.
@@ -48,22 +59,20 @@ public final class UtilDataStoreDb {
      * @return the database environment type
      */
     public static EnvironmentType getEnvironmentType(Properties properties) {
-	String className = properties.getProperty(
-	    DataStoreImpl.ENVIRONMENT_CLASS_PROPERTY);
-	if (className == null ||
-	    className.equals(
-		"com.sun.sgs.impl.service.data.store.db.bdb.BdbEnvironment"))
-	{
-	    return EnvironmentType.BDB;
-	} else if (className.equals(
-		       "com.sun.sgs.impl.service.data.store.db.je." +
-		       "JeEnvironment"))
-	{
-	    return EnvironmentType.JE;
-	} else {
-	    throw new RuntimeException(
-		"Unknown environment class: " + className);
-	}
+        String className = properties.getProperty(
+                DataStoreImpl.ENVIRONMENT_CLASS_PROPERTY);
+        if (className == null ||
+                className.equals(
+                        "com.sun.sgs.impl.service.data.store.db.bdb.BdbEnvironment")) {
+            return EnvironmentType.BDB;
+        } else if (className.equals(
+                "com.sun.sgs.impl.service.data.store.db.je." +
+                        "JeEnvironment")) {
+            return EnvironmentType.JE;
+        } else {
+            throw new RuntimeException(
+                    "Unknown environment class: " + className);
+        }
     }
 
     /**
@@ -73,16 +82,15 @@ public final class UtilDataStoreDb {
      * @return the system property for specifying the lock timeout
      */
     public static String getLockTimeoutPropertyName(
-	Properties properties)
-    {
-	switch (getEnvironmentType(properties)) {
-	case BDB:
-	    return BdbEnvironment.LOCK_TIMEOUT_PROPERTY;
-	case JE:
-	    return JeEnvironment.LOCK_TIMEOUT_PROPERTY;
-	default:
-	    throw new RuntimeException("Unknown environment");
-	}
+            Properties properties) {
+        switch (getEnvironmentType(properties)) {
+            case BDB:
+                return BdbEnvironment.LOCK_TIMEOUT_PROPERTY;
+            case JE:
+                return JeEnvironment.LOCK_TIMEOUT_PROPERTY;
+            default:
+                throw new RuntimeException("Unknown environment");
+        }
     }
 
     /**
@@ -93,12 +101,12 @@ public final class UtilDataStoreDb {
      * @return the lock timeout in microseconds
      */
     public static long getLockTimeoutMicros(DbEnvironment env) {
-	Method method = UtilReflection.getMethod(
-	    env.getClass(), "getLockTimeoutMicros");
-	try {
-	    return (Long) method.invoke(env);
-	} catch (Exception e) {
-	    throw new RuntimeException("Unexpected exception: " + e, e);
-	}
+        Method method = UtilReflection.getMethod(
+                env.getClass(), "getLockTimeoutMicros");
+        try {
+            return (Long) method.invoke(env);
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected exception: " + e, e);
+        }
     }
 }

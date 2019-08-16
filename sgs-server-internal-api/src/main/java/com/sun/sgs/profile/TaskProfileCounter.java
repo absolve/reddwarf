@@ -34,17 +34,17 @@ package com.sun.sgs.profile;
  */
 public interface TaskProfileCounter extends ProfileCounter {
 
-    /** 
+    /**
      * {@inheritDoc}
-     * 
+     *
      * @throws IllegalStateException if this is called outside the scope
      *                               of a task run through the scheduler
      */
     void incrementCount();
 
-    /** 
+    /**
      * {@inheritDoc}
-     * 
+     *
      * @throws IllegalStateException if this is called outside the scope
      *                               of a task run through the scheduler
      */

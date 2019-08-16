@@ -26,10 +26,18 @@ package com.sun.sgs.impl.service.nodemap.affinity;
  */
 public interface AffinityGroupFinder {
 
-    /** Enables the finder. */
+    /**
+     * Enables the finder.
+     */
     void enable();
-    /** Disables the finder. */
+
+    /**
+     * Disables the finder.
+     */
     void disable();
-    /** Shuts down the finder. */
+
+    /**
+     * Shuts down the finder.
+     */
     void shutdown();
 }

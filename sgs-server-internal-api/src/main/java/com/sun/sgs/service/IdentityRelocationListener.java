@@ -32,15 +32,14 @@ import com.sun.sgs.auth.Identity;
  * when an identity is about to be relocated from the local node if it needs
  * to perform any work in advance of the identity relocation.
  *
- * @see 
- * NodeMappingService#addIdentityRelocationListener(IdentityRelocationListener)
+ * @see NodeMappingService#addIdentityRelocationListener(IdentityRelocationListener)
  */
 public interface IdentityRelocationListener {
 
     /**
      * Notifies this listener that the specified {@code id} has been
      * selected for relocation to {@code newNodeId} and that this listener
-     * needs to prepare for that move. This method is invoked outside of 
+     * needs to prepare for that move. This method is invoked outside of
      * a transaction.
      * <p>
      * When the listener has completed preparations for the identity relocation,
@@ -54,12 +53,12 @@ public interface IdentityRelocationListener {
      * because it may be invoked multiple times.  If it is invoked multiple
      * times, the {@link SimpleCompletionHandler#completed completed} method
      * must be called for each {@code handler} provided.
-     * 
+     *
      * @param id        the identity which has been selected for relocation
      * @param newNodeId the identity of the node that {@code id} will move to
      * @param handler   a handler to notify when relocation preparations are
      *                  complete
      */
-    void prepareToRelocate(Identity id, long newNodeId, 
+    void prepareToRelocate(Identity id, long newNodeId,
                            SimpleCompletionHandler handler);
 }

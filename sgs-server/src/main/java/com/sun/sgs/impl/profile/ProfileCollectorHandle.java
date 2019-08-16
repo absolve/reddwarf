@@ -21,9 +21,7 @@
 package com.sun.sgs.impl.profile;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.kernel.KernelRunnable;
-
 import com.sun.sgs.profile.AccessedObjectsDetail;
 import com.sun.sgs.profile.ProfileCollector;
 import com.sun.sgs.profile.ProfileParticipantDetail;
@@ -60,10 +58,10 @@ public interface ProfileCollectorHandle {
      * onto a stack until the new task finishes from a call to
      * <code>finishTask</code>.
      *
-     * @param task the <code>KernelRunnable</code> that is starting
-     * @param owner the <code>Identity</code> of the task owner
+     * @param task               the <code>KernelRunnable</code> that is starting
+     * @param owner              the <code>Identity</code> of the task owner
      * @param scheduledStartTime the requested starting time for the task
-     * @param readyCount the number of ready tasks at the scheduler
+     * @param readyCount         the number of ready tasks at the scheduler
      */
     void startTask(KernelRunnable task, Identity owner,
                    long scheduledStartTime, int readyCount);
@@ -76,10 +74,9 @@ public interface ProfileCollectorHandle {
      * transactional context.
      *
      * @param transactionId the identifier for the transaction
-     *
      * @throws IllegalStateException if no task is bound to this thread
      */
-    void noteTransactional(byte [] transactionId);
+    void noteTransactional(byte[] transactionId);
 
     /**
      * Tells the collector about a participant of a transaction when that
@@ -90,7 +87,6 @@ public interface ProfileCollectorHandle {
      * the context of the current thread.
      *
      * @param participantDetail the detail associated with the participant
-     *
      * @throws IllegalStateException if no transactional task is bound to
      *                               this thread
      */
@@ -105,7 +101,6 @@ public interface ProfileCollectorHandle {
      * called in the context of the current thread.
      *
      * @param listenerDetail the detail associated with the listener
-     *
      * @throws IllegalStateException if no transactional task is bound to
      *                               this thread
      */
@@ -114,9 +109,8 @@ public interface ProfileCollectorHandle {
     /**
      * Sets the detail for all objects accessed during the task as
      * reported to the <code>AccessCoordinator</code>.
-     * 
-     * @param detail all detail of the accessed objects
      *
+     * @param detail all detail of the accessed objects
      * @throws IllegalStateException if no transactional task is bound to
      *                               this thread
      */
@@ -128,7 +122,6 @@ public interface ProfileCollectorHandle {
      * <code>startTask</code>) has now successfully finished.
      *
      * @param tryCount the number of times that the task has tried to run
-     *
      * @throws IllegalStateException if no task is bound to this thread
      */
     void finishTask(int tryCount);
@@ -139,15 +132,14 @@ public interface ProfileCollectorHandle {
      * finished and that an exception occured during its execution.
      *
      * @param tryCount the number of times that the task has tried to run
-     * @param t the <code>Throwable</code> thrown during task execution
-     *
+     * @param t        the <code>Throwable</code> thrown during task execution
      * @throws IllegalStateException if no task is bound to this thread
      */
     void finishTask(int tryCount, Throwable t);
-    
+
     /**
      * Returns the underlying profile collector that this interface controls.
-     * 
+     *
      * @return the underlying profile collector that this interface controls
      */
     ProfileCollector getCollector();

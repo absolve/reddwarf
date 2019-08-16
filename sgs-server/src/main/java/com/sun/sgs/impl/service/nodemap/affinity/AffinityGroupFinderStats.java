@@ -28,6 +28,7 @@ import com.sun.sgs.profile.ProfileCollector;
 import com.sun.sgs.profile.ProfileCollector.ProfileLevel;
 import com.sun.sgs.profile.ProfileConsumer;
 import com.sun.sgs.profile.ProfileConsumer.ProfileDataType;
+
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
@@ -37,52 +38,66 @@ import javax.management.StandardMBean;
  * Management info for the label propagation affinity group finder.
  */
 public class AffinityGroupFinderStats extends StandardMBean
-        implements AffinityGroupFinderMXBean
-{
-    /** 
+        implements AffinityGroupFinderMXBean {
+    /**
      * Our consumer name, created with at {@code ProfileLevel.MEDIUM}.
      */
     public static final String CONS_NAME = "com.sun.sgs.AffinityGroupFinder";
-    /** Configuration info.
+    /**
+     * Configuration info.
      * TBD: what if we allow this be modified?
      */
     private final int stopIteration;
 
-    /** The affinity group finder. */
+    /**
+     * The affinity group finder.
+     */
     private final LPAAffinityGroupFinder finder;
 
-    /** The number of groups found in the last algorithm run. */
+    /**
+     * The number of groups found in the last algorithm run.
+     */
     protected int numGroups;
 
     // Statistics are gathered for samples (min, max, avg).
-    /** The number of iterations in the last algorithm run. */
+    /**
+     * The number of iterations in the last algorithm run.
+     */
     protected final AggregateProfileSample iterations;
-    /** The time (milliseconds) for the last algorithm run. */
+    /**
+     * The time (milliseconds) for the last algorithm run.
+     */
     protected final AggregateProfileSample runtime;
 
-    /** The total number of algorithm runs. */
+    /**
+     * The total number of algorithm runs.
+     */
     protected final AggregateProfileCounter runs;
-    /** The total number of failed algorithm runs. */
+    /**
+     * The total number of failed algorithm runs.
+     */
     protected final AggregateProfileCounter failed;
-    /** The total number of stopped algorithm runs. Stopped runs are
+    /**
+     * The total number of stopped algorithm runs. Stopped runs are
      * not considered failures.
      */
     protected final AggregateProfileCounter stopped;
 
-    /** The last time {@link #clear} was called, or when this object
+    /**
+     * The last time {@link #clear} was called, or when this object
      * was created if {@code clear} has not been called.
      */
     private volatile long lastClear = System.currentTimeMillis();
 
     /**
      * Constructs the MXBean for affinity group finder information.
-     * @param finder the affinity group finder
+     *
+     * @param finder    the affinity group finder
      * @param collector the profile collector
-     * @param stopIter the maximum iterations a run will perform
+     * @param stopIter  the maximum iterations a run will perform
      */
     public AffinityGroupFinderStats(LPAAffinityGroupFinder finder,
-                                    ProfileCollector collector, int stopIter)
-    {
+                                    ProfileCollector collector, int stopIter) {
         super(AffinityGroupFinderMXBean.class, true);
         stopIteration = stopIter;
         this.finder = finder;
@@ -102,57 +117,80 @@ public class AffinityGroupFinderStats extends StandardMBean
         stopped = (AggregateProfileCounter)
                 consumer.createCounter("stopped", type, level);
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public double getAvgIterations() {
         return iterations.getAverage();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public double getAvgRunTime() {
         return runtime.getAverage();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getMaxIterations() {
         return (int) iterations.getMaxSample();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getMaxRunTime() {
         return runtime.getMaxSample();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getMinRunTime() {
         return runtime.getMinSample();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getNumberFailures() {
         return failed.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getNumberGroups() {
         return numGroups;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getNumberRuns() {
         return runs.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getNumberStopped() {
         return stopped.getCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getStopIteration() {
         return stopIteration;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void clear() {
         lastClear = System.currentTimeMillis();
         runtime.clearSamples();
@@ -162,12 +200,16 @@ public class AffinityGroupFinderStats extends StandardMBean
         stopped.clearCount();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long getLastClearTime() {
         return lastClear;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void findAffinityGroups() {
         try {
             finder.findAffinityGroups();
@@ -179,12 +221,16 @@ public class AffinityGroupFinderStats extends StandardMBean
     // Overrides for StandardMBean information, giving JMX clients
     // (like JConsole) more information for better displays.
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected String getDescription(MBeanInfo info) {
         return "An MXBean for examining the affinity group finder";
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
         if (info.getName().equals("NumberGroups")) {
@@ -203,7 +249,7 @@ public class AffinityGroupFinderStats extends StandardMBean
             description = "The maximum time, in milliseconds, for any run.";
         } else if (info.getName().equals("AvgIterations")) {
             description = "The average number of iterations algorithm runs " +
-                   "required.";
+                    "required.";
         } else if (info.getName().equals("MaxIterations")) {
             description = "The maximum number of iterations for any run.";
         } else if (info.getName().equals("StopIteration")) {
@@ -215,7 +261,9 @@ public class AffinityGroupFinderStats extends StandardMBean
         return description;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     protected String getDescription(MBeanOperationInfo op) {
         if (op.getName().equals("clear")) {
             return "Clears all data in this bean.";
@@ -224,7 +272,10 @@ public class AffinityGroupFinderStats extends StandardMBean
         }
         return null;
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     protected int getImpact(MBeanOperationInfo op) {
         if (op.getName().equals("clear")) {
             return MBeanOperationInfo.ACTION;
@@ -236,8 +287,10 @@ public class AffinityGroupFinderStats extends StandardMBean
 
 
     // Setters, but not part of the MXBean
+
     /**
      * Report the number of iterations a run took.
+     *
      * @param sample the number of iterations
      */
     public void iterationsSample(long sample) {
@@ -246,6 +299,7 @@ public class AffinityGroupFinderStats extends StandardMBean
 
     /**
      * Report the amount of runtime, in milliseconds, a run took.
+     *
      * @param sample the amount of runtime, in msecs
      */
     public void runtimeSample(long sample) {
@@ -276,6 +330,7 @@ public class AffinityGroupFinderStats extends StandardMBean
 
     /**
      * Set the number of groups found in the last run.
+     *
      * @param value the number of groups found in the last run.
      */
     public void setNumGroups(int value) {

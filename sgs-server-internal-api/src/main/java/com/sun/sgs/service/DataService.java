@@ -25,12 +25,8 @@
 
 package com.sun.sgs.service;
 
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.NameNotBoundException;
-import com.sun.sgs.app.ObjectNotFoundException;
-import com.sun.sgs.app.TransactionException;
+import com.sun.sgs.app.*;
+
 import java.io.DataInput;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -54,12 +50,12 @@ public interface DataService extends DataManager, Service {
      * value may be passed to {@link WatchdogService#getNode
      * WatchdogService.getNode} to obtain the {@link Node} object for the local
      * node. <p>
-     *
+     * <p>
      * This method may be invoked any time after this service is initialized,
      * whether or not the calling context is inside or outside of a
      * transaction.
      *
-     * @return	the node ID for the local node
+     * @return the node ID for the local node
      */
     long getLocalNodeId();
 
@@ -70,14 +66,14 @@ public interface DataService extends DataManager, Service {
      * markForUpdate} or {@link ManagedReference#getForUpdate
      * ManagedReference.getForUpdate} before making the modifications.
      *
-     * @param	name the name
-     * @return	the object associated with the service binding of the name
-     * @throws	NameNotBoundException if no object is bound to the name
-     * @throws	ObjectNotFoundException if the object bound to the name is not
-     *		found
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
-     * @see	#getServiceBindingForUpdate getServiceBindingForUpdate
+     * @param    name the name
+     * @return the object associated with the service binding of the name
+     * @throws NameNotBoundException if no object is bound to the name
+     * @throws ObjectNotFoundException if the object bound to the name is not
+     * found
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
+     * @see    #getServiceBindingForUpdate getServiceBindingForUpdate
      */
     ManagedObject getServiceBinding(String name);
 
@@ -85,13 +81,13 @@ public interface DataService extends DataManager, Service {
      * Obtains the object associated with the service binding of a name, and
      * notifies the system that the object is going to be modified.
      *
-     * @param	name the name
-     * @return	the object associated with the service binding of the name
-     * @throws	NameNotBoundException if no object is bound to the name
-     * @throws	ObjectNotFoundException if the object bound to the name is not
-     *		found
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    name the name
+     * @return the object associated with the service binding of the name
+     * @throws NameNotBoundException if no object is bound to the name
+     * @throws ObjectNotFoundException if the object bound to the name is not
+     * found
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
      */
     ManagedObject getServiceBindingForUpdate(String name);
 
@@ -107,14 +103,14 @@ public interface DataService extends DataManager, Service {
      * indirectly through non-managed objects, need to be referred to through
      * instances of {@link ManagedReference}.
      *
-     * @param	name the name
-     * @param	object the object associated with the service binding of the
-     *		name
-     * @throws	IllegalArgumentException if <code>object</code> does not
-     *		implement both {@link ManagedObject} and {@link Serializable}
-     * @throws	ObjectNotFoundException if the object has been removed
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    name the name
+     * @param    object the object associated with the service binding of the
+     * name
+     * @throws IllegalArgumentException if <code>object</code> does not
+     * implement both {@link ManagedObject} and {@link Serializable}
+     * @throws ObjectNotFoundException if the object has been removed
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
      */
     void setServiceBinding(String name, Object object);
 
@@ -124,11 +120,11 @@ public interface DataService extends DataManager, Service {
      * name and the object is removed.  To remove the object, use the {@link
      * #removeObject removeObject} method.
      *
-     * @param	name the name
-     * @throws	NameNotBoundException if the name is not bound
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
-     * @see	#removeObject removeObject
+     * @param    name the name
+     * @throws NameNotBoundException if the name is not bound
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
+     * @see    #removeObject removeObject
      */
     void removeServiceBinding(String name);
 
@@ -137,7 +133,7 @@ public interface DataService extends DataManager, Service {
      * binding, or <code>null</code> if there are no more bound names.  If
      * <code>name</code> is <code>null</code>, then the search starts at the
      * beginning. <p>
-     *
+     * <p>
      * The order of the names corresponds to the ordering of the UTF-8 encoding
      * of the names.  To provide flexibility to the implementation, the UTF-8
      * encoding used can be either <em>standard UTF-8</em>, as defined by the
@@ -145,13 +141,13 @@ public interface DataService extends DataManager, Service {
      * <em>modified UTF-8</em>, as used by serialization and defined by the
      * {@link DataInput} interface.
      *
-     * @param	name the name to search after, or <code>null</code> to start at
-     *		the beginning
-     * @return	the next name with a service binding following
-     *		<code>name</code>, or <code>null</code> if there are no more
-     *		bound names
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    name the name to search after, or <code>null</code> to start at
+     * the beginning
+     * @return the next name with a service binding following
+     * <code>name</code>, or <code>null</code> if there are no more
+     * bound names
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
      */
     String nextServiceBoundName(String name);
 
@@ -163,13 +159,13 @@ public interface DataService extends DataManager, Service {
      * binding.  This method does not check to see whether the associated
      * object has been removed.
      *
-     * @param	id the identifier
-     * @return	the managed reference
-     * @throws	IllegalArgumentException if the implementation is able to
-     *		determine that {@code id} was not returned by a call to {@code
-     *		ManagedReference.getId}
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    id the identifier
+     * @return the managed reference
+     * @throws IllegalArgumentException if the implementation is able to
+     * determine that {@code id} was not returned by a call to {@code
+     * ManagedReference.getId}
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
      */
     ManagedReference<?> createReferenceForId(BigInteger id);
 
@@ -181,25 +177,25 @@ public interface DataService extends DataManager, Service {
      * have already been removed, and may not include identifiers for newly
      * created objects.  It is not an error for the object associated with
      * {@code objectId} to have already been removed. <p>
-     *
+     * <p>
      * The object identifiers accepted and returned by this method are the same
      * as those returned by the {@link ManagedReference#getId
      * ManagedReference.getId} method. <p>
-     *
+     * <p>
      * Callers should not assume that objects associated with the identifiers
      * returned by this method, but which cannot be reached by traversing
      * object field references starting with an object associated with a name
      * binding, will continue to be retained by the data service.
      *
-     * @param	objectId the identifier of the object to search after, or
-     *		{@code null} to request the first object
-     * @return	the identifier of the next object following the object with
-     *		identifier {@code objectId}, or {@code null} if there are no
-     *		more objects
-     * @throws	IllegalArgumentException if the implementation can determine
-     *		that {@code objectId} is not a valid object identifier
-     * @throws	TransactionException if the operation failed because of a
-     *		problem with the current transaction
+     * @param    objectId the identifier of the object to search after, or
+     * {@code null} to request the first object
+     * @return the identifier of the next object following the object with
+     * identifier {@code objectId}, or {@code null} if there are no
+     * more objects
+     * @throws IllegalArgumentException if the implementation can determine
+     * that {@code objectId} is not a valid object identifier
+     * @throws TransactionException if the operation failed because of a
+     * problem with the current transaction
      */
     BigInteger nextObjectId(BigInteger objectId);
 }

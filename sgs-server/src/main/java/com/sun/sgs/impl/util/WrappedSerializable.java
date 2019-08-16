@@ -25,6 +25,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.impl.sharedutil.Objects;
+
 import java.io.Serializable;
 
 /**
@@ -37,7 +38,7 @@ import java.io.Serializable;
  * <li>If the {@code object} implements {@code ManagedObject}, the
  * {@code WrappedSerializable} instance contains a {@link
  * ManagedReference} directly to that object. </li>
- 
+ *
  * <li> Otherwise, if the {@code object} implements {@link
  * Serializable} but does not implement {@code ManagedObject}, the
  * {@code WrappedSerializable} instance wraps the {@code object} in a
@@ -54,10 +55,13 @@ import java.io.Serializable;
  */
 public final class WrappedSerializable<T> implements Serializable {
 
-    /** The serialVersionUID for this class. */
+    /**
+     * The serialVersionUID for this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The managed reference for the object or wrapper.
+    /**
+     * The managed reference for the object or wrapper.
      */
     private ManagedReference<?> ref = null;
 
@@ -67,43 +71,41 @@ public final class WrappedSerializable<T> implements Serializable {
      * or may not be a {@link ManagedObject}.
      *
      * @param object an object
-     *
      * @throws IllegalArgumentException if the specified object does not
-     * implement <code>Serializable</code>
+     *                                  implement <code>Serializable</code>
      */
     public WrappedSerializable(T object) {
-	if (object == null) {
-	    throw new NullPointerException("obj is null");
-	} else if (!(object instanceof Serializable)) {
-	    throw new IllegalArgumentException("obj not serializable");
-	}
-	ManagedObject managedObj =
-	    (object instanceof ManagedObject) ?
-	    (ManagedObject) object :
-	    new Wrapper<T>(object);
-	    
-	ref = AppContext.getDataManager().createReference(managedObj);
+        if (object == null) {
+            throw new NullPointerException("obj is null");
+        } else if (!(object instanceof Serializable)) {
+            throw new IllegalArgumentException("obj not serializable");
+        }
+        ManagedObject managedObj =
+                (object instanceof ManagedObject) ?
+                        (ManagedObject) object :
+                        new Wrapper<T>(object);
+
+        ref = AppContext.getDataManager().createReference(managedObj);
     }
 
     /**
      * Returns the object in this wrapper.
      *
      * @return T the object in this wrapper
-     *
      * @throws IllegalStateException if {@link #remove remove} has
-     * been invoked on this instance
+     *                               been invoked on this instance
      */
     public T get() {
-	checkRemoved();
-	ManagedObject obj = (ManagedObject) ref.get();
-	if (obj instanceof Wrapper) {
-	    Wrapper<T> wrapper = Objects.uncheckedCast(obj);
-	    return wrapper.get();
-	} else {
-	    @SuppressWarnings("unchecked")
-	    T result = (T) obj;
-	    return result;
-	}
+        checkRemoved();
+        ManagedObject obj = (ManagedObject) ref.get();
+        if (obj instanceof Wrapper) {
+            Wrapper<T> wrapper = Objects.uncheckedCast(obj);
+            return wrapper.get();
+        } else {
+            @SuppressWarnings("unchecked")
+            T result = (T) obj;
+            return result;
+        }
     }
 
     /**
@@ -112,15 +114,15 @@ public final class WrappedSerializable<T> implements Serializable {
      * during construction, then removes the wrapper as well.
      *
      * @throws IllegalStateException if {@link #remove remove} has
-     * been invoked on this instance
+     *                               been invoked on this instance
      */
     public void remove() {
-	checkRemoved();
-	Object obj = ref.get();
-	if (obj instanceof Wrapper) {
-	    AppContext.getDataManager().removeObject(obj);
-	}
-	ref = null;
+        checkRemoved();
+        Object obj = ref.get();
+        if (obj instanceof Wrapper) {
+            AppContext.getDataManager().removeObject(obj);
+        }
+        ref = null;
     }
 
     /**
@@ -128,9 +130,9 @@ public final class WrappedSerializable<T> implements Serializable {
      * already been invoked.
      */
     private void checkRemoved() {
-	if (ref == null) {
-	    throw new IllegalStateException("remove already invoked");
-	}
+        if (ref == null) {
+            throw new IllegalStateException("remove already invoked");
+        }
     }
 
     /**
@@ -138,16 +140,16 @@ public final class WrappedSerializable<T> implements Serializable {
      */
     private static class Wrapper<T> implements ManagedObject, Serializable {
 
-	private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1L;
 
-	private final T obj;
+        private final T obj;
 
-	Wrapper(T obj) {
-	    this.obj = obj;
-	}
+        Wrapper(T obj) {
+            this.obj = obj;
+        }
 
-	T get() {
-	    return obj;
-	}
+        T get() {
+            return obj;
+        }
     }
 }

@@ -28,8 +28,9 @@ import java.io.Serializable;
  * superclass with a default access no-arguments constructor.
  */
 public class PackageSuperclassConstructor extends PackageConstructor
-    implements Serializable
-{
+        implements Serializable {
     private static final long serialVersionUID = 1;
-    public PackageSuperclassConstructor() { }
+
+    public PackageSuperclassConstructor() {
+    }
 }

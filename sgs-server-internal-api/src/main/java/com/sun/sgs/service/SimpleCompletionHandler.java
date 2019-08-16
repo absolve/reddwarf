@@ -30,10 +30,10 @@ package com.sun.sgs.service;
  * request are complete.
  *
  * @see ClientSessionStatusListener#prepareToRelocate(
- *		BigInteger,long,SimpleCompletionHandler)
+ *BigInteger, long, SimpleCompletionHandler)
  * @see IdentityRelocationListener#prepareToRelocate(
- *		Identity,long,SimpleCompletionHandler)
- * @see RecoveryListener#recover(Node,SimpleCompletionHandler)
+ *Identity, long, SimpleCompletionHandler)
+ * @see RecoveryListener#recover(Node, SimpleCompletionHandler)
  */
 public interface SimpleCompletionHandler {
 

@@ -21,17 +21,12 @@
 
 package com.sun.sgs.tutorial.server.swordworld;
 
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedReference;
 
 /**
  * A tiny sample MUD application for the Project Darkstar Server.
@@ -39,16 +34,21 @@ import com.sun.sgs.app.ManagedReference;
  * There is a Room.  In the Room there is a Sword...
  */
 public class SwordWorld
-    implements Serializable, AppListener
-{
-    /** The version of the serialized form of this class. */
+        implements Serializable, AppListener {
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(SwordWorld.class.getName());
+            Logger.getLogger(SwordWorld.class.getName());
 
-    /** A reference to the one-and-only {@linkplain SwordWorldRoom room}. */
+    /**
+     * A reference to the one-and-only {@linkplain SwordWorldRoom room}.
+     */
     private ManagedReference<SwordWorldRoom> roomRef = null;
 
     /**
@@ -61,11 +61,11 @@ public class SwordWorld
 
         // Create the Room
         SwordWorldRoom room =
-            new SwordWorldRoom("Plain Room", "a nondescript room");
+                new SwordWorldRoom("Plain Room", "a nondescript room");
 
         // Create the Sword
         SwordWorldObject sword =
-            new SwordWorldObject("Shiny Sword", "a shiny sword.");
+                new SwordWorldObject("Shiny Sword", "a shiny sword.");
 
         // Put the Sword to the Room
         room.addItem(sword);
@@ -79,6 +79,7 @@ public class SwordWorld
     /**
      * Gets the SwordWorld's One True Room.
      * <p>
+     *
      * @return the room for this {@code SwordWorld}
      */
     public SwordWorldRoom getRoom() {
@@ -92,6 +93,7 @@ public class SwordWorld
     /**
      * Sets the SwordWorld's One True Room to the given room.
      * <p>
+     *
      * @param room the room to set
      */
     public void setRoom(SwordWorldRoom room) {
@@ -114,7 +116,7 @@ public class SwordWorld
      */
     public ClientSessionListener loggedIn(ClientSession session) {
         logger.log(Level.INFO,
-            "SwordWorld Client login: {0}", session.getName());
+                "SwordWorld Client login: {0}", session.getName());
 
         // Delegate to a factory method on SwordWorldPlayer,
         // since player management really belongs in that class.

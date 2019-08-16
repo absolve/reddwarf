@@ -24,6 +24,7 @@ package com.sun.sgs.test.util;
 import com.sun.sgs.impl.service.nodemap.NoNodesAvailableException;
 import com.sun.sgs.impl.service.nodemap.NodeAssignPolicy;
 import com.sun.sgs.impl.service.nodemap.policy.RoundRobinPolicy;
+
 import java.util.Properties;
 
 /**
@@ -31,15 +32,15 @@ import java.util.Properties;
  * to the local requesting node (i.e., LocalNodePolicy) and round robin
  * assignment is used when the server is making the request due to node
  * failure. <p>
- *
+ * <p>
  * Use the {@link #setRoundRobinPolicy} and {@link #setLocalNodePolicy}
  * methods to modify the policy.
  */
 public class ConfigurableNodePolicy extends RoundRobinPolicy {
 
     private static volatile boolean isRoundRobin = false;
-    
-    /** 
+
+    /**
      * Creates a new instance with the default local node policy.
      * Constructing an instance of this class resets the default policy for
      * all instances of this class.
@@ -48,33 +49,32 @@ public class ConfigurableNodePolicy extends RoundRobinPolicy {
      */
     public ConfigurableNodePolicy(Properties props) {
         super(props);
-	isRoundRobin = false;
+        isRoundRobin = false;
     }
 
     /**
      * Sets the policy to round robin assignment.
      */
     public static void setRoundRobinPolicy() {
-	isRoundRobin = true;
+        isRoundRobin = true;
     }
 
     /**
      * Sets the policy to local node assignment.
      */
     public static void setLocalNodePolicy() {
-	isRoundRobin = false;
+        isRoundRobin = false;
     }
-    
-    /** 
-     * {@inheritDoc} 
+
+    /**
+     * {@inheritDoc}
      * <p>
      * This implementation assigns to the node depending on how this
      * instance is configured. By default, the policy is the "local node"
-     * policy. 
+     * policy.
      */
     public long chooseNode(long requestingNode)
-        throws NoNodesAvailableException 
-    {
+            throws NoNodesAvailableException {
         if (requestingNode == NodeAssignPolicy.SERVER_NODE || isRoundRobin) {
 
             // A node has failed, we need to pick a new one from the live nodes.

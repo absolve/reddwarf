@@ -23,8 +23,8 @@ package com.sun.sgs.test.impl.service.nodemap.affinity;
 
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroup;
-import com.sun.sgs.impl.service.nodemap.affinity.AffinitySet;
 import com.sun.sgs.impl.service.nodemap.affinity.AffinityGroupGoodness;
+import com.sun.sgs.impl.service.nodemap.affinity.AffinitySet;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilder;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
@@ -32,15 +32,15 @@ import com.sun.sgs.test.util.DummyIdentity;
 import com.sun.sgs.tools.test.FilteredNameRunner;
 import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 /**
- *  Tests for static AffinityGroupGoodness methods.
+ * Tests for static AffinityGroupGoodness methods.
  */
 @RunWith(FilteredNameRunner.class)
 public class TestAffinityGroupGoodness {
@@ -63,9 +63,9 @@ public class TestAffinityGroupGoodness {
         AffinitySet b = new AffinitySet(2, gen, identitySet);
         group1.add(b);
 
-        double modularity = 
-            AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
-                                                 group1);
+        double modularity =
+                AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
+                        group1);
         Assert.assertEquals(0.22, modularity, .001);
 
         Collection<AffinityGroup> group2 = new HashSet<AffinityGroup>();
@@ -81,9 +81,9 @@ public class TestAffinityGroupGoodness {
         b = new AffinitySet(4, gen, identitySet);
         group2.add(b);
 
-        modularity = 
-            AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
-                                                 group2);
+        modularity =
+                AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
+                        group2);
         Assert.assertEquals(0.08, modularity, .001);
 
         double jaccard = AffinityGroupGoodness.calcJaccard(group1, group2);
@@ -110,8 +110,8 @@ public class TestAffinityGroupGoodness {
         group1.add(b);
 
         double modularity =
-            AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
-                                                 group1);
+                AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
+                        group1);
         Assert.assertEquals(0.22, modularity, .001);
 
         Collection<AffinityGroup> group2 = new HashSet<AffinityGroup>();
@@ -125,12 +125,12 @@ public class TestAffinityGroupGoodness {
         identitySet.add(new DummyIdentity("4"));
         identitySet.add(new DummyIdentity("5"));
         b = new AffinitySet(4, gen, identitySet);
-        
+
         group2.add(b);
 
         modularity =
-            AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
-                                                 group2);
+                AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
+                        group2);
         Assert.assertEquals(0.08, modularity, .001);
 
         double jaccard = AffinityGroupGoodness.calcJaccard(group1, group2);
@@ -188,8 +188,8 @@ public class TestAffinityGroupGoodness {
         groups.add(b);
 
         double modularity =
-            AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
-                                                 groups);
+                AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
+                        groups);
         System.out.println("Modularity for correct Zachary's karate club is " +
                 modularity);
     }
@@ -241,8 +241,8 @@ public class TestAffinityGroupGoodness {
         groups.add(b);
 
         double modularity =
-            AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
-                                                 groups);
+                AffinityGroupGoodness.calcModularity(builder.getAffinityGraph(),
+                        groups);
         System.out.println("Modularity test club partition is " +
                 modularity);
     }
@@ -256,8 +256,8 @@ public class TestAffinityGroupGoodness {
         public TestToyBuilder() {
             super(createGraph());
         }
-        static private UndirectedGraph<LabelVertex, WeightedEdge> createGraph()
-        {
+
+        static private UndirectedGraph<LabelVertex, WeightedEdge> createGraph() {
             UndirectedGraph<LabelVertex, WeightedEdge> graph =
                     new UndirectedSparseGraph<LabelVertex, WeightedEdge>();
 
@@ -290,8 +290,8 @@ public class TestAffinityGroupGoodness {
         public TestToyWeightBuilder() {
             super(createGraph());
         }
-        static private UndirectedGraph<LabelVertex, WeightedEdge> createGraph()
-        {
+
+        static private UndirectedGraph<LabelVertex, WeightedEdge> createGraph() {
             UndirectedGraph<LabelVertex, WeightedEdge> graph =
                     new UndirectedSparseGraph<LabelVertex, WeightedEdge>();
 

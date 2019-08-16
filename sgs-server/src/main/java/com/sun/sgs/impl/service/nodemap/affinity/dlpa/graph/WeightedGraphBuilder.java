@@ -26,10 +26,8 @@ import com.sun.sgs.impl.kernel.StandardProperties;
 import com.sun.sgs.impl.service.nodemap.affinity.LPAAffinityGroupFinder;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagation;
 import com.sun.sgs.impl.service.nodemap.affinity.dlpa.LabelPropagationServer;
-import
-   com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
-import
-    com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilderStats;
+import com.sun.sgs.impl.service.nodemap.affinity.graph.AbstractAffinityGraphBuilder;
+import com.sun.sgs.impl.service.nodemap.affinity.graph.AffinityGraphBuilderStats;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.LabelVertex;
 import com.sun.sgs.impl.service.nodemap.affinity.graph.WeightedEdge;
 import com.sun.sgs.kernel.AccessedObject;
@@ -45,49 +43,45 @@ import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedSparseGraph;
 import edu.uci.ics.jung.graph.util.Graphs;
 import edu.uci.ics.jung.graph.util.Pair;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import javax.management.JMException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import javax.management.JMException;
 
 /**
- * A graph builder which builds an affinity graph consisting of identities 
+ * A graph builder which builds an affinity graph consisting of identities
  * as vertices and a single weighted edges representing objects used by both
- * identities. 
+ * identities.
  * <p>
  * The data access information naturally forms a bipartite graph, with
  * vertices being either identities or objects, and an edge connecting each
  * identity which has accessed an object.
- * However, we want a graph with vertices for identities, and edges 
+ * However, we want a graph with vertices for identities, and edges
  * representing object accesses between identities, so we need the bipartite
- * graph to be folded.  
+ * graph to be folded.
  * <p>
  * We build the folded graph on the fly by keeping track of which objects have
  * been used by which identities.  Edges between identities are weighted, and
  * represent the number of object accesses the two identities have in common.
  */
-public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder 
-        implements DLPAGraphBuilder
-{
-    /** Map for tracking object-> map of identity-> number accesses
+public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
+        implements DLPAGraphBuilder {
+    /**
+     * Map for tracking object-> map of identity-> number accesses
      * (thus we keep track of the number of accesses each identity has made
      * for an object, to aid maintaining weighted edges)
      */
     private final ConcurrentMap<Object, Map<Identity, Long>>
-        objectMap = new ConcurrentHashMap<Object, Map<Identity, Long>>();
-    
-    /** Our graph of object accesses.  Changes to the graph must be made
+            objectMap = new ConcurrentHashMap<Object, Map<Identity, Long>>();
+
+    /**
+     * Our graph of object accesses.  Changes to the graph must be made
      * with the graph locked.
      */
     private final UndirectedGraph<LabelVertex, WeightedEdge>
-        affinityGraph = new UndirectedSparseGraph<LabelVertex, WeightedEdge>();
+            affinityGraph = new UndirectedSparseGraph<LabelVertex, WeightedEdge>();
 
     /**
      * A map of identity->graph vertex, allowing fast lookups of particular
@@ -98,7 +92,8 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
     private final Map<Identity, LabelVertex> identMap =
             new HashMap<Identity, LabelVertex>();
 
-    /** Our recorded cross-node accesses.  We keep track of this through
+    /**
+     * Our recorded cross-node accesses.  We keep track of this through
      * conflicts detected in data cache kept across nodes;  when a
      * local node is evicted from the cache because of a request from another
      * node for it, we are told of the eviction.
@@ -108,9 +103,10 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
      * inner maps.
      */
     private final ConcurrentMap<Long, Map<Object, Long>> conflictMap =
-        new ConcurrentHashMap<Long, Map<Object, Long>>();
+            new ConcurrentHashMap<Long, Map<Object, Long>>();
 
-    /** The TimerTask which prunes our data structures over time.  As the data
+    /**
+     * The TimerTask which prunes our data structures over time.  As the data
      * structures above are modified, the pruneTask notes the ways they have
      * changed.  Groups of changes are chunked into periods, each the length
      * of the time snapshot (configured at construction time). We
@@ -120,38 +116,43 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
      */
     private final PruneTask pruneTask;
 
-    /** Our JMX exposed information, or {@code null} if we are on the 
+    /**
+     * Our JMX exposed information, or {@code null} if we are on the
      * core server node.  No graph actions occur on the core server node.
      */
     private final AffinityGraphBuilderStats stats;
 
     // Our label propagation algorithm parts
-    /** The core server node portion or null if this is an app node. */
+    /**
+     * The core server node portion or null if this is an app node.
+     */
     private final LabelPropagationServer lpaServer;
-    /** The app node portion or null if this is an app node. */
+    /**
+     * The app node portion or null if this is an app node.
+     */
     private final LabelPropagation lpa;
 
     /**
      * Creates a weighted graph builder.
-     * @param properties the properties for configuring this builder
+     *
+     * @param properties     the properties for configuring this builder
      * @param systemRegistry the registry of available system components
-     * @param txnProxy the transaction proxy
+     * @param txnProxy       the transaction proxy
      * @throws Exception if an error occurs
      */
     public WeightedGraphBuilder(Properties properties,
                                 ComponentRegistry systemRegistry,
                                 TransactionProxy txnProxy)
-        throws Exception
-    {
+            throws Exception {
         super(properties);
 
         WatchdogService wdog = txnProxy.getService(WatchdogService.class);
         // Create the LPA algorithm pieces
         NodeType type =
-            NodeType.valueOf(
-                properties.getProperty(StandardProperties.NODE_TYPE));
+                NodeType.valueOf(
+                        properties.getProperty(StandardProperties.NODE_TYPE));
         ProfileCollector col =
-            systemRegistry.getComponent(ProfileCollector.class);
+                systemRegistry.getComponent(ProfileCollector.class);
         if (type == NodeType.coreServerNode) {
             lpaServer = new LabelPropagationServer(col, wdog, properties);
             lpa = null;
@@ -168,10 +169,10 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
 
             // Create our JMX MBean
             stats = new AffinityGraphBuilderStats(col,
-                        affinityGraph, periodCount, snapshot);
+                    affinityGraph, periodCount, snapshot);
             try {
                 col.registerMBean(stats,
-                                  AffinityGraphBuilderMXBean.MXBEAN_NAME);
+                        AffinityGraphBuilderMXBean.MXBEAN_NAME);
             } catch (JMException e) {
                 // Continue on if we couldn't register this bean, although
                 // it's probably a very bad sign
@@ -185,7 +186,7 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
                     "Cannot use DLPA algorithm on single node");
         }
     }
-    
+
     /**
      * {@inheritDoc}
      * <p>
@@ -265,23 +266,31 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
         stats.processingTimeInc(System.currentTimeMillis() - startTime);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public UndirectedGraph<LabelVertex, WeightedEdge> getAffinityGraph() {
         return Graphs.unmodifiableUndirectedGraph(
                 Graphs.synchronizedUndirectedGraph(affinityGraph));
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Map<Object, Map<Identity, Long>> getObjectUseMap() {
         return objectMap;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Map<Long, Map<Object, Long>> getConflictMap() {
         return conflictMap;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void disable() {
         if (setDisabledState()) {
             if (lpaServer != null) {
@@ -290,7 +299,10 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
             // nothing special is done for client side
         }
     }
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public void enable() {
         if (setEnabledState()) {
             if (lpaServer != null) {
@@ -300,7 +312,9 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void shutdown() {
         if (setShutdownState()) {
             if (pruneTask != null) {
@@ -315,31 +329,34 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public LabelVertex getVertex(Identity id) {
         synchronized (affinityGraph) {
             return identMap.get(id);
         }
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     public LPAAffinityGroupFinder getAffinityGroupFinder() {
         return lpaServer;
     }
-    
+
     /**
      * TBD: This will be the implementation of our conflict detection listener.
      * <p>
      * Note that forUpdate is currently not used.
-     * 
-     * @param objId the object that was evicted
-     * @param nodeId the node that caused the eviction
+     *
+     * @param objId     the object that was evicted
+     * @param nodeId    the node that caused the eviction
      * @param forUpdate {@code true} if this eviction was for an update,
      *                  {@code false} if it was for read only access
      */
     public void noteConflictDetected(Object objId, long nodeId,
-                                     boolean forUpdate)
-    {
+                                     boolean forUpdate) {
         if (objId == null) {
             throw new NullPointerException("objId must not be null");
         }
@@ -359,7 +376,9 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
         pruneTask.updateConflict(objId, nodeId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeNode(long nodeId) {
         conflictMap.remove(nodeId);
     }
@@ -367,6 +386,7 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
     /**
      * Adds a vertex for the given identity to the graph, or retrieve the
      * existing one.
+     *
      * @param id the identity
      * @return the graph vertex representing the identity
      */
@@ -386,11 +406,12 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
      *
      * @return the runnable which prunes the graph.
      * @throws UnsupportedOperationException if this builder does not support
-     *    graph pruning.
+     *                                       graph pruning.
      */
     public Runnable getPruneTask() {
         return pruneTask;
     }
+
     /**
      * The graph pruner.  It runs periodically, and is the only code
      * that removes edges and vertices from the graph.
@@ -424,13 +445,13 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
         // "count" requirement, we also remove the information from the first
         // enqueued info object.
         private final Deque<Map<Object, Map<Identity, Integer>>>
-            periodObjectQueue =
+                periodObjectQueue =
                 new ArrayDeque<Map<Object, Map<Identity, Integer>>>();
         private final Deque<Map<WeightedEdge, Integer>>
-            periodEdgeIncrementsQueue =
+                periodEdgeIncrementsQueue =
                 new ArrayDeque<Map<WeightedEdge, Integer>>();
         private final Deque<Map<Long, Map<Object, Integer>>>
-            periodConflictQueue =
+                periodConflictQueue =
                 new ArrayDeque<Map<Long, Map<Object, Integer>>>();
 
         // A lock to guard all uses of the current period information above
@@ -441,6 +462,7 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
 
         /**
          * Creates a PruneTask.
+         *
          * @param count the number of full snapshots we wish to
          *              retain as live data
          */
@@ -482,18 +504,16 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
 
             // For each object, remove the added access counts
             for (Map.Entry<Object, Map<Identity, Integer>> entry :
-                periodObject.entrySet())
-            {
+                    periodObject.entrySet()) {
                 Map<Identity, Long> idMap = objectMap.get(entry.getKey());
                 synchronized (idMap) {
                     for (Map.Entry<Identity, Integer> updateEntry :
-                         entry.getValue().entrySet())
-                    {
+                            entry.getValue().entrySet()) {
                         Identity updateId = updateEntry.getKey();
                         long updateValue = updateEntry.getValue();
                         Long idMapVal = idMap.get(updateId);
                         long newVal =
-                            (idMapVal == null) ? 0 : idMapVal - updateValue;
+                                (idMapVal == null) ? 0 : idMapVal - updateValue;
                         if (newVal <= 0) {
                             idMap.remove(updateId);
                         } else {
@@ -509,8 +529,7 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
             synchronized (affinityGraph) {
                 // For each modified edge in the graph, update weights
                 for (Map.Entry<WeightedEdge, Integer> entry :
-                     periodEdgeIncrements.entrySet())
-                {
+                        periodEdgeIncrements.entrySet()) {
                     WeightedEdge edge = entry.getKey();
                     int weight = entry.getValue();
                     if (edge.getWeight() == weight) {
@@ -531,21 +550,19 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
 
             // For each conflict, update values
             for (Map.Entry<Long, Map<Object, Integer>> entry :
-                 periodConflicts.entrySet())
-            {
+                    periodConflicts.entrySet()) {
                 Long nodeId = entry.getKey();
                 Map<Object, Long> objMap = conflictMap.get(nodeId);
                 // If the node went down, we might have removed the entry
                 if (objMap != null) {
                     synchronized (objMap) {
                         for (Map.Entry<Object, Integer> updateEntry :
-                              entry.getValue().entrySet())
-                        {
+                                entry.getValue().entrySet()) {
                             Object objId = updateEntry.getKey();
                             Integer periodVal = updateEntry.getValue();
                             Long objMapVal = objMap.get(objId);
                             long newVal =
-                                (objMapVal == null) ? 0 : objMapVal - periodVal;
+                                    (objMapVal == null) ? 0 : objMapVal - periodVal;
                             if (newVal <= 0) {
                                 objMap.remove(objId);
                             } else {
@@ -564,12 +581,13 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
         /**
          * Note that an edge's weight has been incremented.
          * Called by a single thread.
+         *
          * @param edge the edge
          */
         void incrementEdge(WeightedEdge edge) {
             synchronized (currentPeriodLock) {
                 int v = currentPeriodEdgeIncrements.containsKey(edge) ?
-                         currentPeriodEdgeIncrements.get(edge) : 0;
+                        currentPeriodEdgeIncrements.get(edge) : 0;
                 v++;
                 currentPeriodEdgeIncrements.put(edge, v);
             }
@@ -578,6 +596,7 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
         /**
          * Note that an object has been accessed.
          * Called by a single thread.
+         *
          * @param objId the object
          * @param owner the accessor
          */
@@ -590,7 +609,7 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
                     currentPeriodObject.put(objId, periodIdMap);
                 }
                 int periodValue = periodIdMap.containsKey(owner) ?
-                                  periodIdMap.get(owner) : 0;
+                        periodIdMap.get(owner) : 0;
                 periodValue++;
                 periodIdMap.put(owner, periodValue);
             }
@@ -598,7 +617,8 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
 
         /**
          * Note that a data cache conflict has been detected.
-         * @param objId the objId of the object causing the conflict
+         *
+         * @param objId  the objId of the object causing the conflict
          * @param nodeId the node ID of the node we were in conflict with
          */
         void updateConflict(Object objId, long nodeId) {
@@ -610,7 +630,7 @@ public class WeightedGraphBuilder extends AbstractAffinityGraphBuilder
                     currentPeriodConflicts.put(nodeId, periodObjMap);
                 }
                 int periodValue = periodObjMap.containsKey(objId) ?
-                                  periodObjMap.get(objId) : 0;
+                        periodObjMap.get(objId) : 0;
                 periodValue++;
                 periodObjMap.put(objId, periodValue);
             }

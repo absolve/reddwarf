@@ -22,6 +22,7 @@
 package com.sun.sgs.impl.service.data.store.net;
 
 import com.sun.sgs.impl.service.data.store.BindingValue;
+
 import java.io.IOException;
 
 /**
@@ -31,138 +32,177 @@ import java.io.IOException;
  */
 abstract class DataStoreProtocolClient implements DataStoreServer {
 
-    /** Creates an instance of this class. */
-    DataStoreProtocolClient() { }
+    /**
+     * Creates an instance of this class.
+     */
+    DataStoreProtocolClient() {
+    }
 
-    /** The protocol handler for the current thread. */
+    /**
+     * The protocol handler for the current thread.
+     */
     private final ThreadLocal<DataStoreProtocol> handler =
-	new ThreadLocal<DataStoreProtocol>();
+            new ThreadLocal<DataStoreProtocol>();
 
     /**
      * Creates a protocol handler.
      *
-     * @return	the protocol handler
-     * @throws	IOException if an I/O failure occurs
+     * @return the protocol handler
+     * @throws IOException if an I/O failure occurs
      */
     abstract DataStoreProtocol createHandler() throws IOException;
 
     /**
      * Gets the protocol handler for the current thread.
      *
-     * @return	the protocol handler for the current thread
-     * @throws	IOException if an I/O failure occurs
+     * @return the protocol handler for the current thread
+     * @throws IOException if an I/O failure occurs
      */
     DataStoreProtocol getHandler() throws IOException {
-	DataStoreProtocol h = handler.get();
-	if (h == null) {
-	    h = createHandler();
-	    handler.set(h);
-	}
-	return h;
+        DataStoreProtocol h = handler.get();
+        if (h == null) {
+            h = createHandler();
+            handler.set(h);
+        }
+        return h;
     }
 
     /* -- Implement DataStoreServer -- */
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long newNodeId() throws IOException {
-	return getHandler().newNodeId();
+        return getHandler().newNodeId();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long createObject(long tid) throws IOException {
-	return getHandler().createObject(tid);
+        return getHandler().createObject(tid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void markForUpdate(long tid, long oid) throws IOException {
-	getHandler().markForUpdate(tid, oid);
+        getHandler().markForUpdate(tid, oid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public byte[] getObject(long tid, long oid, boolean forUpdate)
-	throws IOException
-    {
-	return getHandler().getObject(tid, oid, forUpdate);
+            throws IOException {
+        return getHandler().getObject(tid, oid, forUpdate);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setObject(long tid, long oid, byte[] data) throws IOException {
-	getHandler().setObject(tid, oid, data);
+        getHandler().setObject(tid, oid, data);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void setObjects(long tid, long[] oids, byte[][] dataArray)
-	throws IOException
-    {
-	getHandler().setObjects(tid, oids, dataArray);
+            throws IOException {
+        getHandler().setObjects(tid, oids, dataArray);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void removeObject(long tid, long oid) throws IOException {
-	getHandler().removeObject(tid, oid);
+        getHandler().removeObject(tid, oid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public BindingValue getBinding(long tid, String name) throws IOException {
-	return getHandler().getBinding(tid, name);
+        return getHandler().getBinding(tid, name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public BindingValue setBinding(long tid, String name, long oid)
-	throws IOException
-    {
-	return getHandler().setBinding(tid, name, oid);
+            throws IOException {
+        return getHandler().setBinding(tid, name, oid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public BindingValue removeBinding(long tid, String name)
-	throws IOException
-    {
-	return getHandler().removeBinding(tid, name);
+            throws IOException {
+        return getHandler().removeBinding(tid, name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String nextBoundName(long tid, String name) throws IOException {
-	return getHandler().nextBoundName(tid, name);
+        return getHandler().nextBoundName(tid, name);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public int getClassId(long tid, byte[] classInfo) throws IOException {
-	return getHandler().getClassId(tid, classInfo);
+        return getHandler().getClassId(tid, classInfo);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public byte[] getClassInfo(long tid, int classId) throws IOException {
-	return getHandler().getClassInfo(tid, classId);
+        return getHandler().getClassInfo(tid, classId);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long nextObjectId(long tid, long oid) throws IOException {
-	return getHandler().nextObjectId(tid, oid);
+        return getHandler().nextObjectId(tid, oid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public long createTransaction(long timeout) throws IOException {
-	return getHandler().createTransaction(timeout);
+        return getHandler().createTransaction(timeout);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public boolean prepare(long tid) throws IOException {
-	return getHandler().prepare(tid);
+        return getHandler().prepare(tid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void commit(long tid) throws IOException {
-	getHandler().commit(tid);
+        getHandler().commit(tid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void prepareAndCommit(long tid) throws IOException {
-	getHandler().prepareAndCommit(tid);
+        getHandler().prepareAndCommit(tid);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void abort(long tid) throws IOException {
-	getHandler().abort(tid);
+        getHandler().abort(tid);
     }
 }

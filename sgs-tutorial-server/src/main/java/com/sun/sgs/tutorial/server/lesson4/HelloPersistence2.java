@@ -21,34 +21,37 @@
 
 package com.sun.sgs.tutorial.server.lesson4;
 
+import com.sun.sgs.app.*;
+
 import java.io.Serializable;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.AppListener;
-import com.sun.sgs.app.ClientSession;
-import com.sun.sgs.app.ClientSessionListener;
-import com.sun.sgs.app.TaskManager;
-
 /**
  * A simple persistence example for the Project Darkstar Server.
  */
 public class HelloPersistence2
-    implements AppListener, Serializable
-{
-    /** The version of the serialized form of this class. */
+        implements AppListener, Serializable {
+    /**
+     * The version of the serialized form of this class.
+     */
     private static final long serialVersionUID = 1L;
 
-    /** The {@link Logger} for this class. */
+    /**
+     * The {@link Logger} for this class.
+     */
     private static final Logger logger =
-        Logger.getLogger(HelloPersistence2.class.getName());
+            Logger.getLogger(HelloPersistence2.class.getName());
 
-    /** The delay before the first run of the task. */
+    /**
+     * The delay before the first run of the task.
+     */
     public static final int DELAY_MS = 5000;
 
-    /** The time to wait before repeating the task. */
+    /**
+     * The time to wait before repeating the task.
+     */
     public static final int PERIOD_MS = 500;
 
     // implement AppListener

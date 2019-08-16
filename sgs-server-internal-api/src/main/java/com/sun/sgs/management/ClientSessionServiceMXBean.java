@@ -31,18 +31,19 @@ import com.sun.sgs.service.Node;
 /**
  * The management interface for the client session service.
  * <p>
- * An instance implementing this MBean can be obtained from the from the 
- * {@link java.lang.management.ManagementFactory.html#getPlatformMBeanServer() 
+ * An instance implementing this MBean can be obtained from the from the
+ * {@link java.lang.management.ManagementFactory.html#getPlatformMBeanServer()
  * getPlatformMBeanServer} method.
  * <p>
  * The {@code ObjectName} for uniquely identifying this MBean is
  * {@value #MXBEAN_NAME}.
- * 
  */
 public interface ClientSessionServiceMXBean {
-    /** The name for uniquely identifying this MBean. */
+    /**
+     * The name for uniquely identifying this MBean.
+     */
     String MXBEAN_NAME = "com.sun.sgs.service:type=ClientSessionService";
-    
+
     // Maybe add number of connects/disconnects?
     // number of channels a client is connected to
     // amount of communications traffic this client sends/receives?
@@ -76,22 +77,22 @@ public interface ClientSessionServiceMXBean {
     void setLoginHighWater(int highWater);
 
     /**
-     * Returns the number of times {@link 
+     * Returns the number of times {@link
      * ClientSessionService#addSessionStatusListener
      * addSessionStatusListener} has been called.
-     * 
-     * @return the number of times {@code addSessionStatusListener} 
-     *         has been called
+     *
+     * @return the number of times {@code addSessionStatusListener}
+     * has been called
      */
     long getAddSessionStatusListenerCalls();
-    
+
     /**
-     * Returns the number of times {@link 
+     * Returns the number of times {@link
      * ClientSessionService#getSessionProtocol getSessionProtocol}
      * has been called.
-     * 
-     * @return the number of times {@code getSessionProtocol} 
-     *         has been called
+     *
+     * @return the number of times {@code getSessionProtocol}
+     * has been called
      */
     long getGetSessionProtocolCalls();
 
@@ -99,9 +100,9 @@ public interface ClientSessionServiceMXBean {
      * Returns the number of times {@link
      * ClientSessionService#isRelocatingToLocalNode
      * isRelocatingToLocalNode} has been called.
-     * 
-     * @return the number of times {@code isRelocatingToLocalNode} 
-     *         has been called
+     *
+     * @return the number of times {@code isRelocatingToLocalNode}
+     * has been called
      */
     long getIsRelocatingToLocalNodeCalls();
 }

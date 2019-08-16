@@ -26,15 +26,18 @@
 package com.sun.sgs.management;
 
 /**
- *  The management interface for the affinity group finder.
+ * The management interface for the affinity group finder.
  */
 public interface AffinityGroupFinderMXBean {
-    /** The name for uniquely identifying this MBean. */
+    /**
+     * The name for uniquely identifying this MBean.
+     */
     String MXBEAN_NAME = "com.sun.sgs:type=AffinityGroupFinder";
 
     /**
      * Returns the number of groups found in the latest run of the
      * affinity group finder.
+     *
      * @return the number of groups found in the latest run
      */
     long getNumberGroups();
@@ -42,6 +45,7 @@ public interface AffinityGroupFinderMXBean {
     /**
      * Returns the number of times the affinity group finder has run,
      * including runs that fail.
+     *
      * @return the number of times the affinity group finder has run
      */
     long getNumberRuns();
@@ -49,6 +53,7 @@ public interface AffinityGroupFinderMXBean {
     /**
      * Returns the number of times the affinity group finder has failed,
      * due to errors or node failures during a run.
+     *
      * @return the number of times the affinity group finder has failed
      */
     long getNumberFailures();
@@ -57,6 +62,7 @@ public interface AffinityGroupFinderMXBean {
      * Returns the number of times the affinity group finder was stopped
      * due to not converging soon enough.  A stopped run is not a failed
      * run;  valid results are returned.
+     *
      * @return the number of times the affinity group finder was stopped
      */
     long getNumberStopped();
@@ -64,6 +70,7 @@ public interface AffinityGroupFinderMXBean {
     /**
      * Returns the average amount of time, in milliseconds, spent in algorithm
      * runs.
+     *
      * @return the average amount of time spent in algorithm runs
      */
     double getAvgRunTime();
@@ -71,6 +78,7 @@ public interface AffinityGroupFinderMXBean {
     /**
      * Returns the minimum amount of time, in milliseconds, spent in an
      * algorithm run.
+     *
      * @return the minimum amount of time spent in an algorithm run
      */
     long getMinRunTime();
@@ -78,18 +86,21 @@ public interface AffinityGroupFinderMXBean {
     /**
      * Returns the maximum amount of time, in milliseconds, spent in an
      * algorithm run.
+     *
      * @return the maximum amount of time spent in an algorithm run
      */
     long getMaxRunTime();
 
     /**
      * Returns the average number of iterations required for algorithm runs.
+     *
      * @return the average number of iterations required for algorithm runs
      */
     double getAvgIterations();
 
     /**
      * Returns the max number of iterations for any algorithm run.
+     *
      * @return the max number of iterations for any algorithm run
      */
     int getMaxIterations();
@@ -97,6 +108,7 @@ public interface AffinityGroupFinderMXBean {
     /**
      * Returns the configured maximum number of iterations allowed to run
      * before stopping the algorithm and returning the current results.
+     *
      * @return the configured maximum number of iterations
      */
     int getStopIteration();

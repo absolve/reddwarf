@@ -26,7 +26,6 @@
 package com.sun.sgs.profile;
 
 import com.sun.sgs.auth.Identity;
-
 import com.sun.sgs.kernel.KernelRunnable;
 
 import java.util.List;
@@ -58,7 +57,7 @@ public interface ProfileReport {
      * Returns whether any of the task was transactional.
      *
      * @return <code>true</code> if any part of the task ran transactionally,
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     boolean wasTaskTransactional();
 
@@ -68,8 +67,8 @@ public interface ProfileReport {
      *
      * @return the transaction identifier or <code>null</code>
      */
-    byte [] getTransactionId();
-    
+    byte[] getTransactionId();
+
     /**
      * Returns detail about each participant in the transaction, or an
      * empty <code>Set</code> if the task was not transactional.
@@ -93,7 +92,7 @@ public interface ProfileReport {
      * successfully.
      *
      * @return <code>true</code> if this task completed successfully,
-     *         <code>false</code> otherwise
+     * <code>false</code> otherwise
      */
     boolean wasTaskSuccessful();
 
@@ -101,7 +100,7 @@ public interface ProfileReport {
      * Returns the time at which that task was scheduled to run.
      *
      * @return the requested starting time for the task in milliseconds
-     *         since January 1, 1970
+     * since January 1, 1970
      */
     long getScheduledStartTime();
 
@@ -109,7 +108,7 @@ public interface ProfileReport {
      * Returns the time at which the task actually started running.
      *
      * @return the actual starting time for the task in milliseconds
-     *         since January 1, 1970
+     * since January 1, 1970
      */
     long getActualStartTime();
 
@@ -125,7 +124,7 @@ public interface ProfileReport {
     /**
      * Returns the number of times this task has been tried. If this is
      * the first time the task has been run, then this method returns 1.
-     * 
+     *
      * @return the number of times this task has been tried
      */
     int getRetryCount();
@@ -136,7 +135,7 @@ public interface ProfileReport {
      * empty <code>List</code> is returned.
      *
      * @return a {@code List} of {@code String}s of the names of the reported
-     *         operations, in the order they were reported
+     * operations, in the order they were reported
      */
     List<String> getReportedOperations();
 
@@ -159,9 +158,9 @@ public interface ProfileReport {
      * to an oldest-first list of sample values.
      *
      * @return a <code>Map</code> from sample name to a list of values
-     *         added during the task
+     * added during the task
      */
-    Map<String, List<Long>> getUpdatedTaskSamples();  
+    Map<String, List<Long>> getUpdatedTaskSamples();
 
     /**
      * Returns detail of the object accesses as reported by the
@@ -174,8 +173,8 @@ public interface ProfileReport {
     AccessedObjectsDetail getAccessedObjectsDetail();
 
     /**
-     * Returns the number of tasks in the scheduler and ready to run when 
-     * this report's task was started. 
+     * Returns the number of tasks in the scheduler and ready to run when
+     * this report's task was started.
      *
      * @return the number of ready tasks
      */
@@ -187,9 +186,9 @@ public interface ProfileReport {
      * occurred.  This <code>Throwable</code> will always be
      * <code>null</code> if {@link #wasTaskSuccessful()} returns
      * <code>true</code>.
-     * 
+     *
      * @return the <code>Throwable</code> thrown during task execution
-     *         or <code>null</code> if no failure occurred
+     * or <code>null</code> if no failure occurred
      */
     Throwable getFailureCause();
 

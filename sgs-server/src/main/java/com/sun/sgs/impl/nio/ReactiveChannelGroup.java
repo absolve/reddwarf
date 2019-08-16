@@ -21,6 +21,9 @@
 
 package com.sun.sgs.impl.nio;
 
+import com.sun.sgs.nio.channels.AsynchronousChannelGroup;
+import com.sun.sgs.nio.channels.ShutdownChannelGroupException;
+
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
 import java.util.ArrayList;
@@ -29,9 +32,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.sgs.nio.channels.AsynchronousChannelGroup;
-import com.sun.sgs.nio.channels.ShutdownChannelGroupException;
 
 /**
  * A select-based AsynchronousChannelGroup.
@@ -56,11 +56,12 @@ import com.sun.sgs.nio.channels.ShutdownChannelGroupException;
  * {@value #REACTORS_PROPERTY}.
  */
 class ReactiveChannelGroup
-    extends AsyncGroupImpl
-{
-    /** The logger for this class. */
+        extends AsyncGroupImpl {
+    /**
+     * The logger for this class.
+     */
     static final Logger log =
-        Logger.getLogger(ReactiveChannelGroup.class.getName());
+            Logger.getLogger(ReactiveChannelGroup.class.getName());
 
     /**
      * Lock held on updates to lifecycleState and reactors list,
@@ -73,14 +74,22 @@ class ReactiveChannelGroup
      * It may only be accessed with stateLock held.
      */
     protected int lifecycleState = RUNNING;
-    /** State: open and running */
-    protected static final int RUNNING      = 0;
-    /** State: graceful shutdown in progress */
-    protected static final int SHUTDOWN     = 1;
-    /** State: forced shutdown in progress */
+    /**
+     * State: open and running
+     */
+    protected static final int RUNNING = 0;
+    /**
+     * State: graceful shutdown in progress
+     */
+    protected static final int SHUTDOWN = 1;
+    /**
+     * State: forced shutdown in progress
+     */
     protected static final int SHUTDOWN_NOW = 2;
-    /** State: terminated */
-    protected static final int DONE         = 3;
+    /**
+     * State: terminated
+     */
+    protected static final int DONE = 3;
 
     /**
      * The active {@linkplain Reactor reactors} in this group.
@@ -93,31 +102,31 @@ class ReactiveChannelGroup
      * channel groups: {@value}
      */
     public static final String REACTORS_PROPERTY =
-        "com.sun.sgs.nio.async.reactive.reactors";
+            "com.sun.sgs.nio.async.reactive.reactors";
 
     /**
      * The default number of reactors to be used by channel groups:
      * {@code Runtime.getRuntime().availableProcessors()}
      */
-    public static final int DEFAULT_REACTORS = 
-        Runtime.getRuntime().availableProcessors();
+    public static final int DEFAULT_REACTORS =
+            Runtime.getRuntime().availableProcessors();
 
 
-    /** The reactor load-balance strategy. */
+    /**
+     * The reactor load-balance strategy.
+     */
     final ReactorAssignmentStrategy reactorAssignmentStrategy;
 
     /**
      * Creates a new group with the default number of reactors.
-     * 
+     *
      * @param provider the provider that created this group
      * @param executor the executor for this group
-     * 
      * @throws IOException if an I/O error occurs
      */
     ReactiveChannelGroup(ReactiveAsyncChannelProvider provider,
                          ExecutorService executor)
-        throws IOException
-    {
+            throws IOException {
         this(provider, executor, 0);
     }
 
@@ -125,25 +134,23 @@ class ReactiveChannelGroup
      * Creates a new group with the requested number of reactors. If {code
      * 0} reactors are requested, a default is chosen as the number of
      * {@link Runtime#availableProcessors() available processors}.
-     * 
-     * @param provider the provider that created this group
-     * @param executor the executor for this group
+     *
+     * @param provider          the provider that created this group
+     * @param executor          the executor for this group
      * @param requestedReactors the number of reactors to create in this
-     *        group, or {@code 0} to use the default
-     * 
+     *                          group, or {@code 0} to use the default
      * @throws IllegalArgumentException if a negative number of reactors is
-     *         requested
-     * @throws IOException if an I/O error occurs
+     *                                  requested
+     * @throws IOException              if an I/O error occurs
      */
     ReactiveChannelGroup(ReactiveAsyncChannelProvider provider,
                          ExecutorService executor,
                          int requestedReactors)
-        throws IOException
-    {
+            throws IOException {
         super(provider, executor);
 
         int n = requestedReactors;
-        
+
         // TODO determine how security model interacts with properties needed
         // for group creation
 
@@ -192,7 +199,7 @@ class ReactiveChannelGroup
 
             reactor = reactorAssignmentStrategy.getReactorFor(ch);
         }
-    
+
         try {
             asyncKey = reactor.register(ch);
             return asyncKey;
@@ -200,7 +207,8 @@ class ReactiveChannelGroup
             if (asyncKey == null) {
                 try {
                     ch.close();
-                } catch (IOException ignore) { }
+                } catch (IOException ignore) {
+                }
             }
         }
     }
@@ -212,7 +220,7 @@ class ReactiveChannelGroup
 
         /**
          * Returns the {@code Reactor} for a newly-registering channel.
-         * 
+         *
          * @param channel a channel to assign to a {@code Reactor}
          * @return the {@code Reactor} to use for the channel
          */
@@ -224,8 +232,7 @@ class ReactiveChannelGroup
      * based on the {@linkplain Object#hashCode() hash} of the channel.
      */
     final class HashingReactorAssignmentStrategy
-    implements ReactorAssignmentStrategy
-    {
+            implements ReactorAssignmentStrategy {
         /**
          * {@inheritDoc}
          * <p>
@@ -234,7 +241,7 @@ class ReactiveChannelGroup
          */
         public Reactor getReactorFor(SelectableChannel channel) {
             return reactors.get(
-                Math.abs(channel.hashCode() % reactors.size()));
+                    Math.abs(channel.hashCode() % reactors.size()));
         }
     }
 
@@ -243,12 +250,14 @@ class ReactiveChannelGroup
      */
     class Worker implements Runnable {
 
-        /** This worker's reactor. */
+        /**
+         * This worker's reactor.
+         */
         private final Reactor reactor;
 
         /**
          * Creates a worker instance for the reactor.
-         * 
+         *
          * @param reactor the reactor to run
          */
         Worker(Reactor reactor) {
@@ -266,13 +275,13 @@ class ReactiveChannelGroup
             // handle termination correctly.
 
             try {
-                for (;; ) {
+                for (; ; ) {
                     boolean keepGoing = reactor.performWork();
                     if (!keepGoing) {
                         break;
                     }
                 }
-            } catch (IOException  t) {
+            } catch (IOException t) {
                 exception = t;
             } catch (RuntimeException t) {
                 exception = t;
@@ -301,7 +310,7 @@ class ReactiveChannelGroup
                     throw (RuntimeException) exception;
                 } else if (exception instanceof IOException) {
                     throw new RuntimeException(
-                        exception.getMessage(), exception);
+                            exception.getMessage(), exception);
                 } else {
                     throw Util.unexpected(exception);
                 }
@@ -316,13 +325,12 @@ class ReactiveChannelGroup
      */
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit)
-        throws InterruptedException
-    {
+            throws InterruptedException {
         long millis = unit.toMillis(timeout);
         final long deadline = System.currentTimeMillis() + millis;
 
         synchronized (stateLock) {
-            for (;; ) {
+            for (; ; ) {
                 if (lifecycleState == DONE) {
                     return true;
                 }
@@ -406,7 +414,7 @@ class ReactiveChannelGroup
                     throw Util.unexpected(exception);
                 }
             }
-            
+
             return this;
         }
     }
@@ -415,7 +423,7 @@ class ReactiveChannelGroup
      * If the group is trying to shutdown, check that all the reactors
      * have shutdown.  If they have, mark this group as done and wake
      * anyone blocked on awaitTermination.
-     * 
+     * <p>
      * NOTE: Must be called with {@code stateLock} held.
      */
     private void tryTerminate() {
